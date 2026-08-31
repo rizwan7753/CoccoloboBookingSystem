@@ -1,0 +1,436 @@
+// Cocolobo Booking System — MVP schema
+// Single-location MVP. `locationId` fields are kept in place (hardcoded to
+// one seeded Location row) so multi-property support can be added later
+// without a schema rewrite.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum ExcursionStatus {
+  ACTIVE
+  INACTIVE
+  DRAFT
+  SOLD_OUT
+}
+
+// PER_GUEST: amountTotal = priceAdult*adultCount + priceChild*childCount (default).
+// FLAT_RATE: amountTotal = priceAdult, a single flat charge for the whole
+// booking regardless of adult/child split — e.g. a cabana priced "$400 for up
+// to 4 guests" rather than per person. capacityDefault still caps how many
+// guests can be on one booking (spec: "Private or exclusive-group pricing" §5).
+enum PricingType {
+  PER_GUEST
+  FLAT_RATE
+}
+
+enum SlotStatus {
+  OPEN
+  CLOSED
+  SOLD_OUT
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  REFUNDED
+  FAILED
+}
+
+enum BookingSource {
+  DIRECT_WEBSITE
+  STAFF_ASSISTED
+  HOTEL_CONCIERGE
+  TRAVEL_AGENT
+  CRUISE
+}
+
+// Mirrors the roles defined in the requirements spec (§14 Staff Roles & Permissions).
+// TRAVEL_AGENT is reserved for the agent/tour-operator portal (a later phase) — the
+// enum value exists now so that phase doesn't require a migration, but no agent-facing
+// routes exist yet in this MVP.
+enum AdminRole {
+  SUPER_ADMIN
+  LOCATION_MANAGER
+  BOOKING_STAFF
+  FINANCE
+  TRAVEL_AGENT
+}
+
+model Location {
+  id        String      @id @default(cuid())
+  name      String      // doubles as the booking system's display name (single-location MVP)
+  timezone  String      @default("America/St_Thomas")
+  currency  String      @default("USD")
+  createdAt DateTime    @default(now())
+
+  // SMTP config for sending guest/staff notifications (confirmations, reminders).
+  // smtpPassword is write-only from the admin UI's perspective — the GET
+  // endpoint never echoes it back, only whether one is set.
+  smtpHost       String?
+  smtpPort       Int?
+  smtpUsername   String?
+  smtpPassword   String?
+  smtpFromEmail  String?
+  smtpFromName   String?
+  smtpSecure     Boolean     @default(false)
+
+  excursions Excursion[]
+  rentalItems RentalItem[]
+  events      Event[]
+  adminUsers AdminUser[]
+  holidays    Holiday[]
+
+  @@map("locations")
+}
+
+// A closed/blackout date (holiday, weather closure, private charter, etc.)
+// at the location level — set once, blocks booking wherever it applies
+// rather than needing to be configured on every excursion/rental/event
+// individually. The three booleans let an admin scope a closure (e.g. "beach
+// chairs stay open on Christmas but tours don't") instead of always
+// shutting down everything.
+model Holiday {
+  id                  String   @id @default(cuid())
+  locationId          String
+  location            Location @relation(fields: [locationId], references: [id])
+  date                DateTime @db.Date
+  label               String   // "Christmas Day"
+  appliesToExcursions Boolean  @default(true)
+  appliesToRentals    Boolean  @default(true)
+  appliesToEvents     Boolean  @default(true)
+  createdAt           DateTime @default(now())
+
+  @@unique([locationId, date])
+  @@map("holidays")
+}
+
+model Excursion {
+  id                String           @id @default(cuid())
+  locationId        String
+  location          Location         @relation(fields: [locationId], references: [id])
+  title             String
+  slug              String           @unique
+  description       String           @db.Text
+  included          String?          @db.Text
+  excluded          String?          @db.Text
+  durationMinutes   Int
+  meetingPoint      String?          @db.Text
+  mapUrl            String?
+  whatToBring       String?          @db.Text
+  images            Json?            // array of image URLs
+  pricingType       PricingType      @default(PER_GUEST)
+  priceAdult        Decimal          @db.Decimal(10, 2) // flat total when pricingType = FLAT_RATE
+  priceChild        Decimal?         @db.Decimal(10, 2) // ignored when pricingType = FLAT_RATE
+  capacityDefault   Int
+  cutoffHoursBefore Int              @default(0) // hours before departure that booking closes; combined with cutoffTime
+  cutoffTime        String           @default("21:00") // "book by 9:00 PM the evening before"
+  status            ExcursionStatus  @default(DRAFT)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  departureTimes    DepartureTime[]
+  slots             DepartureSlot[]
+  bookings          Booking[]
+
+  @@map("excursions")
+}
+
+// Recurring weekly schedule: this excursion runs at `time` on the given days of week.
+model DepartureTime {
+  id           String    @id @default(cuid())
+  excursionId  String
+  excursion    Excursion @relation(fields: [excursionId], references: [id], onDelete: Cascade)
+  time         String    // "09:00" 24h format
+  daysOfWeek   Json      // e.g. [1,2,3,4,5] (0=Sun .. 6=Sat)
+  isActive     Boolean   @default(true)
+
+  @@map("departure_times")
+}
+
+// A concrete bookable instance: one excursion, one date, one time.
+// Created lazily (upserted) the first time it's requested/booked.
+// Row locked via SELECT ... FOR UPDATE during booking to prevent oversell.
+model DepartureSlot {
+  id           String       @id @default(cuid())
+  excursionId  String
+  excursion    Excursion    @relation(fields: [excursionId], references: [id])
+  date         DateTime     @db.Date
+  time         String
+  capacity     Int
+  bookedCount  Int          @default(0)
+  status       SlotStatus   @default(OPEN)
+  createdAt    DateTime     @default(now())
+
+  bookings     Booking[]
+
+  @@unique([excursionId, date, time])
+  @@map("departure_slots")
+}
+
+model Booking {
+  id               String        @id @default(cuid())
+  excursionId      String
+  excursion        Excursion     @relation(fields: [excursionId], references: [id])
+  slotId           String
+  slot             DepartureSlot @relation(fields: [slotId], references: [id])
+
+  guestName        String
+  guestEmail       String
+  guestPhone       String?
+  roomNumber       String?
+  specialRequests  String?       @db.Text
+
+  adultCount       Int           @default(0)
+  childCount       Int           @default(0)
+  totalGuests      Int
+
+  amountTotal      Decimal       @db.Decimal(10, 2)
+  currency         String        @default("USD")
+
+  status           BookingStatus @default(PENDING)
+  paymentStatus    PaymentStatus @default(PENDING)
+  stripePaymentIntentId String?  @unique
+
+  source           BookingSource @default(DIRECT_WEBSITE)
+  internalNotes    String?       @db.Text
+
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([excursionId])
+  @@index([slotId])
+  @@map("bookings")
+}
+
+// Beach chairs / cabanas / umbrellas — same guest-type pricing as excursions,
+// but booked per-day against a specific numbered spot rather than a shared
+// capacity pool, and bookable same-day (no advance-booking cutoff).
+model RentalItem {
+  id          String           @id @default(cuid())
+  locationId  String
+  location    Location         @relation(fields: [locationId], references: [id])
+  name        String
+  slug        String           @unique
+  description String           @db.Text
+  images      Json?
+  durationMinutes Int          @default(240) // length of one booking session; used to auto-generate time slots
+  priceAdult  Decimal          @db.Decimal(10, 2)
+  priceChild  Decimal?         @db.Decimal(10, 2)
+  status      ExcursionStatus  @default(DRAFT)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  spots       RentalSpot[]
+  timeSlots   RentalTimeSlot[]
+  bookings    RentalBooking[]
+
+  @@map("rental_items")
+}
+
+// A bookable time window for a rental item (e.g. "Morning", 09:00-13:00).
+// Capacity is tracked per (spot, date, timeSlot) — the same physical chair
+// can be booked separately in the morning and afternoon, same as an
+// excursion's capacity resets per departure time rather than being shared
+// across the whole day.
+model RentalTimeSlot {
+  id           String          @id @default(cuid())
+  rentalItemId String
+  rentalItem   RentalItem      @relation(fields: [rentalItemId], references: [id], onDelete: Cascade)
+  label        String          // "Morning"
+  startTime    String          // "09:00"
+  endTime      String          // "13:00"
+  isActive     Boolean         @default(true)
+
+  bookings     RentalBooking[]
+
+  @@unique([rentalItemId, label])
+  @@map("rental_time_slots")
+}
+
+// A named spot/row (e.g. "Row A"), holding `quantity` chairs — not
+// necessarily one chair each. A booking can take more than one chair from a
+// spot's pool (up to however many are left for that date); the remaining
+// count is computed live as quantity minus the sum of that day's bookings.
+model RentalSpot {
+  id           String          @id @default(cuid())
+  rentalItemId String
+  rentalItem   RentalItem      @relation(fields: [rentalItemId], references: [id], onDelete: Cascade)
+  code         String          // "Row A - Chairs 1-5"
+  quantity     Int             @default(1) // total chairs available at this spot
+  isActive     Boolean         @default(true)
+
+  bookings     RentalBooking[]
+
+  @@unique([rentalItemId, code])
+  @@map("rental_spots")
+}
+
+model RentalBooking {
+  id             String        @id @default(cuid())
+  rentalItemId   String
+  rentalItem     RentalItem    @relation(fields: [rentalItemId], references: [id])
+  spotId         String
+  spot           RentalSpot    @relation(fields: [spotId], references: [id])
+  timeSlotId     String
+  timeSlot       RentalTimeSlot @relation(fields: [timeSlotId], references: [id])
+  date           DateTime      @db.Date
+
+  guestName      String
+  guestEmail     String
+  guestPhone     String?
+  roomNumber     String?
+
+  adultCount     Int           @default(1)
+  childCount     Int           @default(0)
+  quantity       Int           @default(1) // chairs reserved by this booking (= adultCount + childCount)
+
+  amountTotal    Decimal       @db.Decimal(10, 2)
+  currency       String        @default("USD")
+
+  status         BookingStatus @default(PENDING)
+  paymentStatus  PaymentStatus @default(PENDING)
+  stripePaymentIntentId String? @unique
+
+  source         BookingSource @default(DIRECT_WEBSITE)
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  // Concurrency safety here works like excursion capacity (see
+  // bookingService.createBooking): the spot row is locked with
+  // SELECT ... FOR UPDATE inside a transaction, remaining capacity for
+  // (spotId, date, timeSlotId) is computed from the sum of non-cancelled
+  // bookings, and only then is this row inserted. Cancelling DELETES the row
+  // (rather than flagging CANCELLED) so the sum frees up again — the audit
+  // log keeps a full snapshot for history.
+  @@index([spotId, date, timeSlotId])
+  @@index([rentalItemId, date])
+  @@map("rental_bookings")
+}
+
+// One-off dated happenings (parties, galas, live music nights, workshops) —
+// unlike excursions these have a single fixed date rather than a recurring
+// weekly schedule, and are bookable right up to the event (no advance-booking
+// cutoff). Ticketing is tier-based: even a "simple" single-price event is
+// just an event with one EventTicketTier.
+model Event {
+  id          String            @id @default(cuid())
+  locationId  String
+  location    Location          @relation(fields: [locationId], references: [id])
+  title       String
+  slug        String            @unique
+  description String            @db.Text
+  images      Json?
+  eventDate   DateTime          @db.Date
+  startTime   String            // "19:00"
+  endTime     String?           // optional, for display only
+  venue       String?           @db.Text
+  mapUrl      String?
+  status      ExcursionStatus   @default(DRAFT)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  ticketTiers EventTicketTier[]
+  bookings    EventBooking[]
+
+  @@index([eventDate])
+  @@map("events")
+}
+
+// A ticket type for one event (e.g. "General Admission" $25, "VIP" $75,
+// "Table for 6" $400) — each tier has its own price and its own capacity.
+model EventTicketTier {
+  id          String         @id @default(cuid())
+  eventId     String
+  event       Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name        String         // "General Admission"
+  description String?        @db.Text
+  price       Decimal        @db.Decimal(10, 2)
+  capacity    Int
+  isActive    Boolean        @default(true)
+
+  bookings    EventBooking[]
+
+  @@unique([eventId, name])
+  @@map("event_ticket_tiers")
+}
+
+model EventBooking {
+  id             String        @id @default(cuid())
+  eventId        String
+  event          Event         @relation(fields: [eventId], references: [id])
+  tierId         String
+  tier           EventTicketTier @relation(fields: [tierId], references: [id])
+
+  guestName      String
+  guestEmail     String
+  guestPhone     String?
+  roomNumber     String?
+
+  quantity       Int           @default(1) // tickets purchased at this tier
+
+  amountTotal    Decimal       @db.Decimal(10, 2)
+  currency       String        @default("USD")
+
+  status         BookingStatus @default(PENDING)
+  paymentStatus  PaymentStatus @default(PENDING)
+  stripePaymentIntentId String? @unique
+
+  source         BookingSource @default(DIRECT_WEBSITE)
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  // Same concurrency pattern as rental bookings: the tier row is locked with
+  // SELECT ... FOR UPDATE inside a transaction, remaining capacity computed
+  // from the sum of non-cancelled bookings, only then is this row inserted.
+  // Cancelling DELETES the row so that sum frees back up — audit log keeps
+  // a full snapshot for history.
+  @@index([tierId])
+  @@index([eventId])
+  @@map("event_bookings")
+}
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  locationId   String?
+  location     Location? @relation(fields: [locationId], references: [id])
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         AdminRole @default(BOOKING_STAFF)
+  createdAt    DateTime  @default(now())
+  isActive     Boolean   @default(true)
+
+  @@map("admin_users")
+}
+
+// Audit trail for booking-affecting actions (§14/§18: who did what, when).
+// entityType/entityId are a loose polymorphic reference (e.g. "Booking"/<id>,
+// "Excursion"/<id>) rather than a hard FK, since one log spans several entity types.
+model AuditLog {
+  id          String   @id @default(cuid())
+  adminUserId String? // null for guest-initiated actions (e.g. a self-service booking)
+  actorLabel  String // denormalized name/email or "Guest" — survives the admin user being deleted later
+  action      String // e.g. "booking.created", "booking.cancelled", "excursion.updated"
+  entityType  String
+  entityId    String
+  detail      Json?
+  createdAt   DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([adminUserId])
+  @@map("audit_logs")
+}

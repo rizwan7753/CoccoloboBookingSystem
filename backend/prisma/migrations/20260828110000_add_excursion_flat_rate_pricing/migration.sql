@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `excursions` ADD COLUMN `pricingType` ENUM('PER_GUEST', 'FLAT_RATE') NOT NULL DEFAULT 'PER_GUEST';

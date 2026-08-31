@@ -1,0 +1,33 @@
+import Link from "next/link";
+import { settingsApi } from "@/lib/settingsApi";
+
+export default async function Header() {
+  const { name } = await settingsApi.getSettings();
+
+  return (
+    <header className="sticky top-0 z-40 border-b border-stone-200/80 bg-white/90 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
+        <Link href="/" className="flex items-baseline gap-2">
+          <span className="font-display text-xl font-bold tracking-tight text-teal-800">{name}</span>
+        </Link>
+        <nav className="flex items-center gap-6 text-sm font-medium text-stone-600">
+          <Link href="/" className="transition hover:text-teal-700">
+            Excursions
+          </Link>
+          <Link href="/beach-chairs" className="transition hover:text-teal-700">
+            Beach Chairs
+          </Link>
+          <Link href="/events" className="transition hover:text-teal-700">
+            Events
+          </Link>
+          <Link
+            href="/admin/login"
+            className="rounded-full border border-stone-300 px-4 py-1.5 text-stone-600 transition hover:border-teal-700 hover:text-teal-700"
+          >
+            Staff login
+          </Link>
+        </nav>
+      </div>
+    </header>
+  );
+}
