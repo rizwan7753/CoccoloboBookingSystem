@@ -1,26 +1,38 @@
-// cPanel/LiteSpeed (LSNode) entry point. This requires a JS file it can load
-// directly — it can't run npm scripts — so this execs `next start` on
-// whatever port the platform assigns.
+// cPanel/LiteSpeed (LSNode) entry point.
+//
+// LSNode doesn't hand the app a PORT — it expects the process to listen
+// directly on a Unix domain socket path given via LSNODE_SOCKET (LiteSpeed's
+// proxy connects to that socket, not a TCP port). `next start -p <port>`
+// only binds a TCP port, so a plain CLI spawn can never satisfy this — we
+// need Next's programmatic custom-server API instead, which can listen on
+// any http.Server target: a socket path here, or a TCP port as a fallback
+// for other hosts (e.g. plain Passenger) that do use PORT.
 const fs = require("fs");
-const path = require("path");
-const { spawn } = require("child_process");
+const { createServer } = require("http");
+const next = require("next");
 
-// TEMP DEBUG: dump exactly what LSNode hands this process at launch, since
-// the intended port wasn't showing up in an activated-venv interactive
-// shell's `env` output. Remove this block once the real port var is found.
-try {
-  fs.writeFileSync(
-    path.join(__dirname, "env-debug.log"),
-    `argv: ${JSON.stringify(process.argv)}\n\nenv:\n${JSON.stringify(process.env, null, 2)}\n`
-  );
-} catch {
-  // ignore — debug-only
-}
+const app = next({ dev: process.env.NODE_ENV !== "production", dir: __dirname });
+const handle = app.getRequestHandler();
 
-const port = process.env.PORT || 3000;
-const next = spawn(process.execPath, ["node_modules/next/dist/bin/next", "start", "-p", String(port)], {
-  stdio: "inherit",
-  cwd: __dirname,
+app.prepare().then(() => {
+  const server = createServer((req, res) => handle(req, res));
+  const socketPath = process.env.LSNODE_SOCKET;
+
+  if (socketPath) {
+    try {
+      fs.unlinkSync(socketPath);
+    } catch {
+      // no stale socket file — fine
+    }
+    server.listen(socketPath, () => {
+      // eslint-disable-next-line no-console
+      console.log(`Ready on socket ${socketPath}`);
+    });
+  } else {
+    const port = process.env.PORT || 3000;
+    server.listen(port, () => {
+      // eslint-disable-next-line no-console
+      console.log(`Ready on port ${port}`);
+    });
+  }
 });
-
-next.on("exit", (code) => process.exit(code ?? 0));
