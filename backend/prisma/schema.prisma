@@ -4,7 +4,10 @@
 // without a schema rewrite.
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // "native" covers local dev; debian-openssl-1.0.x covers the older
+  // CentOS/AlmaLinux-based cPanel host this also deploys to.
+  binaryTargets = ["native", "debian-openssl-1.0.x"]
 }
 
 datasource db {
