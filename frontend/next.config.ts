@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   // count, causing "pthread_create: Resource temporarily unavailable"
   // during the page-data-collection build phase. Keep the build single-threaded.
   experimental: {
-    cpus: 1,
+    cpus: 2,
     workerThreads: false,
   },
 };
