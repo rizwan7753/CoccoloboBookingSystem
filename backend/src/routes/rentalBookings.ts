@@ -5,7 +5,9 @@ import { createRentalBooking, markRentalBookingPaid, RentalError } from "../serv
 import { createRentalPaymentIntent, isStripeConfigured } from "../services/stripeService";
 import { sendRentalBookingConfirmationEmail } from "../services/emailService";
 
-const useDevPaymentBypass = process.env.NODE_ENV !== "production" && !isStripeConfigured();
+/** No real Stripe key configured, so skip the network call and auto-confirm — stripeService already
+ *  logs a loud startup warning when this is the case, so it's never silent. */
+const useDevPaymentBypass = !isStripeConfigured();
 
 const router = Router();
 
