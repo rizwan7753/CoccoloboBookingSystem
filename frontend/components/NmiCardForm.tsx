@@ -7,10 +7,12 @@ const fieldBoxClass = "rounded-lg border border-stone-300 px-3 py-2.5";
 
 export default function NmiCardForm({
   tokenizationKey,
+  gatewayDomain,
   onToken,
   buttonClassName,
 }: {
   tokenizationKey: string;
+  gatewayDomain: string;
   /** Called with the Collect.js payment token — throw to show an error (e.g. a decline). */
   onToken: (token: string) => Promise<void>;
   buttonClassName?: string;
@@ -22,7 +24,7 @@ export default function NmiCardForm({
 
   useEffect(() => {
     let cancelled = false;
-    loadCollectJs(tokenizationKey)
+    loadCollectJs(tokenizationKey, gatewayDomain)
       .then(() => {
         if (cancelled || configuredRef.current || !window.CollectJS) return;
         configuredRef.current = true;
@@ -56,7 +58,7 @@ export default function NmiCardForm({
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tokenizationKey]);
+  }, [tokenizationKey, gatewayDomain]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

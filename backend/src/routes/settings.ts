@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma";
+import { resolveGatewayDomain } from "../services/nmiService";
 
 const router = Router();
 
@@ -18,8 +19,11 @@ router.get("/", async (_req, res) => {
     stripePublishableKey: location.stripePublishableKey,
     nmiEnabled: location.nmiEnabled,
     // A tokenization key is meant to be public (Collect.js loads with it in
-    // the browser) — safe to expose here, unlike the security key.
+    // the browser) — safe to expose here, unlike the security key. The
+    // gateway domain (resolved, with its default applied) is needed so the
+    // browser loads Collect.js from the right white-label domain too.
     nmiTokenizationKey: location.nmiTokenizationKey,
+    nmiGatewayDomain: await resolveGatewayDomain(),
     offlinePaymentEnabled: location.offlinePaymentEnabled,
     offlinePaymentInstructions: location.offlinePaymentInstructions,
     offlinePaymentReceiptEmail: location.offlinePaymentReceiptEmail,

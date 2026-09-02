@@ -53,6 +53,7 @@ export default function AdminSettingsPage() {
   const [nmiEnabled, setNmiEnabled] = useState(false);
   const [nmiTokenizationKey, setNmiTokenizationKey] = useState("");
   const [nmiSecurityKey, setNmiSecurityKey] = useState("");
+  const [nmiGatewayDomain, setNmiGatewayDomain] = useState("");
 
   const [offlinePaymentEnabled, setOfflinePaymentEnabled] = useState(false);
   const [offlinePaymentInstructions, setOfflinePaymentInstructions] = useState("");
@@ -81,6 +82,7 @@ export default function AdminSettingsPage() {
     setStripePublishableKey(s.stripePublishableKey ?? "");
     setNmiEnabled(s.nmiEnabled);
     setNmiTokenizationKey(s.nmiTokenizationKey ?? "");
+    setNmiGatewayDomain(s.nmiGatewayDomain ?? "");
     setOfflinePaymentEnabled(s.offlinePaymentEnabled);
     setOfflinePaymentInstructions(s.offlinePaymentInstructions ?? "");
     setOfflinePaymentReceiptEmail(s.offlinePaymentReceiptEmail ?? "");
@@ -117,6 +119,7 @@ export default function AdminSettingsPage() {
         nmiEnabled,
         nmiTokenizationKey: nmiTokenizationKey || undefined,
         nmiSecurityKey: nmiSecurityKey || undefined, // blank = keep existing
+        nmiGatewayDomain: nmiGatewayDomain || undefined,
         offlinePaymentEnabled,
         offlinePaymentInstructions: offlinePaymentInstructions || undefined,
         offlinePaymentReceiptEmail: offlinePaymentReceiptEmail || undefined,
@@ -362,6 +365,20 @@ export default function AdminSettingsPage() {
                 className={inputClass}
               />
               <p className="mt-1 text-xs text-stone-400">Never shown once saved — only whether one is set. Used server-side to charge the token guests submit.</p>
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-stone-700">Gateway domain</label>
+              <input
+                placeholder="secure.nmi.com"
+                value={nmiGatewayDomain}
+                onChange={(e) => setNmiGatewayDomain(e.target.value)}
+                className={inputClass}
+              />
+              <p className="mt-1 text-xs text-stone-400">
+                NMI is white-label — sandbox accounts and some resellers use their own domain instead of{" "}
+                <code className="rounded bg-stone-100 px-1 py-0.5 text-[11px]">secure.nmi.com</code>. Check your NMI
+                welcome email or portal if unsure. Leave blank to use the default.
+              </p>
             </div>
           </>
         )}

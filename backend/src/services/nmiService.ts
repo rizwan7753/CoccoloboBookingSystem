@@ -1,9 +1,6 @@
 import { prisma } from "../lib/prisma";
 
-// NMI's classic gateway endpoint — takes a Collect.js payment_token (never
-// raw card data, keeping this server out of PCI SAQ-D scope) and charges it
-// synchronously, unlike Stripe's async PaymentIntent + webhook model.
-const NMI_GATEWAY_URL = "https://secure.nmi.com/api/transact.php";
+const DEFAULT_GATEWAY_DOMAIN = "secure.nmi.com";
 
 function isRealSecurityKey(key?: string | null): key is string {
   return Boolean(key && key.length > 10);
@@ -15,6 +12,13 @@ async function resolveSecurityKey(): Promise<string | null> {
   if (isRealSecurityKey(location?.nmiSecurityKey)) return location!.nmiSecurityKey!;
   if (isRealSecurityKey(process.env.NMI_SECURITY_KEY)) return process.env.NMI_SECURITY_KEY!;
   return null;
+}
+
+/** NMI is white-label — sandbox accounts and many resellers serve both the
+ *  charge API and Collect.js from their own domain, not secure.nmi.com. */
+export async function resolveGatewayDomain(): Promise<string> {
+  const location = await prisma.location.findFirst();
+  return location?.nmiGatewayDomain || process.env.NMI_GATEWAY_DOMAIN || DEFAULT_GATEWAY_DOMAIN;
 }
 
 export async function isNmiConfigured(): Promise<boolean> {
@@ -33,6 +37,7 @@ export interface NmiChargeResult {
 export async function chargeNmiToken(amountUsd: number, paymentToken: string, orderId: string): Promise<NmiChargeResult> {
   const securityKey = await resolveSecurityKey();
   if (!securityKey) throw new Error("NMI is not configured");
+  const domain = await resolveGatewayDomain();
 
   const body = new URLSearchParams({
     security_key: securityKey,
@@ -42,7 +47,7 @@ export async function chargeNmiToken(amountUsd: number, paymentToken: string, or
     order_id: orderId,
   });
 
-  const res = await fetch(NMI_GATEWAY_URL, {
+  const res = await fetch(`https://${domain}/api/transact.php`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: body.toString(),

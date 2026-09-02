@@ -54,6 +54,7 @@ const settingsSchema = z.object({
   nmiEnabled: z.boolean().optional(),
   nmiTokenizationKey: z.string().optional(),
   nmiSecurityKey: z.string().optional(), // omitted or blank = keep existing
+  nmiGatewayDomain: z.string().optional(),
 });
 
 // PUT /api/admin/settings

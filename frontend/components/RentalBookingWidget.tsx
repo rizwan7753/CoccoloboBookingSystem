@@ -426,6 +426,7 @@ export default function RentalBookingWidget({ item }: { item: RentalItem }) {
       {step === "payment" && nmiPending && bookingId && settings?.nmiTokenizationKey && (
         <NmiCardForm
           tokenizationKey={settings.nmiTokenizationKey}
+          gatewayDomain={settings.nmiGatewayDomain ?? "secure.nmi.com"}
           onToken={async (token) => {
             await rentalApi.chargeNmi(bookingId, token);
             router.push(`/beach-chairs/confirmation/${bookingId}`);

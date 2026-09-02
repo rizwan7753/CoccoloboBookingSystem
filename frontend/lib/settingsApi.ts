@@ -8,6 +8,7 @@ export interface PublicSettings {
   stripePublishableKey?: string | null;
   nmiEnabled: boolean;
   nmiTokenizationKey?: string | null;
+  nmiGatewayDomain?: string;
   offlinePaymentEnabled: boolean;
   offlinePaymentInstructions?: string | null;
   offlinePaymentReceiptEmail?: string | null;
@@ -21,6 +22,7 @@ const FALLBACK: PublicSettings = {
   stripePublishableKey: null,
   nmiEnabled: false,
   nmiTokenizationKey: null,
+  nmiGatewayDomain: "secure.nmi.com",
   offlinePaymentEnabled: false,
   offlinePaymentInstructions: null,
   offlinePaymentReceiptEmail: null,

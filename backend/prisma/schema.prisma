@@ -114,6 +114,11 @@ model Location {
   nmiEnabled         Boolean @default(false)
   nmiTokenizationKey String?
   nmiSecurityKey     String?
+  // NMI is a white-label platform — sandbox accounts and many resellers use
+  // their own gateway domain rather than secure.nmi.com. Both the server-side
+  // charge endpoint and the Collect.js script are served from this same
+  // domain. Defaults to secure.nmi.com when unset.
+  nmiGatewayDomain String?
 
   excursions Excursion[]
   rentalItems RentalItem[]

@@ -212,6 +212,7 @@ export interface AdminSettings {
   nmiEnabled: boolean;
   nmiTokenizationKey?: string | null;
   nmiSecurityKeySet: boolean;
+  nmiGatewayDomain?: string | null;
 }
 
 export interface AdminSettingsInput {
@@ -235,6 +236,7 @@ export interface AdminSettingsInput {
   nmiEnabled?: boolean;
   nmiTokenizationKey?: string;
   nmiSecurityKey?: string; // blank/omitted = keep existing
+  nmiGatewayDomain?: string;
 }
 
 export interface AdminUserSummary {
