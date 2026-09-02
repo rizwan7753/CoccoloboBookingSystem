@@ -107,7 +107,7 @@ export async function createEventBooking(input: CreateEventBookingInput) {
 export async function markEventBookingPaid(
   bookingId: string,
   stripePaymentIntentId: string,
-  paymentMethod: "stripe" | "offline" = "stripe"
+  paymentMethod: "stripe" | "offline" | "nmi" = "stripe"
 ) {
   const booking = await prisma.eventBooking.update({
     where: { id: bookingId },

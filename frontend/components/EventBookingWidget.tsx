@@ -7,6 +7,7 @@ import { eventApi, EventItem, TierAvailability } from "@/lib/eventApi";
 import { settingsApi, PublicSettings } from "@/lib/settingsApi";
 import { getStripePromise } from "@/lib/stripeClient";
 import CheckoutForm from "@/components/CheckoutForm";
+import NmiCardForm from "@/components/NmiCardForm";
 
 type Step = "select" | "details" | "payment";
 const STEPS: { key: Step; label: string }[] = [
@@ -59,9 +60,14 @@ export default function EventBookingWidget({ event }: { event: EventItem }) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [bookingId, setBookingId] = useState<string | null>(null);
   const [offlinePending, setOfflinePending] = useState(false);
+  const [nmiPending, setNmiPending] = useState(false);
 
   const [settings, setSettings] = useState<PublicSettings | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<"stripe" | "offline">("stripe");
+  const [paymentMethod, setPaymentMethod] = useState<"stripe" | "offline" | "nmi">("stripe");
+
+  const availablePaymentMethodCount = [settings?.stripeEnabled, settings?.nmiEnabled, settings?.offlinePaymentEnabled].filter(
+    Boolean
+  ).length;
 
   useEffect(() => {
     eventApi
@@ -76,7 +82,7 @@ export default function EventBookingWidget({ event }: { event: EventItem }) {
   useEffect(() => {
     settingsApi.getSettings().then((s) => {
       setSettings(s);
-      setPaymentMethod(s.stripeEnabled ? "stripe" : "offline");
+      setPaymentMethod(s.stripeEnabled ? "stripe" : s.nmiEnabled ? "nmi" : "offline");
     });
   }, []);
 
@@ -111,6 +117,12 @@ export default function EventBookingWidget({ event }: { event: EventItem }) {
       });
       if (result.offlinePending) {
         setOfflinePending(true);
+        setBookingId(result.bookingId);
+        setStep("payment");
+        return;
+      }
+      if (result.nmiPending) {
+        setNmiPending(true);
         setBookingId(result.bookingId);
         setStep("payment");
         return;
@@ -216,17 +228,27 @@ export default function EventBookingWidget({ event }: { event: EventItem }) {
             className={inputClass}
           />
 
-          {settings?.stripeEnabled && settings.offlinePaymentEnabled && (
+          {availablePaymentMethodCount > 1 && (
             <div className="space-y-2 rounded-lg border border-stone-200 p-3">
               <p className="text-sm font-medium text-stone-700">Payment method</p>
-              <label className="flex items-center gap-2 text-sm text-stone-600">
-                <input type="radio" checked={paymentMethod === "stripe"} onChange={() => setPaymentMethod("stripe")} />
-                Pay by card
-              </label>
-              <label className="flex items-center gap-2 text-sm text-stone-600">
-                <input type="radio" checked={paymentMethod === "offline"} onChange={() => setPaymentMethod("offline")} />
-                Pay by bank transfer
-              </label>
+              {settings?.stripeEnabled && (
+                <label className="flex items-center gap-2 text-sm text-stone-600">
+                  <input type="radio" checked={paymentMethod === "stripe"} onChange={() => setPaymentMethod("stripe")} />
+                  Pay by card
+                </label>
+              )}
+              {settings?.nmiEnabled && (
+                <label className="flex items-center gap-2 text-sm text-stone-600">
+                  <input type="radio" checked={paymentMethod === "nmi"} onChange={() => setPaymentMethod("nmi")} />
+                  Pay by card (alternate)
+                </label>
+              )}
+              {settings?.offlinePaymentEnabled && (
+                <label className="flex items-center gap-2 text-sm text-stone-600">
+                  <input type="radio" checked={paymentMethod === "offline"} onChange={() => setPaymentMethod("offline")} />
+                  Pay by bank transfer
+                </label>
+              )}
             </div>
           )}
 
@@ -288,7 +310,17 @@ export default function EventBookingWidget({ event }: { event: EventItem }) {
         </div>
       )}
 
-      {step === "payment" && !offlinePending && clientSecret && bookingId && (
+      {step === "payment" && nmiPending && bookingId && settings?.nmiTokenizationKey && (
+        <NmiCardForm
+          tokenizationKey={settings.nmiTokenizationKey}
+          onToken={async (token) => {
+            await eventApi.chargeNmi(bookingId, token);
+            router.push(`/events/confirmation/${bookingId}`);
+          }}
+        />
+      )}
+
+      {step === "payment" && !offlinePending && !nmiPending && clientSecret && bookingId && (
         <div>
           <Elements stripe={stripePromise} options={{ clientSecret }}>
             <CheckoutForm bookingId={bookingId} confirmationBasePath="/events/confirmation" />

@@ -22,6 +22,7 @@ const TABS = [
   { key: "general", label: "General" },
   { key: "email", label: "Email (SMTP)" },
   { key: "stripe", label: "Stripe" },
+  { key: "nmi", label: "NMI" },
   { key: "offline", label: "Offline Payment" },
 ] as const;
 type TabKey = (typeof TABS)[number]["key"];
@@ -49,6 +50,10 @@ export default function AdminSettingsPage() {
   const [stripeSecretKey, setStripeSecretKey] = useState("");
   const [stripeWebhookSecret, setStripeWebhookSecret] = useState("");
 
+  const [nmiEnabled, setNmiEnabled] = useState(false);
+  const [nmiTokenizationKey, setNmiTokenizationKey] = useState("");
+  const [nmiSecurityKey, setNmiSecurityKey] = useState("");
+
   const [offlinePaymentEnabled, setOfflinePaymentEnabled] = useState(false);
   const [offlinePaymentInstructions, setOfflinePaymentInstructions] = useState("");
   const [offlinePaymentReceiptEmail, setOfflinePaymentReceiptEmail] = useState("");
@@ -74,6 +79,8 @@ export default function AdminSettingsPage() {
     setSmtpSecure(s.smtpSecure);
     setStripeEnabled(s.stripeEnabled);
     setStripePublishableKey(s.stripePublishableKey ?? "");
+    setNmiEnabled(s.nmiEnabled);
+    setNmiTokenizationKey(s.nmiTokenizationKey ?? "");
     setOfflinePaymentEnabled(s.offlinePaymentEnabled);
     setOfflinePaymentInstructions(s.offlinePaymentInstructions ?? "");
     setOfflinePaymentReceiptEmail(s.offlinePaymentReceiptEmail ?? "");
@@ -107,6 +114,9 @@ export default function AdminSettingsPage() {
         stripePublishableKey: stripePublishableKey || undefined,
         stripeSecretKey: stripeSecretKey || undefined, // blank = keep existing
         stripeWebhookSecret: stripeWebhookSecret || undefined, // blank = keep existing
+        nmiEnabled,
+        nmiTokenizationKey: nmiTokenizationKey || undefined,
+        nmiSecurityKey: nmiSecurityKey || undefined, // blank = keep existing
         offlinePaymentEnabled,
         offlinePaymentInstructions: offlinePaymentInstructions || undefined,
         offlinePaymentReceiptEmail: offlinePaymentReceiptEmail || undefined,
@@ -115,6 +125,7 @@ export default function AdminSettingsPage() {
       setSmtpPassword("");
       setStripeSecretKey("");
       setStripeWebhookSecret("");
+      setNmiSecurityKey("");
       setSaveMessage("Settings saved.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save settings");
@@ -318,11 +329,48 @@ export default function AdminSettingsPage() {
           </>
         )}
 
+        {tab === "nmi" && (
+          <>
+            <p className="text-xs text-stone-400">
+              A second card gateway alongside Stripe. Keys come from your{" "}
+              <span className="font-medium text-stone-600">NMI merchant portal → Security Keys</span>. Changes here
+              take effect immediately — no redeploy needed.
+            </p>
+
+            <label className="flex items-center gap-2 text-sm text-stone-600">
+              <input type="checkbox" checked={nmiEnabled} onChange={(e) => setNmiEnabled(e.target.checked)} />
+              Accept card payments via NMI
+            </label>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-stone-700">Tokenization key</label>
+              <input
+                placeholder="Collect.js tokenization key"
+                value={nmiTokenizationKey}
+                onChange={(e) => setNmiTokenizationKey(e.target.value)}
+                className={inputClass}
+              />
+              <p className="mt-1 text-xs text-stone-400">Sent to the guest&apos;s browser to load the card form — this one isn&apos;t secret.</p>
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-stone-700">Security key</label>
+              <input
+                type="password"
+                placeholder={settings.nmiSecurityKeySet ? "•••••••• (leave blank to keep)" : "NMI API security key"}
+                value={nmiSecurityKey}
+                onChange={(e) => setNmiSecurityKey(e.target.value)}
+                className={inputClass}
+              />
+              <p className="mt-1 text-xs text-stone-400">Never shown once saved — only whether one is set. Used server-side to charge the token guests submit.</p>
+            </div>
+          </>
+        )}
+
         {tab === "offline" && (
           <>
             <p className="text-xs text-stone-400">
-              Guests can pay by bank deposit/transfer instead of card. If both Stripe and offline payment are on,
-              guests pick one at checkout; if only one is on, it&apos;s used automatically.
+              Guests can pay by bank deposit/transfer instead of card. If more than one payment method is on, guests
+              pick one at checkout; if only one is on, it&apos;s used automatically.
             </p>
 
             <label className="flex items-center gap-2 text-sm text-stone-600">

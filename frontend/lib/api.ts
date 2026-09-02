@@ -87,7 +87,7 @@ export const api = {
     specialRequests?: string;
     adultCount: number;
     childCount?: number;
-    paymentMethod?: "stripe" | "offline";
+    paymentMethod?: "stripe" | "offline" | "nmi";
   }) =>
     request<{
       bookingId: string;
@@ -95,9 +95,15 @@ export const api = {
       clientSecret: string | null;
       devBypass?: boolean;
       offlinePending?: boolean;
+      nmiPending?: boolean;
     }>("/bookings", {
       method: "POST",
       body: JSON.stringify(payload),
+    }),
+  chargeNmi: (bookingId: string, paymentToken: string) =>
+    request<{ approved: boolean; bookingId: string }>(`/bookings/${bookingId}/nmi-charge`, {
+      method: "POST",
+      body: JSON.stringify({ paymentToken }),
     }),
   getBooking: (id: string) => request<Booking>(`/bookings/${id}`),
 };

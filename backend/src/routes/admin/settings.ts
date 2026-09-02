@@ -15,12 +15,13 @@ router.use(requireAdmin);
 router.use(requireRole("SUPER_ADMIN"));
 
 function serialize(location: NonNullable<Awaited<ReturnType<typeof prisma.location.findFirst>>>) {
-  const { smtpPassword, stripeSecretKey, stripeWebhookSecret, ...rest } = location;
+  const { smtpPassword, stripeSecretKey, stripeWebhookSecret, nmiSecurityKey, ...rest } = location;
   return {
     ...rest,
     smtpPasswordSet: Boolean(smtpPassword),
     stripeSecretKeySet: Boolean(stripeSecretKey),
     stripeWebhookSecretSet: Boolean(stripeWebhookSecret),
+    nmiSecurityKeySet: Boolean(nmiSecurityKey),
   };
 }
 
@@ -50,6 +51,9 @@ const settingsSchema = z.object({
   stripePublishableKey: z.string().optional(),
   stripeSecretKey: z.string().optional(), // omitted or blank = keep existing
   stripeWebhookSecret: z.string().optional(), // omitted or blank = keep existing
+  nmiEnabled: z.boolean().optional(),
+  nmiTokenizationKey: z.string().optional(),
+  nmiSecurityKey: z.string().optional(), // omitted or blank = keep existing
 });
 
 // PUT /api/admin/settings
@@ -60,7 +64,7 @@ router.put("/", async (req: AuthedRequest, res) => {
   const existing = await prisma.location.findFirst();
   if (!existing) return res.status(404).json({ error: "No location configured" });
 
-  const { smtpPassword, stripeSecretKey, stripeWebhookSecret, ...data } = parsed.data;
+  const { smtpPassword, stripeSecretKey, stripeWebhookSecret, nmiSecurityKey, ...data } = parsed.data;
 
   const location = await prisma.location.update({
     where: { id: existing.id },
@@ -72,6 +76,7 @@ router.put("/", async (req: AuthedRequest, res) => {
       ...(smtpPassword ? { smtpPassword } : {}),
       ...(stripeSecretKey ? { stripeSecretKey } : {}),
       ...(stripeWebhookSecret ? { stripeWebhookSecret } : {}),
+      ...(nmiSecurityKey ? { nmiSecurityKey } : {}),
     },
   });
 

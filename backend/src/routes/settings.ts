@@ -16,6 +16,10 @@ router.get("/", async (_req, res) => {
     // A publishable key is meant to be public (it's sent to the browser by
     // design) — safe to expose here, unlike the secret key/webhook secret.
     stripePublishableKey: location.stripePublishableKey,
+    nmiEnabled: location.nmiEnabled,
+    // A tokenization key is meant to be public (Collect.js loads with it in
+    // the browser) — safe to expose here, unlike the security key.
+    nmiTokenizationKey: location.nmiTokenizationKey,
     offlinePaymentEnabled: location.offlinePaymentEnabled,
     offlinePaymentInstructions: location.offlinePaymentInstructions,
     offlinePaymentReceiptEmail: location.offlinePaymentReceiptEmail,

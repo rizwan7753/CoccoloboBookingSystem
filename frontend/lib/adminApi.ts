@@ -209,6 +209,9 @@ export interface AdminSettings {
   stripePublishableKey?: string | null;
   stripeSecretKeySet: boolean;
   stripeWebhookSecretSet: boolean;
+  nmiEnabled: boolean;
+  nmiTokenizationKey?: string | null;
+  nmiSecurityKeySet: boolean;
 }
 
 export interface AdminSettingsInput {
@@ -229,6 +232,9 @@ export interface AdminSettingsInput {
   stripePublishableKey?: string;
   stripeSecretKey?: string; // blank/omitted = keep existing
   stripeWebhookSecret?: string; // blank/omitted = keep existing
+  nmiEnabled?: boolean;
+  nmiTokenizationKey?: string;
+  nmiSecurityKey?: string; // blank/omitted = keep existing
 }
 
 export interface AdminUserSummary {

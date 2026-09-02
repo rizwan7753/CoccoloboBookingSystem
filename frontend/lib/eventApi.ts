@@ -72,7 +72,7 @@ export const eventApi = {
     guestEmail: string;
     guestPhone?: string;
     roomNumber?: string;
-    paymentMethod?: "stripe" | "offline";
+    paymentMethod?: "stripe" | "offline" | "nmi";
   }) =>
     request<{
       bookingId: string;
@@ -80,6 +80,12 @@ export const eventApi = {
       clientSecret: string | null;
       devBypass?: boolean;
       offlinePending?: boolean;
+      nmiPending?: boolean;
     }>("/event-bookings", { method: "POST", body: JSON.stringify(payload) }),
+  chargeNmi: (bookingId: string, paymentToken: string) =>
+    request<{ approved: boolean; bookingId: string }>(`/event-bookings/${bookingId}/nmi-charge`, {
+      method: "POST",
+      body: JSON.stringify({ paymentToken }),
+    }),
   getBooking: (id: string) => request<EventBooking>(`/event-bookings/${id}`),
 };

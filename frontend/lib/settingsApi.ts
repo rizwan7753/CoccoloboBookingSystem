@@ -6,6 +6,8 @@ export interface PublicSettings {
   currency: string;
   stripeEnabled: boolean;
   stripePublishableKey?: string | null;
+  nmiEnabled: boolean;
+  nmiTokenizationKey?: string | null;
   offlinePaymentEnabled: boolean;
   offlinePaymentInstructions?: string | null;
   offlinePaymentReceiptEmail?: string | null;
@@ -17,6 +19,8 @@ const FALLBACK: PublicSettings = {
   currency: "USD",
   stripeEnabled: true,
   stripePublishableKey: null,
+  nmiEnabled: false,
+  nmiTokenizationKey: null,
   offlinePaymentEnabled: false,
   offlinePaymentInstructions: null,
   offlinePaymentReceiptEmail: null,

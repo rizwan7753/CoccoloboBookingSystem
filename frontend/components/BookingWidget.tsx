@@ -8,6 +8,7 @@ import { formatTimeRange } from "@/lib/time";
 import { settingsApi, PublicSettings } from "@/lib/settingsApi";
 import { getStripePromise } from "@/lib/stripeClient";
 import CheckoutForm from "@/components/CheckoutForm";
+import NmiCardForm from "@/components/NmiCardForm";
 
 type Step = "select" | "details" | "payment";
 const STEPS: { key: Step; label: string }[] = [
@@ -67,16 +68,21 @@ export default function BookingWidget({ excursion }: { excursion: Excursion }) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [bookingId, setBookingId] = useState<string | null>(null);
   const [offlinePending, setOfflinePending] = useState(false);
+  const [nmiPending, setNmiPending] = useState(false);
 
   const [settings, setSettings] = useState<PublicSettings | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<"stripe" | "offline">("stripe");
+  const [paymentMethod, setPaymentMethod] = useState<"stripe" | "offline" | "nmi">("stripe");
 
   useEffect(() => {
     settingsApi.getSettings().then((s) => {
       setSettings(s);
-      setPaymentMethod(s.stripeEnabled ? "stripe" : "offline");
+      setPaymentMethod(s.stripeEnabled ? "stripe" : s.nmiEnabled ? "nmi" : "offline");
     });
   }, []);
+
+  const availablePaymentMethodCount = [settings?.stripeEnabled, settings?.nmiEnabled, settings?.offlinePaymentEnabled].filter(
+    Boolean
+  ).length;
 
   const stripePromise = getStripePromise(settings?.stripePublishableKey);
 
@@ -120,6 +126,12 @@ export default function BookingWidget({ excursion }: { excursion: Excursion }) {
       });
       if (result.offlinePending) {
         setOfflinePending(true);
+        setBookingId(result.bookingId);
+        setStep("payment");
+        return;
+      }
+      if (result.nmiPending) {
+        setNmiPending(true);
         setBookingId(result.bookingId);
         setStep("payment");
         return;
@@ -267,17 +279,27 @@ export default function BookingWidget({ excursion }: { excursion: Excursion }) {
             rows={2}
           />
 
-          {settings?.stripeEnabled && settings.offlinePaymentEnabled && (
+          {availablePaymentMethodCount > 1 && (
             <div className="space-y-2 rounded-lg border border-stone-200 p-3">
               <p className="text-sm font-medium text-stone-700">Payment method</p>
-              <label className="flex items-center gap-2 text-sm text-stone-600">
-                <input type="radio" checked={paymentMethod === "stripe"} onChange={() => setPaymentMethod("stripe")} />
-                Pay by card
-              </label>
-              <label className="flex items-center gap-2 text-sm text-stone-600">
-                <input type="radio" checked={paymentMethod === "offline"} onChange={() => setPaymentMethod("offline")} />
-                Pay by bank transfer
-              </label>
+              {settings?.stripeEnabled && (
+                <label className="flex items-center gap-2 text-sm text-stone-600">
+                  <input type="radio" checked={paymentMethod === "stripe"} onChange={() => setPaymentMethod("stripe")} />
+                  Pay by card
+                </label>
+              )}
+              {settings?.nmiEnabled && (
+                <label className="flex items-center gap-2 text-sm text-stone-600">
+                  <input type="radio" checked={paymentMethod === "nmi"} onChange={() => setPaymentMethod("nmi")} />
+                  Pay by card (alternate)
+                </label>
+              )}
+              {settings?.offlinePaymentEnabled && (
+                <label className="flex items-center gap-2 text-sm text-stone-600">
+                  <input type="radio" checked={paymentMethod === "offline"} onChange={() => setPaymentMethod("offline")} />
+                  Pay by bank transfer
+                </label>
+              )}
             </div>
           )}
 
@@ -302,7 +324,11 @@ export default function BookingWidget({ excursion }: { excursion: Excursion }) {
             onClick={handleCreateBooking}
             className="w-full rounded-lg bg-teal-700 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {submitting ? "Holding your spot…" : paymentMethod === "offline" ? "Submit booking" : "Continue to payment"}
+            {submitting
+              ? "Holding your spot…"
+              : paymentMethod === "offline"
+                ? "Submit booking"
+                : "Continue to payment"}
           </button>
           <button type="button" onClick={() => setStep("select")} className="w-full py-1 text-sm text-stone-500 hover:text-stone-700">
             Back
@@ -339,7 +365,17 @@ export default function BookingWidget({ excursion }: { excursion: Excursion }) {
         </div>
       )}
 
-      {step === "payment" && !offlinePending && clientSecret && bookingId && (
+      {step === "payment" && nmiPending && bookingId && settings?.nmiTokenizationKey && (
+        <NmiCardForm
+          tokenizationKey={settings.nmiTokenizationKey}
+          onToken={async (token) => {
+            await api.chargeNmi(bookingId, token);
+            router.push(`/booking/confirmation/${bookingId}`);
+          }}
+        />
+      )}
+
+      {step === "payment" && !offlinePending && !nmiPending && clientSecret && bookingId && (
         <div>
           <Elements stripe={stripePromise} options={{ clientSecret }}>
             <CheckoutForm bookingId={bookingId} />

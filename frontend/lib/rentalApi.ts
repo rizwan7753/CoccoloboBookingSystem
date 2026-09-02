@@ -95,7 +95,7 @@ export const rentalApi = {
     roomNumber?: string;
     adultCount: number;
     childCount?: number;
-    paymentMethod?: "stripe" | "offline";
+    paymentMethod?: "stripe" | "offline" | "nmi";
   }) =>
     request<{
       bookingId: string;
@@ -103,6 +103,12 @@ export const rentalApi = {
       clientSecret: string | null;
       devBypass?: boolean;
       offlinePending?: boolean;
+      nmiPending?: boolean;
     }>("/rental-bookings", { method: "POST", body: JSON.stringify(payload) }),
+  chargeNmi: (bookingId: string, paymentToken: string) =>
+    request<{ approved: boolean; bookingId: string }>(`/rental-bookings/${bookingId}/nmi-charge`, {
+      method: "POST",
+      body: JSON.stringify({ paymentToken }),
+    }),
   getBooking: (id: string) => request<RentalBooking>(`/rental-bookings/${id}`),
 };

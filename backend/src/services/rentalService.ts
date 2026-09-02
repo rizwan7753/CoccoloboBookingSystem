@@ -128,7 +128,7 @@ export async function createRentalBooking(input: CreateRentalBookingInput) {
 export async function markRentalBookingPaid(
   bookingId: string,
   stripePaymentIntentId: string,
-  paymentMethod: "stripe" | "offline" = "stripe"
+  paymentMethod: "stripe" | "offline" | "nmi" = "stripe"
 ) {
   const booking = await prisma.rentalBooking.update({
     where: { id: bookingId },

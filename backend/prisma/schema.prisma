@@ -106,6 +106,15 @@ model Location {
   stripeSecretKey      String?
   stripeWebhookSecret  String?
 
+  // NMI — a second card gateway alongside Stripe, using Collect.js for
+  // client-side tokenization (same PCI-friendly shape as Stripe Elements).
+  // tokenizationKey is the public key Collect.js loads with (safe to expose);
+  // securityKey is the private API key used server-side to charge the token
+  // — write-only from the admin UI, same pattern as stripeSecretKey.
+  nmiEnabled         Boolean @default(false)
+  nmiTokenizationKey String?
+  nmiSecurityKey     String?
+
   excursions Excursion[]
   rentalItems RentalItem[]
   events      Event[]
