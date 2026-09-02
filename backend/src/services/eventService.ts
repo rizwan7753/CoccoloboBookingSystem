@@ -104,10 +104,14 @@ export async function createEventBooking(input: CreateEventBookingInput) {
   return booking;
 }
 
-export async function markEventBookingPaid(bookingId: string, stripePaymentIntentId: string) {
+export async function markEventBookingPaid(
+  bookingId: string,
+  stripePaymentIntentId: string,
+  paymentMethod: "stripe" | "offline" = "stripe"
+) {
   const booking = await prisma.eventBooking.update({
     where: { id: bookingId },
-    data: { status: "CONFIRMED", paymentStatus: "PAID", stripePaymentIntentId },
+    data: { status: "CONFIRMED", paymentStatus: "PAID", stripePaymentIntentId, paymentMethod },
   });
   await logAudit(
     { adminUserId: null, actorLabel: "System (payment confirmed)" },
@@ -116,6 +120,24 @@ export async function markEventBookingPaid(bookingId: string, stripePaymentInten
     bookingId
   );
   return booking;
+}
+
+/** Staff-confirmed offline payment — only valid for bookings actually placed
+ *  via the offline method. */
+export async function markEventBookingPaidManually(bookingId: string, actor: { adminUserId: string; actorLabel: string }) {
+  const booking = await prisma.eventBooking.findUnique({ where: { id: bookingId } });
+  if (!booking) throw new EventError("Booking not found", 404);
+  if (booking.paymentMethod !== "offline") {
+    throw new EventError("Only offline-payment bookings can be marked as paid manually", 400);
+  }
+  if (booking.paymentStatus === "PAID") throw new EventError("Booking is already paid", 400);
+
+  const updated = await prisma.eventBooking.update({
+    where: { id: bookingId },
+    data: { status: "CONFIRMED", paymentStatus: "PAID" },
+  });
+  await logAudit(actor, "event_booking.marked_paid", "EventBooking", bookingId);
+  return updated;
 }
 
 /**

@@ -15,6 +15,8 @@ export interface RentalItem {
   slug: string;
   description: string;
   images?: string[] | null;
+  cardImageUrl?: string | null;
+  headerImageUrl?: string | null;
   durationMinutes: number;
   priceAdult: string;
   priceChild?: string | null;
@@ -54,6 +56,7 @@ export interface RentalBooking {
   currency: string;
   status: string;
   paymentStatus: string;
+  paymentMethod?: string | null;
   source: string;
   createdAt: string;
   rentalItem?: RentalItem;
@@ -92,10 +95,14 @@ export const rentalApi = {
     roomNumber?: string;
     adultCount: number;
     childCount?: number;
+    paymentMethod?: "stripe" | "offline";
   }) =>
-    request<{ bookingId: string; amountTotal: string; clientSecret: string | null; devBypass?: boolean }>(
-      "/rental-bookings",
-      { method: "POST", body: JSON.stringify(payload) }
-    ),
+    request<{
+      bookingId: string;
+      amountTotal: string;
+      clientSecret: string | null;
+      devBypass?: boolean;
+      offlinePending?: boolean;
+    }>("/rental-bookings", { method: "POST", body: JSON.stringify(payload) }),
   getBooking: (id: string) => request<RentalBooking>(`/rental-bookings/${id}`),
 };

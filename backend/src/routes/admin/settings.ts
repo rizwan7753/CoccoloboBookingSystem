@@ -5,6 +5,7 @@ import { requireAdmin, AuthedRequest } from "../../middleware/requireAdmin";
 import { requireRole } from "../../middleware/requireRole";
 import { logAudit } from "../../lib/auditLog";
 import { sendEmail, invalidateEmailTransport } from "../../services/emailService";
+import { invalidateStripeClient } from "../../services/stripeService";
 
 const router = Router();
 router.use(requireAdmin);
@@ -14,8 +15,13 @@ router.use(requireAdmin);
 router.use(requireRole("SUPER_ADMIN"));
 
 function serialize(location: NonNullable<Awaited<ReturnType<typeof prisma.location.findFirst>>>) {
-  const { smtpPassword, ...rest } = location;
-  return { ...rest, smtpPasswordSet: Boolean(smtpPassword) };
+  const { smtpPassword, stripeSecretKey, stripeWebhookSecret, ...rest } = location;
+  return {
+    ...rest,
+    smtpPasswordSet: Boolean(smtpPassword),
+    stripeSecretKeySet: Boolean(stripeSecretKey),
+    stripeWebhookSecretSet: Boolean(stripeWebhookSecret),
+  };
 }
 
 // GET /api/admin/settings — the single-location MVP's system settings.
@@ -37,6 +43,13 @@ const settingsSchema = z.object({
   smtpFromEmail: z.union([z.string().email(), z.literal("")]).optional(),
   smtpFromName: z.string().optional(),
   smtpSecure: z.boolean().optional(),
+  stripeEnabled: z.boolean().optional(),
+  offlinePaymentEnabled: z.boolean().optional(),
+  offlinePaymentInstructions: z.string().optional(),
+  offlinePaymentReceiptEmail: z.union([z.string().email(), z.literal("")]).optional(),
+  stripePublishableKey: z.string().optional(),
+  stripeSecretKey: z.string().optional(), // omitted or blank = keep existing
+  stripeWebhookSecret: z.string().optional(), // omitted or blank = keep existing
 });
 
 // PUT /api/admin/settings
@@ -47,20 +60,23 @@ router.put("/", async (req: AuthedRequest, res) => {
   const existing = await prisma.location.findFirst();
   if (!existing) return res.status(404).json({ error: "No location configured" });
 
-  const { smtpPassword, ...data } = parsed.data;
+  const { smtpPassword, stripeSecretKey, stripeWebhookSecret, ...data } = parsed.data;
 
   const location = await prisma.location.update({
     where: { id: existing.id },
     data: {
       ...data,
-      // Blank/omitted password keeps whatever was there before — the admin
-      // UI never has the real value to send back, so an empty field must
-      // not be interpreted as "clear the password".
+      // Blank/omitted secrets keep whatever was there before — the admin UI
+      // never has the real value to send back, so an empty field must not be
+      // interpreted as "clear it".
       ...(smtpPassword ? { smtpPassword } : {}),
+      ...(stripeSecretKey ? { stripeSecretKey } : {}),
+      ...(stripeWebhookSecret ? { stripeWebhookSecret } : {}),
     },
   });
 
   invalidateEmailTransport();
+  invalidateStripeClient();
 
   await logAudit(
     { adminUserId: req.admin!.sub, actorLabel: req.admin!.email },

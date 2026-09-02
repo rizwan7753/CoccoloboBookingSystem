@@ -20,6 +20,8 @@ const rentalItemSchema = z.object({
     .regex(/^[a-z0-9-]+$/, "slug must be lowercase, alphanumeric, hyphen-separated"),
   description: z.string().min(1),
   images: z.array(z.string()).optional(),
+  cardImageUrl: z.string().optional(),
+  headerImageUrl: z.string().optional(),
   durationMinutes: z.number().int().positive().optional(),
   priceAdult: z.number().nonnegative(),
   priceChild: z.number().nonnegative().optional(),

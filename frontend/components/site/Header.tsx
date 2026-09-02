@@ -20,12 +20,6 @@ export default async function Header() {
           <Link href="/events" className="transition hover:text-teal-700">
             Events
           </Link>
-          <Link
-            href="/admin/login"
-            className="rounded-full border border-stone-300 px-4 py-1.5 text-stone-600 transition hover:border-teal-700 hover:text-teal-700"
-          >
-            Staff login
-          </Link>
         </nav>
       </div>
     </header>

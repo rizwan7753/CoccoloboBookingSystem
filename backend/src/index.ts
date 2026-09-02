@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import path from "path";
 
 import excursionsRouter from "./routes/excursions";
 import bookingsRouter from "./routes/bookings";
@@ -23,6 +24,7 @@ import adminEventBookingsRouter from "./routes/admin/eventBookings";
 import adminHolidaysRouter from "./routes/admin/holidays";
 import adminSettingsRouter from "./routes/admin/settings";
 import settingsRouter from "./routes/settings";
+import adminUploadsRouter from "./routes/admin/uploads";
 
 const app = express();
 
@@ -33,6 +35,10 @@ app.use(cors({ origin: process.env.FRONTEND_ORIGIN || "http://localhost:3000" })
 app.use("/api/webhooks", express.raw({ type: "application/json" }), webhooksRouter);
 
 app.use(express.json());
+
+// Uploaded card/header images — served statically, path stored on the
+// entity is exactly the relative path returned here.
+app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
@@ -56,6 +62,7 @@ app.use("/api/admin/event-bookings", adminEventBookingsRouter);
 app.use("/api/admin/holidays", adminHolidaysRouter);
 app.use("/api/admin/settings", adminSettingsRouter);
 app.use("/api/settings", settingsRouter);
+app.use("/api/admin/uploads", adminUploadsRouter);
 
 // Centralized error handler (catches anything thrown in async route handlers below Express 5,
 // or rejected promises not already try/caught).

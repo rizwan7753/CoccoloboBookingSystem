@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { adminApi } from "@/lib/adminApi";
 import { Excursion } from "@/lib/api";
 import { inputClass, primaryButtonClass, cardClass } from "@/components/admin/ui";
+import ImageUploadField from "@/components/ImageUploadField";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const DEFAULT_LOCATION_ID = "carambola-main"; // MVP: single location, seeded in prisma/seed.ts
@@ -29,6 +30,8 @@ export default function ExcursionForm({ initial }: { initial?: Excursion }) {
   const [status, setStatus] = useState(initial?.status || "DRAFT");
   const [time, setTime] = useState(initial?.departureTimes?.[0]?.time || "09:00");
   const [days, setDays] = useState<number[]>(initial?.departureTimes?.[0]?.daysOfWeek || [0, 1, 2, 3, 4, 5, 6]);
+  const [cardImageUrl, setCardImageUrl] = useState(initial?.cardImageUrl || "");
+  const [headerImageUrl, setHeaderImageUrl] = useState(initial?.headerImageUrl || "");
 
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -58,6 +61,8 @@ export default function ExcursionForm({ initial }: { initial?: Excursion }) {
       meetingPoint,
       status,
       departureTimes: [{ time, daysOfWeek: days }],
+      cardImageUrl: cardImageUrl || undefined,
+      headerImageUrl: headerImageUrl || undefined,
     };
     try {
       if (isEdit && initial) {
@@ -121,6 +126,19 @@ export default function ExcursionForm({ initial }: { initial?: Excursion }) {
         <label className="mb-1 block text-sm font-medium text-stone-700">Meeting point</label>
         <input value={meetingPoint} onChange={(e) => setMeetingPoint(e.target.value)} className={inputClass} />
       </div>
+
+      <ImageUploadField
+        label="Card image (listing thumbnail)"
+        value={cardImageUrl}
+        onChange={setCardImageUrl}
+        hint="Recommended: 1200×800px landscape (3:2), under 500KB. Cropped to fill — avoid portrait photos."
+      />
+      <ImageUploadField
+        label="Header image (detail page top)"
+        value={headerImageUrl}
+        onChange={setHeaderImageUrl}
+        hint="Recommended: 1920×600px wide landscape (~3:1), under 500KB. Spans the full page width — a tall or square photo will get heavily cropped."
+      />
 
       <div className="grid grid-cols-2 gap-4">
         <div>

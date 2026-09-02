@@ -89,6 +89,23 @@ model Location {
   smtpFromName   String?
   smtpSecure     Boolean     @default(false)
 
+  // Which payment methods guests can choose at checkout. If both are on,
+  // the guest picks one; if only one is on, it's used without asking.
+  stripeEnabled              Boolean @default(true)
+  offlinePaymentEnabled      Boolean @default(false)
+  offlinePaymentInstructions String? @db.Text // guest-visible bank/deposit instructions
+  offlinePaymentReceiptEmail String?          // guest sends their payment receipt here, referencing the booking ID
+
+  // Stripe API keys — configurable here instead of only via env vars/.env, so
+  // they can be changed without a redeploy. DB value takes priority over the
+  // .env fallback (see stripeService.resolveSecretKey). Publishable key is
+  // not secret (it's meant to be public, sent to the browser); secretKey and
+  // webhookSecret are write-only from the admin UI's perspective, same
+  // pattern as smtpPassword above — never echoed back, only whether one is set.
+  stripePublishableKey String?
+  stripeSecretKey      String?
+  stripeWebhookSecret  String?
+
   excursions Excursion[]
   rentalItems RentalItem[]
   events      Event[]
@@ -133,6 +150,8 @@ model Excursion {
   mapUrl            String?
   whatToBring       String?          @db.Text
   images            Json?            // array of image URLs
+  cardImageUrl      String?          // shown on the public listing card
+  headerImageUrl    String?          // shown at the top of the detail page
   pricingType       PricingType      @default(PER_GUEST)
   priceAdult        Decimal          @db.Decimal(10, 2) // flat total when pricingType = FLAT_RATE
   priceChild        Decimal?         @db.Decimal(10, 2) // ignored when pricingType = FLAT_RATE
@@ -205,6 +224,7 @@ model Booking {
   status           BookingStatus @default(PENDING)
   paymentStatus    PaymentStatus @default(PENDING)
   stripePaymentIntentId String?  @unique
+  paymentMethod    String?       // "stripe" | "offline" — informational only, not indexed
 
   source           BookingSource @default(DIRECT_WEBSITE)
   internalNotes    String?       @db.Text
@@ -228,6 +248,8 @@ model RentalItem {
   slug        String           @unique
   description String           @db.Text
   images      Json?
+  cardImageUrl   String?
+  headerImageUrl String?
   durationMinutes Int          @default(240) // length of one booking session; used to auto-generate time slots
   priceAdult  Decimal          @db.Decimal(10, 2)
   priceChild  Decimal?         @db.Decimal(10, 2)
@@ -305,6 +327,7 @@ model RentalBooking {
   status         BookingStatus @default(PENDING)
   paymentStatus  PaymentStatus @default(PENDING)
   stripePaymentIntentId String? @unique
+  paymentMethod  String?       // "stripe" | "offline" — informational only, not indexed
 
   source         BookingSource @default(DIRECT_WEBSITE)
 
@@ -336,6 +359,8 @@ model Event {
   slug        String            @unique
   description String            @db.Text
   images      Json?
+  cardImageUrl   String?
+  headerImageUrl String?
   eventDate   DateTime          @db.Date
   startTime   String            // "19:00"
   endTime     String?           // optional, for display only
@@ -390,6 +415,7 @@ model EventBooking {
   status         BookingStatus @default(PENDING)
   paymentStatus  PaymentStatus @default(PENDING)
   stripePaymentIntentId String? @unique
+  paymentMethod  String?       // "stripe" | "offline" — informational only, not indexed
 
   source         BookingSource @default(DIRECT_WEBSITE)
 

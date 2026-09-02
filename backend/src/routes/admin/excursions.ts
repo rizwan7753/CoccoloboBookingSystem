@@ -34,6 +34,8 @@ const excursionSchema = z.object({
   mapUrl: z.string().optional(),
   whatToBring: z.string().optional(),
   images: z.array(z.string()).optional(),
+  cardImageUrl: z.string().optional(),
+  headerImageUrl: z.string().optional(),
   pricingType: z.enum(["PER_GUEST", "FLAT_RATE"]).optional(),
   priceAdult: z.number().nonnegative(),
   priceChild: z.number().nonnegative().optional(),

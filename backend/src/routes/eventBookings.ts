@@ -3,11 +3,7 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { createEventBooking, markEventBookingPaid, EventError } from "../services/eventService";
 import { createEventPaymentIntent, isStripeConfigured } from "../services/stripeService";
-import { sendEventBookingConfirmationEmail } from "../services/emailService";
-
-/** No real Stripe key configured, so skip the network call and auto-confirm — stripeService already
- *  logs a loud startup warning when this is the case, so it's never silent. */
-const useDevPaymentBypass = !isStripeConfigured();
+import { sendEventBookingConfirmationEmail, sendOfflinePaymentPendingEmail } from "../services/emailService";
 
 const router = Router();
 
@@ -19,6 +15,7 @@ const createEventBookingSchema = z.object({
   guestEmail: z.string().email(),
   guestPhone: z.string().optional(),
   roomNumber: z.string().optional(),
+  paymentMethod: z.enum(["stripe", "offline"]).optional(),
 });
 
 // POST /api/event-bookings — reserves `quantity` tickets at one tier.
@@ -29,10 +26,58 @@ router.post("/", async (req, res) => {
   }
 
   try {
+    const location = await prisma.location.findFirst();
+    const useDevPaymentBypass = !(await isStripeConfigured());
+
+    if (!useDevPaymentBypass) {
+      if (!location?.stripeEnabled && !location?.offlinePaymentEnabled) {
+        return res.status(400).json({ error: "No payment method is currently available — please contact us." });
+      }
+      const wantsOffline = parsed.data.paymentMethod === "offline";
+      if (wantsOffline && !location?.offlinePaymentEnabled) {
+        return res.status(400).json({ error: "Offline payment isn't available — please pay by card." });
+      }
+      if (!wantsOffline && location?.stripeEnabled === false) {
+        return res.status(400).json({ error: "Card payment isn't available — please choose offline payment." });
+      }
+    }
+
     const booking = await createEventBooking(parsed.data);
 
+    // Offline is checked first and unconditionally — see bookings.ts for why.
+    if (parsed.data.paymentMethod === "offline") {
+      const [event, tier] = await Promise.all([
+        prisma.event.findUnique({ where: { id: booking.eventId } }),
+        prisma.eventTicketTier.findUnique({ where: { id: booking.tierId } }),
+      ]);
+      await prisma.eventBooking.update({
+        where: { id: booking.id },
+        data: { paymentMethod: "offline", stripePaymentIntentId: `offline_${booking.id}` },
+      });
+      await sendOfflinePaymentPendingEmail({
+        guestEmail: booking.guestEmail,
+        guestName: booking.guestName,
+        title: event?.title ?? "your event",
+        amountTotal: booking.amountTotal,
+        bookingId: booking.id,
+        details: [
+          event ? `Event date: ${event.eventDate.toISOString().slice(0, 10)} at ${event.startTime}` : "",
+          event?.venue ? `Venue: ${event.venue}` : "",
+          tier ? `${booking.quantity} x ${tier.name}` : `Quantity: ${booking.quantity}`,
+        ].filter(Boolean),
+        instructions: location?.offlinePaymentInstructions,
+        receiptEmail: location?.offlinePaymentReceiptEmail,
+      });
+      return res.status(201).json({
+        bookingId: booking.id,
+        amountTotal: booking.amountTotal,
+        clientSecret: null,
+        offlinePending: true,
+      });
+    }
+
     if (useDevPaymentBypass) {
-      const confirmed = await markEventBookingPaid(booking.id, `dev_bypass_${booking.id}`);
+      const confirmed = await markEventBookingPaid(booking.id, `dev_bypass_${booking.id}`, "stripe");
       const [event, tier] = await Promise.all([
         prisma.event.findUnique({ where: { id: confirmed.eventId } }),
         prisma.eventTicketTier.findUnique({ where: { id: confirmed.tierId } }),
@@ -47,6 +92,7 @@ router.post("/", async (req, res) => {
       });
     }
 
+    await prisma.eventBooking.update({ where: { id: booking.id }, data: { paymentMethod: "stripe" } });
     const paymentIntent = await createEventPaymentIntent(Number(booking.amountTotal), booking.id);
     res.status(201).json({
       bookingId: booking.id,

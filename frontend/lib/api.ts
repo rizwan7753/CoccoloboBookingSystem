@@ -12,6 +12,8 @@ export interface Excursion {
   mapUrl?: string | null;
   whatToBring?: string | null;
   images?: string[] | null;
+  cardImageUrl?: string | null;
+  headerImageUrl?: string | null;
   pricingType: "PER_GUEST" | "FLAT_RATE";
   priceAdult: string;
   priceChild?: string | null;
@@ -49,6 +51,7 @@ export interface Booking {
   currency: string;
   status: string;
   paymentStatus: string;
+  paymentMethod?: string | null;
   source: string;
   createdAt: string;
   excursion?: Excursion;
@@ -84,8 +87,15 @@ export const api = {
     specialRequests?: string;
     adultCount: number;
     childCount?: number;
+    paymentMethod?: "stripe" | "offline";
   }) =>
-    request<{ bookingId: string; amountTotal: string; clientSecret: string | null; devBypass?: boolean }>("/bookings", {
+    request<{
+      bookingId: string;
+      amountTotal: string;
+      clientSecret: string | null;
+      devBypass?: boolean;
+      offlinePending?: boolean;
+    }>("/bookings", {
       method: "POST",
       body: JSON.stringify(payload),
     }),

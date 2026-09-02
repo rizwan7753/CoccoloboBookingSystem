@@ -4,9 +4,23 @@ export interface PublicSettings {
   name: string;
   timezone: string;
   currency: string;
+  stripeEnabled: boolean;
+  stripePublishableKey?: string | null;
+  offlinePaymentEnabled: boolean;
+  offlinePaymentInstructions?: string | null;
+  offlinePaymentReceiptEmail?: string | null;
 }
 
-const FALLBACK: PublicSettings = { name: "Cocolobo Beach Club", timezone: "America/St_Thomas", currency: "USD" };
+const FALLBACK: PublicSettings = {
+  name: "Cocolobo Beach Club",
+  timezone: "America/St_Thomas",
+  currency: "USD",
+  stripeEnabled: true,
+  stripePublishableKey: null,
+  offlinePaymentEnabled: false,
+  offlinePaymentInstructions: null,
+  offlinePaymentReceiptEmail: null,
+};
 
 export const settingsApi = {
   // Never throws — branding falls back gracefully if the API is unreachable

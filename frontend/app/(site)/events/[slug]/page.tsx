@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { eventApi } from "@/lib/eventApi";
 import { settingsApi } from "@/lib/settingsApi";
+import { mediaUrl } from "@/lib/media";
 import EventBookingWidget from "@/components/EventBookingWidget";
 
 export const revalidate = 60;
@@ -43,7 +44,11 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
     <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      <div className="relative h-56 overflow-hidden bg-gradient-to-br from-fuchsia-900 via-purple-800 to-indigo-800 sm:h-72">
+      <div
+        className="relative h-56 overflow-hidden bg-gradient-to-br from-fuchsia-900 via-purple-800 to-indigo-800 bg-cover bg-center sm:h-72"
+        style={event.headerImageUrl ? { backgroundImage: `url(${mediaUrl(event.headerImageUrl)})` } : undefined}
+      >
+        {event.headerImageUrl && <div className="pointer-events-none absolute inset-0 bg-black/35" />}
         <div
           className="pointer-events-none absolute inset-0 opacity-20"
           style={{ backgroundImage: "radial-gradient(circle at 75% 30%, white 0, transparent 45%)" }}

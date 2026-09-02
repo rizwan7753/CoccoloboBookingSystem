@@ -21,6 +21,8 @@ const eventSchema = z.object({
     .regex(/^[a-z0-9-]+$/, "slug must be lowercase, alphanumeric, hyphen-separated"),
   description: z.string().min(1),
   images: z.array(z.string()).optional(),
+  cardImageUrl: z.string().optional(),
+  headerImageUrl: z.string().optional(),
   eventDate: z.string(), // "2026-12-31"
   startTime: z.string().regex(/^\d{2}:\d{2}$/),
   endTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),

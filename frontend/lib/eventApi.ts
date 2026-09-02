@@ -6,6 +6,8 @@ export interface EventItem {
   slug: string;
   description: string;
   images?: string[] | null;
+  cardImageUrl?: string | null;
+  headerImageUrl?: string | null;
   eventDate: string;
   startTime: string;
   endTime?: string | null;
@@ -38,6 +40,7 @@ export interface EventBooking {
   currency: string;
   status: string;
   paymentStatus: string;
+  paymentMethod?: string | null;
   source: string;
   createdAt: string;
   event?: EventItem;
@@ -69,10 +72,14 @@ export const eventApi = {
     guestEmail: string;
     guestPhone?: string;
     roomNumber?: string;
+    paymentMethod?: "stripe" | "offline";
   }) =>
-    request<{ bookingId: string; amountTotal: string; clientSecret: string | null; devBypass?: boolean }>(
-      "/event-bookings",
-      { method: "POST", body: JSON.stringify(payload) }
-    ),
+    request<{
+      bookingId: string;
+      amountTotal: string;
+      clientSecret: string | null;
+      devBypass?: boolean;
+      offlinePending?: boolean;
+    }>("/event-bookings", { method: "POST", body: JSON.stringify(payload) }),
   getBooking: (id: string) => request<EventBooking>(`/event-bookings/${id}`),
 };

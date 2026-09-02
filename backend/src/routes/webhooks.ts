@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { stripe } from "../services/stripeService";
+import { getStripeClient, getWebhookSecret } from "../services/stripeService";
 import { markBookingPaid, releaseBooking } from "../services/bookingService";
 import { markRentalBookingPaid, cancelRentalBooking } from "../services/rentalService";
 import { markEventBookingPaid, cancelEventBooking } from "../services/eventService";
@@ -15,13 +15,17 @@ const router = Router();
 // POST /api/webhooks/stripe — mounted with express.raw() body parsing (see index.ts)
 router.post("/stripe", async (req, res) => {
   const signature = req.headers["stripe-signature"];
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const webhookSecret = await getWebhookSecret();
 
   let event;
   try {
-    event = webhookSecret
-      ? stripe.webhooks.constructEvent(req.body, signature as string, webhookSecret)
-      : JSON.parse(req.body.toString());
+    if (webhookSecret) {
+      const client = await getStripeClient();
+      if (!client) throw new Error("Stripe is not configured");
+      event = client.webhooks.constructEvent(req.body, signature as string, webhookSecret);
+    } else {
+      event = JSON.parse(req.body.toString());
+    }
   } catch (err) {
     return res.status(400).send(`Webhook signature verification failed`);
   }

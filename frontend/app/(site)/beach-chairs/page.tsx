@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { rentalApi } from "@/lib/rentalApi";
+import { mediaUrl } from "@/lib/media";
 
 export const revalidate = 60;
 
@@ -58,9 +59,14 @@ export default async function BeachChairsPage() {
                   className="group block overflow-hidden rounded-2xl border border-stone-200 bg-white transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-stone-200/60"
                 >
                   <div className="relative h-32 bg-gradient-to-br from-amber-500 to-orange-500">
-                    <svg className="absolute bottom-2 right-3 h-16 w-16 text-white/20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.2}>
-                      <path d="M4 20 12 4l8 16M8 12h8M6 16h12" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
+                    {item.cardImageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={mediaUrl(item.cardImageUrl) ?? undefined} alt={item.name} className="h-full w-full object-cover" />
+                    ) : (
+                      <svg className="absolute bottom-2 right-3 h-16 w-16 text-white/20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.2}>
+                        <path d="M4 20 12 4l8 16M8 12h8M6 16h12" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
                     {availability && (
                       <span className="absolute left-4 top-4 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-stone-700">
                         {availability.remainingChairs} of {availability.totalChairs} left today

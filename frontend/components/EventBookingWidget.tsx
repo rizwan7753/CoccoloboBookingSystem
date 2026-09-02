@@ -2,12 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { eventApi, EventItem, TierAvailability } from "@/lib/eventApi";
+import { settingsApi, PublicSettings } from "@/lib/settingsApi";
+import { getStripePromise } from "@/lib/stripeClient";
 import CheckoutForm from "@/components/CheckoutForm";
-
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "");
 
 type Step = "select" | "details" | "payment";
 const STEPS: { key: Step; label: string }[] = [
@@ -59,6 +58,10 @@ export default function EventBookingWidget({ event }: { event: EventItem }) {
   const [error, setError] = useState<string | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [bookingId, setBookingId] = useState<string | null>(null);
+  const [offlinePending, setOfflinePending] = useState(false);
+
+  const [settings, setSettings] = useState<PublicSettings | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<"stripe" | "offline">("stripe");
 
   useEffect(() => {
     eventApi
@@ -69,6 +72,15 @@ export default function EventBookingWidget({ event }: { event: EventItem }) {
       })
       .finally(() => setLoadingTiers(false));
   }, [event.id]);
+
+  useEffect(() => {
+    settingsApi.getSettings().then((s) => {
+      setSettings(s);
+      setPaymentMethod(s.stripeEnabled ? "stripe" : "offline");
+    });
+  }, []);
+
+  const stripePromise = getStripePromise(settings?.stripePublishableKey);
 
   const selectedTier = tiers.find((t) => t.id === selectedTierId);
   const total = selectedTier ? Number(selectedTier.price) * quantity : 0;
@@ -95,7 +107,14 @@ export default function EventBookingWidget({ event }: { event: EventItem }) {
         guestEmail,
         guestPhone: guestPhone || undefined,
         roomNumber: roomNumber || undefined,
+        paymentMethod,
       });
+      if (result.offlinePending) {
+        setOfflinePending(true);
+        setBookingId(result.bookingId);
+        setStep("payment");
+        return;
+      }
       if (result.devBypass || !result.clientSecret) {
         router.push(`/events/confirmation/${result.bookingId}`);
         return;
@@ -197,6 +216,33 @@ export default function EventBookingWidget({ event }: { event: EventItem }) {
             className={inputClass}
           />
 
+          {settings?.stripeEnabled && settings.offlinePaymentEnabled && (
+            <div className="space-y-2 rounded-lg border border-stone-200 p-3">
+              <p className="text-sm font-medium text-stone-700">Payment method</p>
+              <label className="flex items-center gap-2 text-sm text-stone-600">
+                <input type="radio" checked={paymentMethod === "stripe"} onChange={() => setPaymentMethod("stripe")} />
+                Pay by card
+              </label>
+              <label className="flex items-center gap-2 text-sm text-stone-600">
+                <input type="radio" checked={paymentMethod === "offline"} onChange={() => setPaymentMethod("offline")} />
+                Pay by bank transfer
+              </label>
+            </div>
+          )}
+
+          {paymentMethod === "offline" && settings?.offlinePaymentInstructions && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-900">
+              <p className="font-medium">Pay to the below details:</p>
+              <p className="mt-1 whitespace-pre-line">{settings.offlinePaymentInstructions}</p>
+              {settings.offlinePaymentReceiptEmail && (
+                <p className="mt-2">
+                  After paying, send your receipt (with the booking ID we&apos;ll give you) to{" "}
+                  <span className="font-medium">{settings.offlinePaymentReceiptEmail}</span>.
+                </p>
+              )}
+            </div>
+          )}
+
           {error && <p className="text-sm text-red-600">{error}</p>}
 
           <button
@@ -205,7 +251,7 @@ export default function EventBookingWidget({ event }: { event: EventItem }) {
             onClick={handleCreateBooking}
             className="w-full rounded-lg bg-fuchsia-700 py-2.5 text-sm font-semibold text-white transition hover:bg-fuchsia-800 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {submitting ? "Reserving your tickets…" : "Continue to payment"}
+            {submitting ? "Reserving your tickets…" : paymentMethod === "offline" ? "Submit booking" : "Continue to payment"}
           </button>
           <button type="button" onClick={() => setStep("select")} className="w-full py-1 text-sm text-stone-500 hover:text-stone-700">
             Back
@@ -213,7 +259,36 @@ export default function EventBookingWidget({ event }: { event: EventItem }) {
         </div>
       )}
 
-      {step === "payment" && clientSecret && bookingId && (
+      {step === "payment" && offlinePending && bookingId && (
+        <div className="space-y-3">
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-900">
+            <p className="font-semibold">Booking received — pending payment</p>
+            <p className="mt-1">We&apos;ve held your tickets. Pay to the below details, then send your receipt to confirm.</p>
+            {settings?.offlinePaymentInstructions && (
+              <p className="mt-2 whitespace-pre-line text-amber-800">{settings.offlinePaymentInstructions}</p>
+            )}
+            {settings?.offlinePaymentReceiptEmail && (
+              <p className="mt-2">
+                Send your payment receipt — referencing booking ID <span className="font-semibold">{bookingId}</span> —
+                to{" "}
+                <a href={`mailto:${settings.offlinePaymentReceiptEmail}`} className="font-semibold underline">
+                  {settings.offlinePaymentReceiptEmail}
+                </a>
+                .
+              </p>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => router.push(`/events/confirmation/${bookingId}`)}
+            className="w-full rounded-lg bg-fuchsia-700 py-2.5 text-sm font-semibold text-white transition hover:bg-fuchsia-800"
+          >
+            View booking
+          </button>
+        </div>
+      )}
+
+      {step === "payment" && !offlinePending && clientSecret && bookingId && (
         <div>
           <Elements stripe={stripePromise} options={{ clientSecret }}>
             <CheckoutForm bookingId={bookingId} confirmationBasePath="/events/confirmation" />

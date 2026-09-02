@@ -168,13 +168,36 @@ export async function createBooking(input: CreateBookingInput) {
 }
 
 /** Called after successful Stripe payment confirmation (webhook, or the local dev bypass). */
-export async function markBookingPaid(bookingId: string, stripePaymentIntentId: string) {
+export async function markBookingPaid(
+  bookingId: string,
+  stripePaymentIntentId: string,
+  paymentMethod: "stripe" | "offline" = "stripe"
+) {
   const booking = await prisma.booking.update({
     where: { id: bookingId },
-    data: { status: "CONFIRMED", paymentStatus: "PAID", stripePaymentIntentId },
+    data: { status: "CONFIRMED", paymentStatus: "PAID", stripePaymentIntentId, paymentMethod },
   });
   await logAudit({ adminUserId: null, actorLabel: "System (payment confirmed)" }, "booking.paid", "Booking", bookingId);
   return booking;
+}
+
+/** Staff-confirmed offline payment (bank deposit/transfer) — only valid for
+ *  bookings actually placed via the offline method, so a real unpaid Stripe
+ *  booking can't be manually "confirmed" by mistake. */
+export async function markBookingPaidManually(bookingId: string, actor: { adminUserId: string; actorLabel: string }) {
+  const booking = await prisma.booking.findUnique({ where: { id: bookingId } });
+  if (!booking) throw new BookingError("Booking not found", 404);
+  if (booking.paymentMethod !== "offline") {
+    throw new BookingError("Only offline-payment bookings can be marked as paid manually", 400);
+  }
+  if (booking.paymentStatus === "PAID") throw new BookingError("Booking is already paid", 400);
+
+  const updated = await prisma.booking.update({
+    where: { id: bookingId },
+    data: { status: "CONFIRMED", paymentStatus: "PAID" },
+  });
+  await logAudit(actor, "booking.marked_paid", "Booking", bookingId);
+  return updated;
 }
 
 /**

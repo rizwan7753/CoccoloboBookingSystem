@@ -38,6 +38,8 @@ export interface AdminExcursionInput {
   cutoffTime: string;
   status: string;
   departureTimes: { time: string; daysOfWeek: number[] }[];
+  cardImageUrl?: string;
+  headerImageUrl?: string;
 }
 
 export interface AdminRentalSpot {
@@ -67,6 +69,8 @@ export interface AdminRentalItem {
   priceAdult: string;
   priceChild?: string | null;
   status: string;
+  cardImageUrl?: string | null;
+  headerImageUrl?: string | null;
   spots?: AdminRentalSpot[];
   timeSlots?: AdminRentalTimeSlot[];
   _count?: { bookings: number };
@@ -81,6 +85,8 @@ export interface AdminRentalItemInput {
   priceAdult: number;
   priceChild?: number;
   status: string;
+  cardImageUrl?: string;
+  headerImageUrl?: string;
 }
 
 export interface AdminRentalBooking {
@@ -99,8 +105,10 @@ export interface AdminRentalBooking {
   amountTotal: string;
   status: string;
   paymentStatus: string;
+  paymentMethod?: string | null;
   spot: AdminRentalSpot;
   timeSlot: AdminRentalTimeSlot;
+  rentalItem: { id: string; name: string };
 }
 
 export interface AdminEventTier {
@@ -125,6 +133,8 @@ export interface AdminEvent {
   venue?: string | null;
   mapUrl?: string | null;
   status: string;
+  cardImageUrl?: string | null;
+  headerImageUrl?: string | null;
   ticketTiers?: AdminEventTier[];
   _count?: { bookings: number };
 }
@@ -140,6 +150,8 @@ export interface AdminEventInput {
   venue?: string;
   mapUrl?: string;
   status: string;
+  cardImageUrl?: string;
+  headerImageUrl?: string;
 }
 
 export interface AdminEventBooking {
@@ -154,7 +166,9 @@ export interface AdminEventBooking {
   amountTotal: string;
   status: string;
   paymentStatus: string;
+  paymentMethod?: string | null;
   tier: AdminEventTier;
+  event: { id: string; title: string; eventDate: string };
 }
 
 export interface AdminHoliday {
@@ -188,6 +202,13 @@ export interface AdminSettings {
   smtpFromName?: string | null;
   smtpSecure: boolean;
   smtpPasswordSet: boolean;
+  stripeEnabled: boolean;
+  offlinePaymentEnabled: boolean;
+  offlinePaymentInstructions?: string | null;
+  offlinePaymentReceiptEmail?: string | null;
+  stripePublishableKey?: string | null;
+  stripeSecretKeySet: boolean;
+  stripeWebhookSecretSet: boolean;
 }
 
 export interface AdminSettingsInput {
@@ -201,6 +222,13 @@ export interface AdminSettingsInput {
   smtpFromEmail?: string;
   smtpFromName?: string;
   smtpSecure?: boolean;
+  stripeEnabled?: boolean;
+  offlinePaymentEnabled?: boolean;
+  offlinePaymentInstructions?: string;
+  offlinePaymentReceiptEmail?: string;
+  stripePublishableKey?: string;
+  stripeSecretKey?: string; // blank/omitted = keep existing
+  stripeWebhookSecret?: string; // blank/omitted = keep existing
 }
 
 export interface AdminUserSummary {
@@ -350,6 +378,56 @@ async function authedRequest<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json();
 }
 
+// Separate from authedRequest — a FormData body must NOT get an explicit
+// Content-Type header (the browser generates the multipart boundary itself),
+// but authedRequest always sets "Content-Type: application/json".
+async function authedUpload(file: File): Promise<{ url: string }> {
+  const token = getToken();
+  const fd = new FormData();
+  fd.append("file", file);
+  const res = await fetch(`${API_URL}/admin/uploads`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: fd,
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `Upload failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+// Export endpoints require the Bearer token, so a plain <a href> download
+// won't work (the browser navigation carries no auth header) — fetch the
+// file as a blob instead and trigger the download via a temporary object URL.
+async function authedDownload(path: string, params: Record<string, string | undefined>) {
+  const token = getToken();
+  const query = new URLSearchParams(
+    Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined && v !== "")) as Record<
+      string,
+      string
+    >
+  );
+  const res = await fetch(`${API_URL}${path}?${query}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `Export failed: ${res.status}`);
+  }
+  const disposition = res.headers.get("Content-Disposition") || "";
+  const filename = /filename="([^"]+)"/.exec(disposition)?.[1] || "export.xlsx";
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 export const adminApi = {
   login: async (email: string, password: string): Promise<LoginResponse> => {
     const res = await fetch(`${API_URL}/auth/login`, {
@@ -378,8 +456,12 @@ export const adminApi = {
     ),
   cancelBooking: (id: string, reason?: string) =>
     authedRequest<void>(`/admin/bookings/${id}/cancel`, { method: "POST", body: JSON.stringify({ reason }) }),
+  markBookingPaid: (id: string) => authedRequest<Booking>(`/admin/bookings/${id}/mark-paid`, { method: "POST" }),
+  exportBookings: (params: { excursionId?: string; from: string; to?: string; status?: string }) =>
+    authedDownload("/admin/bookings/export", params),
 
   listLocations: () => authedRequest<Location[]>("/admin/locations"),
+  uploadImage: (file: File) => authedUpload(file),
 
   listRentals: () => authedRequest<AdminRentalItem[]>("/admin/rentals"),
   getRental: (id: string) => authedRequest<AdminRentalItem>(`/admin/rentals/${id}`),
@@ -418,12 +500,21 @@ export const adminApi = {
   deleteRentalTimeSlot: (timeSlotId: string) =>
     authedRequest<void>(`/admin/rentals/time-slots/${timeSlotId}`, { method: "DELETE" }),
 
-  listRentalBookings: (rentalItemId: string, date: string, timeSlotId?: string) =>
+  listRentalBookings: (params: { rentalItemId?: string; from: string; to?: string; timeSlotId?: string }) =>
     authedRequest<AdminRentalBooking[]>(
-      `/admin/rental-bookings?${new URLSearchParams({ rentalItemId, date, ...(timeSlotId ? { timeSlotId } : {}) })}`
+      `/admin/rental-bookings?${new URLSearchParams(
+        Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined && v !== "")) as Record<
+          string,
+          string
+        >
+      )}`
     ),
   cancelRentalBooking: (id: string, reason?: string) =>
     authedRequest<void>(`/admin/rental-bookings/${id}/cancel`, { method: "POST", body: JSON.stringify({ reason }) }),
+  markRentalBookingPaid: (id: string) =>
+    authedRequest<AdminRentalBooking>(`/admin/rental-bookings/${id}/mark-paid`, { method: "POST" }),
+  exportRentalBookings: (params: { rentalItemId?: string; from: string; to?: string; timeSlotId?: string }) =>
+    authedDownload("/admin/rental-bookings/export", params),
 
   listEvents: () => authedRequest<AdminEvent[]>("/admin/events"),
   getEvent: (id: string) => authedRequest<AdminEvent>(`/admin/events/${id}`),
@@ -440,10 +531,21 @@ export const adminApi = {
   ) => authedRequest<AdminEventTier>(`/admin/events/tiers/${tierId}`, { method: "PUT", body: JSON.stringify(data) }),
   deleteEventTier: (tierId: string) => authedRequest<void>(`/admin/events/tiers/${tierId}`, { method: "DELETE" }),
 
-  listEventBookings: (eventId: string) =>
-    authedRequest<AdminEventBooking[]>(`/admin/event-bookings?${new URLSearchParams({ eventId })}`),
+  listEventBookings: (params: { eventId?: string; from: string; to?: string }) =>
+    authedRequest<AdminEventBooking[]>(
+      `/admin/event-bookings?${new URLSearchParams(
+        Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined && v !== "")) as Record<
+          string,
+          string
+        >
+      )}`
+    ),
   cancelEventBooking: (id: string, reason?: string) =>
     authedRequest<void>(`/admin/event-bookings/${id}/cancel`, { method: "POST", body: JSON.stringify({ reason }) }),
+  markEventBookingPaid: (id: string) =>
+    authedRequest<AdminEventBooking>(`/admin/event-bookings/${id}/mark-paid`, { method: "POST" }),
+  exportEventBookings: (params: { eventId?: string; from: string; to?: string }) =>
+    authedDownload("/admin/event-bookings/export", params),
 
   listHolidays: () => authedRequest<AdminHoliday[]>("/admin/holidays"),
   createHoliday: (data: AdminHolidayInput) =>

@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cocolobo Booking Manual</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+  :root {
+    --paper: #f5f6f4;
+    --paper-raised: #ffffff;
+    --ink: #122e2c;
+    --ink-soft: #4c625f;
+    --ink-faint: #7c8f8c;
+    --line: #dce3e0;
+    --line-soft: #e8ede9;
+    --admin: #0b7285;
+    --admin-soft: #e4f1f2;
+    --admin-ink: #075a68;
+    --guest: #d9682f;
+    --guest-soft: #fbeae0;
+    --guest-ink: #ad4f21;
+    --code-bg: #eef1ef;
+    --shadow: 0 1px 2px rgba(18,46,44,0.06), 0 8px 24px -12px rgba(18,46,44,0.12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #0e1614;
+      --paper-raised: #16211f;
+      --ink: #e9efec;
+      --ink-soft: #a9bcb8;
+      --ink-faint: #7c918d;
+      --line: #26332f;
+      --line-soft: #1d2926;
+      --admin: #4fb8c4;
+      --admin-soft: #102d31;
+      --admin-ink: #7fd0da;
+      --guest: #ef9a66;
+      --guest-soft: #302118;
+      --guest-ink: #f4b287;
+      --code-bg: #1a2422;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #0e1614;
+    --paper-raised: #16211f;
+    --ink: #e9efec;
+    --ink-soft: #a9bcb8;
+    --ink-faint: #7c918d;
+    --line: #26332f;
+    --line-soft: #1d2926;
+    --admin: #4fb8c4;
+    --admin-soft: #102d31;
+    --admin-ink: #7fd0da;
+    --guest: #ef9a66;
+    --guest-soft: #302118;
+    --guest-ink: #f4b287;
+    --code-bg: #1a2422;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+  html { color-scheme: light dark; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Public Sans", ui-sans-serif, system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 {
+    font-family: "Fraunces", ui-serif, Georgia, serif;
+    font-weight: 600;
+    text-wrap: balance;
+    color: var(--ink);
+  }
+  a { color: inherit; }
+  img { max-width: 100%; }
+  code, .mono {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+  }
+  code {
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: 0.1em 0.4em;
+    font-size: 0.88em;
+  }
+
+  /* ---------- Shell ---------- */
+  .shell {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 760px);
+    justify-content: center;
+    gap: 56px;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 40px 24px 120px;
+  }
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    .rail { position: static !important; order: -1; margin-bottom: 8px; }
+  }
+
+  /* ---------- Left rail ---------- */
+  .rail {
+    position: sticky;
+    top: 24px;
+    align-self: start;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .brand {
+    font-family: "Fraunces", serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 0 0 2px;
+  }
+  .brand-sub {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 20px;
+  }
+  .audience-toggle {
+    display: flex;
+    background: var(--line-soft);
+    border-radius: 999px;
+    padding: 3px;
+    margin-bottom: 22px;
+    gap: 2px;
+  }
+  .audience-toggle button {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 8px 6px;
+    border-radius: 999px;
+    cursor: pointer;
+    color: var(--ink-soft);
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .audience-toggle button:focus-visible { outline: 2px solid var(--admin); outline-offset: 2px; }
+  .audience-toggle button[aria-pressed="true"][data-a="admin"] { background: var(--admin); color: white; }
+  .audience-toggle button[aria-pressed="true"][data-a="guest"] { background: var(--guest); color: white; }
+  .audience-toggle button[aria-pressed="true"][data-a="all"] { background: var(--ink); color: var(--paper); }
+
+  .toc { list-style: none; margin: 0; padding: 0; }
+  .toc-group { margin-bottom: 18px; }
+  .toc-group-label {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .toc-group-label.admin { color: var(--admin-ink); }
+  .toc-group-label.guest { color: var(--guest-ink); }
+  .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+  .dot.admin { background: var(--admin); }
+  .dot.guest { background: var(--guest); }
+  .toc li a {
+    display: block;
+    text-decoration: none;
+    font-size: 0.87rem;
+    color: var(--ink-soft);
+    padding: 5px 0 5px 2px;
+    border-left: 2px solid transparent;
+    padding-left: 10px;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .toc li a:hover { color: var(--ink); }
+  .toc-group.admin li a:hover, .toc-group.admin li a:focus-visible { border-color: var(--admin); }
+  .toc-group.guest li a:hover, .toc-group.guest li a:focus-visible { border-color: var(--guest); }
+
+  /* ---------- Main content ---------- */
+  .titleblock { margin-bottom: 44px; }
+  .titleblock .eyebrow {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.74rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 10px;
+  }
+  .titleblock h1 {
+    font-size: clamp(2rem, 4vw, 2.6rem);
+    line-height: 1.1;
+    margin: 0 0 14px;
+  }
+  .titleblock p {
+    max-width: 58ch;
+    color: var(--ink-soft);
+    font-size: 1.02rem;
+    margin: 0;
+  }
+
+  .manual-part { margin-top: 64px; }
+  .part-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding-bottom: 14px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid var(--line);
+  }
+  .part-head .tag {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+  .manual-part[data-audience="admin"] .part-head .tag { background: var(--admin-soft); color: var(--admin-ink); }
+  .manual-part[data-audience="guest"] .part-head .tag { background: var(--guest-soft); color: var(--guest-ink); }
+  .part-head h2 { font-size: 1.5rem; margin: 0; }
+
+  section.step-section {
+    padding-left: 20px;
+    border-left: 3px solid var(--line);
+    margin-bottom: 40px;
+    scroll-margin-top: 24px;
+  }
+  .manual-part[data-audience="admin"] section.step-section { border-left-color: var(--admin); }
+  .manual-part[data-audience="guest"] section.step-section { border-left-color: var(--guest); }
+
+  section.step-section h3 {
+    font-size: 1.18rem;
+    margin: 0 0 4px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  section.step-section h3 .num {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.8rem;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  .lede {
+    color: var(--ink-soft);
+    margin: 0 0 18px;
+    max-width: 60ch;
+    font-size: 0.98rem;
+  }
+
+  ol.steps { list-style: none; margin: 0 0 18px; padding: 0; counter-reset: step; }
+  ol.steps > li {
+    counter-increment: step;
+    position: relative;
+    padding-left: 34px;
+    margin-bottom: 12px;
+    font-size: 0.96rem;
+  }
+  ol.steps > li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 0.05em;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--line-soft);
+    color: var(--ink-soft);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.72rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .manual-part[data-audience="admin"] ol.steps > li::before { background: var(--admin-soft); color: var(--admin-ink); }
+  .manual-part[data-audience="guest"] ol.steps > li::before { background: var(--guest-soft); color: var(--guest-ink); }
+
+  ul.bullets { margin: 0 0 18px; padding-left: 20px; }
+  ul.bullets li { margin-bottom: 7px; font-size: 0.96rem; }
+
+  .callout {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+    box-shadow: var(--shadow);
+    margin: 0 0 18px;
+  }
+  .callout strong { color: var(--ink); }
+  .callout.warn { border-color: color-mix(in srgb, var(--guest) 35%, var(--line)); }
+
+  table.ref {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    margin: 0 0 18px;
+  }
+  table.ref th, table.ref td {
+    text-align: left;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  table.ref th {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+  }
+  .ref-wrap { overflow-x: auto; margin-bottom: 18px; }
+
+  footer.manual-footer {
+    margin-top: 80px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-size: 0.82rem;
+    color: var(--ink-faint);
+  }
+
+  [hidden] { display: none !important; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="rail" aria-label="Manual navigation">
+    <p class="brand">Cocolobo Beach Club</p>
+    <p class="brand-sub">Booking system manual</p>
+
+    <div class="audience-toggle" role="group" aria-label="Filter manual by audience">
+      <button type="button" data-a="all" aria-pressed="true">All</button>
+      <button type="button" data-a="admin" aria-pressed="false">Admin</button>
+      <button type="button" data-a="guest" aria-pressed="false">Guest</button>
+    </div>
+
+    <ul class="toc">
+      <li class="toc-group admin">
+        <p class="toc-group-label admin"><span class="dot admin"></span>For staff</p>
+        <ul style="list-style:none;margin:0;padding:0;">
+          <li><a href="#admin-login">1. Logging in</a></li>
+          <li><a href="#admin-dashboard">2. The dashboard</a></li>
+          <li><a href="#admin-excursions">3. Excursions</a></li>
+          <li><a href="#admin-rentals">4. Beach chair rentals</a></li>
+          <li><a href="#admin-events">5. Events</a></li>
+          <li><a href="#admin-bookings">6. Bookings &amp; payments</a></li>
+          <li><a href="#admin-holidays">7. Closures &amp; holidays</a></li>
+          <li><a href="#admin-settings">8. Settings</a></li>
+          <li><a href="#admin-users">9. Staff &amp; roles</a></li>
+        </ul>
+      </li>
+      <li class="toc-group guest">
+        <p class="toc-group-label guest"><span class="dot guest"></span>For guests</p>
+        <ul style="list-style:none;margin:0;padding:0;">
+          <li><a href="#guest-browse">1. Finding something to book</a></li>
+          <li><a href="#guest-book">2. Making a booking</a></li>
+          <li><a href="#guest-payment">3. Paying</a></li>
+          <li><a href="#guest-offline">4. Paying by bank transfer</a></li>
+          <li><a href="#guest-confirmation">5. Your confirmation</a></li>
+        </ul>
+      </li>
+    </ul>
+  </nav>
+
+  <main>
+    <div class="titleblock">
+      <p class="eyebrow">Manual · v1</p>
+      <h1>Running Cocolobo, from zero</h1>
+      <p>Two short guides in one place: how staff run the booking system day to day, and what a guest sees when they book an excursion, a beach chair, or event tickets. No prior knowledge assumed.</p>
+    </div>
+
+    <!-- ============ ADMIN ============ -->
+    <div class="manual-part" data-audience="admin">
+      <div class="part-head">
+        <span class="tag">Staff manual</span>
+        <h2>Running the booking system</h2>
+      </div>
+
+      <section class="step-section" id="admin-login">
+        <h3><span class="num">01</span> Logging in</h3>
+        <p class="lede">Every staff action happens through the admin panel, kept separate from the public site.</p>
+        <ol class="steps">
+          <li>Go to <code>/admin/login</code> on your booking site's address (e.g. <code>yourdomain.com/admin/login</code>).</li>
+          <li>Enter your email and password, then select <strong>Sign in</strong>.</li>
+          <li>You'll land on the Dashboard. The left sidebar is how you get everywhere else.</li>
+        </ol>
+        <div class="callout warn">
+          <strong>First time in?</strong> If you were given one of the demo accounts, change its password immediately under <a href="#admin-users">Staff &amp; roles</a> — demo passwords are not safe to leave in place on a live site.
+        </div>
+      </section>
+
+      <section class="step-section" id="admin-dashboard">
+        <h3><span class="num">02</span> The dashboard</h3>
+        <p class="lede">Your landing page after login — a quick read on what's happening today and this month.</p>
+        <ul class="bullets">
+          <li>Stat cards summarise today's and upcoming bookings across excursions, chairs, and events.</li>
+          <li>The calendar shows every booking type on the date it happens — click a day to jump straight to it.</li>
+        </ul>
+      </section>
+
+      <section class="step-section" id="admin-excursions">
+        <h3><span class="num">03</span> Excursions</h3>
+        <p class="lede">Tours and activities guests book by date and departure time.</p>
+        <ol class="steps">
+          <li>Sidebar → <strong>Excursions</strong> → <strong>New excursion</strong> (or open an existing one to edit).</li>
+          <li>Fill in title, description, what's included/excluded, and what to bring.</li>
+          <li>Choose a <strong>pricing type</strong>: <em>Per guest</em> (adult/child rates) or <em>Flat rate</em> (one price for the whole booking, e.g. a private cabana for up to 4).</li>
+          <li>Set duration, default capacity, and the booking cut-off time (how late guests can book before the departure).</li>
+          <li>Add a departure time and the days of the week it runs.</li>
+          <li>Optionally add a <strong>card image</strong> (shown on the listing) and a <strong>header image</strong> (shown at the top of the detail page).</li>
+          <li>Set status to <strong>Active</strong> so it appears on the public site, then save.</li>
+        </ol>
+      </section>
+
+      <section class="step-section" id="admin-rentals">
+        <h3><span class="num">04</span> Beach chair rentals</h3>
+        <p class="lede">Same-day chair reservations, organised into spots (rows) and time slots.</p>
+        <ol class="steps">
+          <li>Sidebar → <strong>Rentals</strong> → create or open an item (e.g. "Beach Chair").</li>
+          <li>Set the session duration — this is used to auto-generate time slots.</li>
+          <li>Open the item and add <strong>spots</strong> (e.g. "Row A"), each with a chair <strong>quantity</strong> — several guests can share one spot's pool of chairs.</li>
+          <li>Add <strong>time slots</strong> one at a time, or use <strong>Generate slots</strong> to fill a day automatically from an operating window and the duration you set.</li>
+          <li>Each spot's remaining chairs are calculated live per date and time slot — no manual capacity tracking needed.</li>
+        </ol>
+      </section>
+
+      <section class="step-section" id="admin-events">
+        <h3><span class="num">05</span> Events</h3>
+        <p class="lede">One-off ticketed nights — a party, a class, a tasting.</p>
+        <ol class="steps">
+          <li>Sidebar → <strong>Events</strong> → <strong>New event</strong>.</li>
+          <li>Set the date, start/end time, venue, and description.</li>
+          <li>Open the event and add one or more <strong>ticket tiers</strong> (e.g. "General Admission" and "VIP"), each with its own price and capacity.</li>
+          <li>Add card and header images the same way as excursions.</li>
+        </ol>
+      </section>
+
+      <section class="step-section" id="admin-bookings">
+        <h3><span class="num">06</span> Bookings &amp; payments</h3>
+        <p class="lede">Three list pages — one per booking type — each showing upcoming bookings by default.</p>
+        <ul class="bullets">
+          <li><strong>Bookings</strong>, <strong>Rental Bookings</strong>, and <strong>Event Bookings</strong> in the sidebar each list every booking of that type from today onward. Narrow by excursion/item/event or by date range using the filters at the top.</li>
+          <li>Select <strong>Cancel</strong> on a row to release its capacity back to availability.</li>
+          <li>Select <strong>Export to Excel</strong> to download the current filtered list as a spreadsheet.</li>
+        </ul>
+        <div class="callout">
+          <strong>Offline payments (bank transfer)</strong> — when a guest chooses to pay by bank transfer, their booking is created but held as <em>Pending</em>. It will <strong>not</strong> confirm on its own. Once you've verified the payment arrived (guests are asked to email their receipt referencing the booking ID), find the booking and select <strong>Mark as paid</strong>. This confirms the booking and emails the guest a confirmation. This button only appears for pending offline bookings.
+        </div>
+      </section>
+
+      <section class="step-section" id="admin-holidays">
+        <h3><span class="num">07</span> Closures &amp; holidays</h3>
+        <p class="lede">Block a date across some or all booking types at once — no need to edit every excursion.</p>
+        <ol class="steps">
+          <li>Sidebar → <strong>Holidays</strong> → add a date and a label (e.g. "Staff training day").</li>
+          <li>Choose which booking types it applies to: excursions, rentals, events — any combination.</li>
+          <li>Guests see a "closed" notice on that date and can't book it; already-made bookings aren't affected automatically.</li>
+        </ol>
+      </section>
+
+      <section class="step-section" id="admin-settings">
+        <h3><span class="num">08</span> Settings</h3>
+        <p class="lede">System-wide configuration, organised into tabs. Super Admin access only.</p>
+        <div class="ref-wrap">
+          <table class="ref">
+            <thead><tr><th>Tab</th><th>What it controls</th></tr></thead>
+            <tbody>
+              <tr><td>General</td><td>Booking system name, timezone, currency — shown across the site and emails.</td></tr>
+              <tr><td>Email (SMTP)</td><td>The mail server used to send confirmations. Send a test email once configured to confirm it works.</td></tr>
+              <tr><td>Stripe</td><td>Turn card payments on/off, and set the publishable key, secret key, and webhook signing secret. Changes apply immediately — no redeploy needed.</td></tr>
+              <tr><td>Offline Payment</td><td>Turn bank-transfer payment on/off, set the instructions guests see (account details), and the email address guests send their payment receipt to.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="lede" style="margin-top:-6px;">If both Stripe and Offline Payment are on, guests choose one at checkout. If only one is on, it's used automatically with no choice shown.</p>
+      </section>
+
+      <section class="step-section" id="admin-users">
+        <h3><span class="num">09</span> Staff &amp; roles</h3>
+        <p class="lede">Every staff member gets a role that controls what they can see and change.</p>
+        <div class="ref-wrap">
+          <table class="ref">
+            <thead><tr><th>Role</th><th>Can do</th></tr></thead>
+            <tbody>
+              <tr><td>Super Admin</td><td>Everything, including Settings and managing other staff accounts.</td></tr>
+              <tr><td>Location Manager</td><td>Manage excursions, rentals, events, holidays, and bookings.</td></tr>
+              <tr><td>Booking Staff</td><td>View and manage bookings — cancel, mark offline payments as paid.</td></tr>
+              <tr><td>Finance</td><td>View bookings and export reports; read-only, can't cancel or edit.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="lede" style="margin-top:-6px;">Manage accounts under sidebar → <strong>Users</strong> (Super Admin only). Every booking-affecting action is recorded in the <strong>Audit Log</strong> with who did it and when.</p>
+      </section>
+    </div>
+
+    <!-- ============ GUEST ============ -->
+    <div class="manual-part" data-audience="guest">
+      <div class="part-head">
+        <span class="tag">Guest manual</span>
+        <h2>Booking your visit</h2>
+      </div>
+
+      <section class="step-section" id="guest-browse">
+        <h3><span class="num">01</span> Finding something to book</h3>
+        <p class="lede">Three kinds of things to book, each on its own page.</p>
+        <ul class="bullets">
+          <li><strong>Excursions</strong> — the homepage lists tours and activities with a set departure time.</li>
+          <li><strong>Beach Chairs</strong> — same-day chair reservations by the water.</li>
+          <li><strong>Events</strong> — one-off ticketed nights, listed by date.</li>
+        </ul>
+        <p class="lede" style="margin-top:-6px;">Select any card to see full details, photos, and pricing before booking.</p>
+      </section>
+
+      <section class="step-section" id="guest-book">
+        <h3><span class="num">02</span> Making a booking</h3>
+        <p class="lede">Every booking follows the same three steps, shown at the top of the booking box.</p>
+        <ol class="steps">
+          <li><strong>Select</strong> — pick a date and time (excursions/chairs) or a ticket type and quantity (events).</li>
+          <li><strong>Your details</strong> — name, email, phone, and room/villa number if you're a resident guest.</li>
+          <li><strong>Payment</strong> — pay by card, or by bank transfer if that's offered.</li>
+        </ol>
+        <div class="callout warn">
+          A greyed-out time or date means it's sold out or closed — pick another. If a whole date shows as closed, the property is unavailable that day.
+        </div>
+      </section>
+
+      <section class="step-section" id="guest-payment">
+        <h3><span class="num">03</span> Paying</h3>
+        <p class="lede">What you see depends on what the property has turned on.</p>
+        <ul class="bullets">
+          <li>If only card payment is offered, you'll go straight to a secure card form after entering your details.</li>
+          <li>If both card and bank transfer are offered, you'll be asked to choose before continuing.</li>
+        </ul>
+      </section>
+
+      <section class="step-section" id="guest-offline">
+        <h3><span class="num">04</span> Paying by bank transfer</h3>
+        <p class="lede">If you choose bank transfer, your spot is held — but not yet confirmed.</p>
+        <ol class="steps">
+          <li>As soon as you choose bank transfer, the account details you need to pay to appear on screen.</li>
+          <li>After submitting, you'll see the same details again along with your booking ID, plus an email address to send your payment receipt to.</li>
+          <li>Send your receipt to that address, mentioning your booking ID, so staff can match it to your booking.</li>
+          <li>You'll get an email confirming your booking once staff verify the payment arrived.</li>
+        </ol>
+      </section>
+
+      <section class="step-section" id="guest-confirmation">
+        <h3><span class="num">05</span> Your confirmation</h3>
+        <p class="lede">What happens once your booking goes through.</p>
+        <ul class="bullets">
+          <li>You're taken to a confirmation page showing your booking reference, date/time, and details — save this page or note the reference.</li>
+          <li>A confirmation email is sent with the same details, plus what to bring and where to meet, if relevant.</li>
+          <li>Paid by bank transfer? The page and email instead say <em>pending</em> until staff verify your payment — a second email follows once confirmed.</li>
+        </ul>
+      </section>
+    </div>
+
+    <footer class="manual-footer">
+      Cocolobo Beach Club booking system — internal manual. Keep this page's link handy for new staff.
+    </footer>
+  </main>
+</div>
+
+<script>
+  (function () {
+    var buttons = document.querySelectorAll('.audience-toggle button');
+    var parts = document.querySelectorAll('.manual-part');
+    var tocGroups = document.querySelectorAll('.toc-group');
+
+    function setAudience(a) {
+      buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.a === a)); });
+      parts.forEach(function (p) {
+        p.hidden = a !== 'all' && p.dataset.audience !== a;
+      });
+      tocGroups.forEach(function (g) {
+        var isAdmin = g.classList.contains('admin');
+        var isGuest = g.classList.contains('guest');
+        g.hidden = a !== 'all' && ((a === 'admin' && !isAdmin) || (a === 'guest' && !isGuest));
+      });
+      try { localStorage.setItem('cocolobo-manual-audience', a); } catch (e) {}
+    }
+
+    buttons.forEach(function (b) {
+      b.addEventListener('click', function () { setAudience(b.dataset.a); });
+    });
+
+    var saved = null;
+    try { saved = localStorage.getItem('cocolobo-manual-audience'); } catch (e) {}
+    if (saved) setAudience(saved);
+  })();
+</script>
+</body>
+</html>

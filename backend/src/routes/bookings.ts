@@ -3,11 +3,7 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { createBooking, markBookingPaid, BookingError } from "../services/bookingService";
 import { createPaymentIntent, isStripeConfigured } from "../services/stripeService";
-import { sendBookingConfirmationEmail } from "../services/emailService";
-
-/** No real Stripe key configured, so skip the network call and auto-confirm — stripeService already
- *  logs a loud startup warning when this is the case, so it's never silent. */
-const useDevPaymentBypass = !isStripeConfigured();
+import { sendBookingConfirmationEmail, sendOfflinePaymentPendingEmail } from "../services/emailService";
 
 const router = Router();
 
@@ -22,6 +18,7 @@ const createBookingSchema = z.object({
   specialRequests: z.string().optional(),
   adultCount: z.number().int().min(0),
   childCount: z.number().int().min(0).optional(),
+  paymentMethod: z.enum(["stripe", "offline"]).optional(),
 });
 
 // POST /api/bookings — creates a PENDING booking + holds capacity,
@@ -33,10 +30,65 @@ router.post("/", async (req, res) => {
   }
 
   try {
+    const location = await prisma.location.findFirst();
+    // No real Stripe key configured (DB or .env), so skip the network call and
+    // auto-confirm — stripeService already logs a startup warning when this is
+    // the case, so it's never silent. Resolved per-request now (not at module
+    // load) since the key can change at runtime via the Settings page.
+    const useDevPaymentBypass = !(await isStripeConfigured());
+
+    if (!useDevPaymentBypass) {
+      if (!location?.stripeEnabled && !location?.offlinePaymentEnabled) {
+        return res.status(400).json({ error: "No payment method is currently available — please contact us." });
+      }
+      const wantsOffline = parsed.data.paymentMethod === "offline";
+      if (wantsOffline && !location?.offlinePaymentEnabled) {
+        return res.status(400).json({ error: "Offline payment isn't available — please pay by card." });
+      }
+      if (!wantsOffline && location?.stripeEnabled === false) {
+        return res.status(400).json({ error: "Card payment isn't available — please choose offline payment." });
+      }
+    }
+
     const booking = await createBooking(parsed.data);
 
+    // Offline is checked first and unconditionally — an explicit guest
+    // choice to pay offline must never be silently overridden by the dev
+    // bypass (which only stands in for the Stripe/card path when no real
+    // key is configured). Offline bookings always stay PENDING until staff
+    // manually verify payment, regardless of Stripe configuration state.
+    if (parsed.data.paymentMethod === "offline") {
+      const [excursion, slot] = await Promise.all([
+        prisma.excursion.findUnique({ where: { id: booking.excursionId } }),
+        prisma.departureSlot.findUnique({ where: { id: booking.slotId } }),
+      ]);
+      await prisma.booking.update({
+        where: { id: booking.id },
+        data: { paymentMethod: "offline", stripePaymentIntentId: `offline_${booking.id}` },
+      });
+      await sendOfflinePaymentPendingEmail({
+        guestEmail: booking.guestEmail,
+        guestName: booking.guestName,
+        title: excursion?.title ?? "your excursion",
+        amountTotal: booking.amountTotal,
+        bookingId: booking.id,
+        details: [
+          slot ? `Date & time: ${slot.date.toISOString().slice(0, 10)} at ${slot.time}` : "",
+          `Guests: ${booking.totalGuests} (Adults: ${booking.adultCount}, Children: ${booking.childCount})`,
+        ].filter(Boolean),
+        instructions: location?.offlinePaymentInstructions,
+        receiptEmail: location?.offlinePaymentReceiptEmail,
+      });
+      return res.status(201).json({
+        bookingId: booking.id,
+        amountTotal: booking.amountTotal,
+        clientSecret: null,
+        offlinePending: true,
+      });
+    }
+
     if (useDevPaymentBypass) {
-      const confirmed = await markBookingPaid(booking.id, `dev_bypass_${booking.id}`);
+      const confirmed = await markBookingPaid(booking.id, `dev_bypass_${booking.id}`, "stripe");
       const excursion = await prisma.excursion.findUnique({ where: { id: confirmed.excursionId } });
       if (excursion) await sendBookingConfirmationEmail(confirmed, excursion);
 
@@ -48,6 +100,7 @@ router.post("/", async (req, res) => {
       });
     }
 
+    await prisma.booking.update({ where: { id: booking.id }, data: { paymentMethod: "stripe" } });
     const paymentIntent = await createPaymentIntent(Number(booking.amountTotal), booking.id);
     res.status(201).json({
       bookingId: booking.id,

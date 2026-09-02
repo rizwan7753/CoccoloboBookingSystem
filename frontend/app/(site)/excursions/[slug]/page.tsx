@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { settingsApi } from "@/lib/settingsApi";
+import { mediaUrl } from "@/lib/media";
 import BookingWidget from "@/components/BookingWidget";
 
 export const revalidate = 60;
@@ -42,7 +43,11 @@ export default async function ExcursionDetailPage({ params }: { params: Promise<
     <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      <div className="relative h-56 overflow-hidden bg-gradient-to-br from-teal-800 via-teal-700 to-cyan-700 sm:h-72">
+      <div
+        className="relative h-56 overflow-hidden bg-gradient-to-br from-teal-800 via-teal-700 to-cyan-700 bg-cover bg-center sm:h-72"
+        style={excursion.headerImageUrl ? { backgroundImage: `url(${mediaUrl(excursion.headerImageUrl)})` } : undefined}
+      >
+        {excursion.headerImageUrl && <div className="pointer-events-none absolute inset-0 bg-black/35" />}
         <div
           className="pointer-events-none absolute inset-0 opacity-20"
           style={{ backgroundImage: "radial-gradient(circle at 75% 30%, white 0, transparent 45%)" }}

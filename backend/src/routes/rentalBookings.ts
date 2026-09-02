@@ -3,11 +3,7 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { createRentalBooking, markRentalBookingPaid, RentalError } from "../services/rentalService";
 import { createRentalPaymentIntent, isStripeConfigured } from "../services/stripeService";
-import { sendRentalBookingConfirmationEmail } from "../services/emailService";
-
-/** No real Stripe key configured, so skip the network call and auto-confirm — stripeService already
- *  logs a loud startup warning when this is the case, so it's never silent. */
-const useDevPaymentBypass = !isStripeConfigured();
+import { sendRentalBookingConfirmationEmail, sendOfflinePaymentPendingEmail } from "../services/emailService";
 
 const router = Router();
 
@@ -22,6 +18,7 @@ const createRentalBookingSchema = z.object({
   roomNumber: z.string().optional(),
   adultCount: z.number().int().min(0),
   childCount: z.number().int().min(0).optional(),
+  paymentMethod: z.enum(["stripe", "offline"]).optional(),
 });
 
 // POST /api/rental-bookings — reserves a specific spot for a specific date.
@@ -32,10 +29,60 @@ router.post("/", async (req, res) => {
   }
 
   try {
+    const location = await prisma.location.findFirst();
+    const useDevPaymentBypass = !(await isStripeConfigured());
+
+    if (!useDevPaymentBypass) {
+      if (!location?.stripeEnabled && !location?.offlinePaymentEnabled) {
+        return res.status(400).json({ error: "No payment method is currently available — please contact us." });
+      }
+      const wantsOffline = parsed.data.paymentMethod === "offline";
+      if (wantsOffline && !location?.offlinePaymentEnabled) {
+        return res.status(400).json({ error: "Offline payment isn't available — please pay by card." });
+      }
+      if (!wantsOffline && location?.stripeEnabled === false) {
+        return res.status(400).json({ error: "Card payment isn't available — please choose offline payment." });
+      }
+    }
+
     const booking = await createRentalBooking(parsed.data);
 
+    // Offline is checked first and unconditionally — see bookings.ts for why.
+    if (parsed.data.paymentMethod === "offline") {
+      const [item, spot, timeSlot] = await Promise.all([
+        prisma.rentalItem.findUnique({ where: { id: booking.rentalItemId } }),
+        prisma.rentalSpot.findUnique({ where: { id: booking.spotId } }),
+        prisma.rentalTimeSlot.findUnique({ where: { id: booking.timeSlotId } }),
+      ]);
+      await prisma.rentalBooking.update({
+        where: { id: booking.id },
+        data: { paymentMethod: "offline", stripePaymentIntentId: `offline_${booking.id}` },
+      });
+      await sendOfflinePaymentPendingEmail({
+        guestEmail: booking.guestEmail,
+        guestName: booking.guestName,
+        title: item?.name ?? "your rental",
+        amountTotal: booking.amountTotal,
+        bookingId: booking.id,
+        details: [
+          `Date: ${booking.date.toISOString().slice(0, 10)}`,
+          timeSlot ? `Time slot: ${timeSlot.label} (${timeSlot.startTime}-${timeSlot.endTime})` : "",
+          spot ? `Spot: ${spot.code}` : "",
+          `Chairs reserved: ${booking.quantity}`,
+        ].filter(Boolean),
+        instructions: location?.offlinePaymentInstructions,
+        receiptEmail: location?.offlinePaymentReceiptEmail,
+      });
+      return res.status(201).json({
+        bookingId: booking.id,
+        amountTotal: booking.amountTotal,
+        clientSecret: null,
+        offlinePending: true,
+      });
+    }
+
     if (useDevPaymentBypass) {
-      const confirmed = await markRentalBookingPaid(booking.id, `dev_bypass_${booking.id}`);
+      const confirmed = await markRentalBookingPaid(booking.id, `dev_bypass_${booking.id}`, "stripe");
       const [item, spot, timeSlot] = await Promise.all([
         prisma.rentalItem.findUnique({ where: { id: confirmed.rentalItemId } }),
         prisma.rentalSpot.findUnique({ where: { id: confirmed.spotId } }),
@@ -51,6 +98,7 @@ router.post("/", async (req, res) => {
       });
     }
 
+    await prisma.rentalBooking.update({ where: { id: booking.id }, data: { paymentMethod: "stripe" } });
     const paymentIntent = await createRentalPaymentIntent(Number(booking.amountTotal), booking.id);
     res.status(201).json({
       bookingId: booking.id,

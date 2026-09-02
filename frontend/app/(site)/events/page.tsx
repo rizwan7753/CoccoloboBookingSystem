@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { eventApi } from "@/lib/eventApi";
 import { settingsApi } from "@/lib/settingsApi";
+import { mediaUrl } from "@/lib/media";
 
 export const revalidate = 60;
 
@@ -52,9 +53,14 @@ export default async function EventsPage() {
                 className="group block overflow-hidden rounded-2xl border border-stone-200 bg-white transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-stone-200/60"
               >
                 <div className="relative h-32 bg-gradient-to-br from-fuchsia-600 to-purple-600">
-                  <svg className="absolute bottom-2 right-3 h-16 w-16 text-white/20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.2}>
-                    <path d="M9 18V5l12-2v13M9 9l12-2M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM18 19a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  {event.cardImageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={mediaUrl(event.cardImageUrl) ?? undefined} alt={event.title} className="h-full w-full object-cover" />
+                  ) : (
+                    <svg className="absolute bottom-2 right-3 h-16 w-16 text-white/20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.2}>
+                      <path d="M9 18V5l12-2v13M9 9l12-2M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM18 19a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
                   <span className="absolute left-4 top-4 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-stone-700">
                     {event.startTime}
                   </span>

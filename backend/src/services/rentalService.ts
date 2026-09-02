@@ -125,10 +125,14 @@ export async function createRentalBooking(input: CreateRentalBookingInput) {
   return booking;
 }
 
-export async function markRentalBookingPaid(bookingId: string, stripePaymentIntentId: string) {
+export async function markRentalBookingPaid(
+  bookingId: string,
+  stripePaymentIntentId: string,
+  paymentMethod: "stripe" | "offline" = "stripe"
+) {
   const booking = await prisma.rentalBooking.update({
     where: { id: bookingId },
-    data: { status: "CONFIRMED", paymentStatus: "PAID", stripePaymentIntentId },
+    data: { status: "CONFIRMED", paymentStatus: "PAID", stripePaymentIntentId, paymentMethod },
   });
   await logAudit(
     { adminUserId: null, actorLabel: "System (payment confirmed)" },
@@ -137,6 +141,24 @@ export async function markRentalBookingPaid(bookingId: string, stripePaymentInte
     bookingId
   );
   return booking;
+}
+
+/** Staff-confirmed offline payment — only valid for bookings actually placed
+ *  via the offline method. */
+export async function markRentalBookingPaidManually(bookingId: string, actor: { adminUserId: string; actorLabel: string }) {
+  const booking = await prisma.rentalBooking.findUnique({ where: { id: bookingId } });
+  if (!booking) throw new RentalError("Booking not found", 404);
+  if (booking.paymentMethod !== "offline") {
+    throw new RentalError("Only offline-payment bookings can be marked as paid manually", 400);
+  }
+  if (booking.paymentStatus === "PAID") throw new RentalError("Booking is already paid", 400);
+
+  const updated = await prisma.rentalBooking.update({
+    where: { id: bookingId },
+    data: { status: "CONFIRMED", paymentStatus: "PAID" },
+  });
+  await logAudit(actor, "rental_booking.marked_paid", "RentalBooking", bookingId);
+  return updated;
 }
 
 /**

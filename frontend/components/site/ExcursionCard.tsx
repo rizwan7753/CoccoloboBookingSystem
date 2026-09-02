@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Excursion } from "@/lib/api";
 import { formatTime12h } from "@/lib/time";
+import { mediaUrl } from "@/lib/media";
 
 // Deterministic gradient per card (no real photography yet) — cycles through
 // a small set of coastal tones so the grid still reads as designed, not random.
@@ -37,15 +38,20 @@ export default function ExcursionCard({ excursion }: { excursion: Excursion }) {
       className="group block overflow-hidden rounded-2xl border border-stone-200 bg-white transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-stone-200/60"
     >
       <div className={`relative h-36 bg-gradient-to-br ${gradientFor(excursion.id)}`}>
-        <svg
-          className="absolute bottom-0 right-0 h-20 w-20 text-white/15"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={1}
-        >
-          <path d="M2 18c1.5 1 3 1 4.5 0s3-1 4.5 0 3 1 4.5 0 3-1 4.5 0M2 13c1.5 1 3 1 4.5 0s3-1 4.5 0 3 1 4.5 0 3-1 4.5 0" strokeLinecap="round" />
-        </svg>
+        {excursion.cardImageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={mediaUrl(excursion.cardImageUrl) ?? undefined} alt={excursion.title} className="h-full w-full object-cover" />
+        ) : (
+          <svg
+            className="absolute bottom-0 right-0 h-20 w-20 text-white/15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1}
+          >
+            <path d="M2 18c1.5 1 3 1 4.5 0s3-1 4.5 0 3 1 4.5 0 3-1 4.5 0M2 13c1.5 1 3 1 4.5 0s3-1 4.5 0 3 1 4.5 0 3-1 4.5 0" strokeLinecap="round" />
+          </svg>
+        )}
         <span className="absolute left-4 top-4 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-stone-700">
           {excursion.durationMinutes} min
         </span>
