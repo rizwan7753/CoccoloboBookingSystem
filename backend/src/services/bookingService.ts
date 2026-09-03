@@ -14,13 +14,11 @@ export class BookingError extends Error {
 }
 
 // NOTE on computeCutoffDateTime/dayOfWeek (imported from lib/dateOnly):
-// departureDate is UTC midnight (see parseDateOnly) and cutoffTime is
-// treated as UTC too, so this is only accurate for a property actually
-// operating in UTC. Proper per-location timezone support (Location.timezone)
-// is deferred to the multi-property phase — tracked as a known MVP gap, not
-// an oversight. Using UTC getters/setters throughout (rather than local
-// getDate/setHours) at least keeps this consistent regardless of the
-// server's own timezone, which is the bug this replaces.
+// departureDate is UTC midnight (see parseDateOnly) and dayOfWeek reads the
+// calendar date directly, so both are timezone-independent by construction.
+// cutoffTime, though, is a property-local wall-clock time — computeCutoffDateTime
+// converts it to the correct UTC instant using Location.timezone (passed in
+// below), so cut-offs land at e.g. 9pm island time regardless of server TZ.
 
 /**
  * Ensures a DepartureSlot row exists for (excursionId, date, time).
@@ -68,9 +66,13 @@ export interface CreateBookingInput {
  * atomically within that lock.
  */
 export async function createBooking(input: CreateBookingInput) {
-  const excursion = await prisma.excursion.findUnique({ where: { id: input.excursionId } });
+  const [excursion, location] = await Promise.all([
+    prisma.excursion.findUnique({ where: { id: input.excursionId } }),
+    prisma.location.findFirst(),
+  ]);
   if (!excursion) throw new BookingError("Excursion not found", 404);
   if (excursion.status !== "ACTIVE") throw new BookingError("This excursion is not currently bookable", 409);
+  const timezone = location?.timezone || "UTC";
 
   const adultCount = input.adultCount ?? 0;
   const childCount = input.childCount ?? 0;
@@ -87,7 +89,7 @@ export async function createBooking(input: CreateBookingInput) {
     throw new BookingError("This excursion does not depart at the requested date/time", 422);
   }
 
-  const cutoff = computeCutoffDateTime(departureDate, excursion.cutoffTime);
+  const cutoff = computeCutoffDateTime(departureDate, excursion.cutoffTime, timezone);
   if (new Date() >= cutoff) {
     throw new BookingError(
       `Booking cut-off has passed. Bookings must be made by ${excursion.cutoffTime} the evening before.`,
@@ -232,11 +234,15 @@ export async function releaseBooking(
 }
 
 export async function getAvailability(excursionId: string, from: Date, to: Date) {
-  const excursion = await prisma.excursion.findUnique({
-    where: { id: excursionId },
-    include: { departureTimes: { where: { isActive: true } } },
-  });
+  const [excursion, location] = await Promise.all([
+    prisma.excursion.findUnique({
+      where: { id: excursionId },
+      include: { departureTimes: { where: { isActive: true } } },
+    }),
+    prisma.location.findFirst(),
+  ]);
   if (!excursion) throw new BookingError("Excursion not found", 404);
+  const timezone = location?.timezone || "UTC";
 
   const existingSlots = await prisma.departureSlot.findMany({
     where: { excursionId, date: { gte: from, lte: to } },
@@ -266,7 +272,7 @@ export async function getAvailability(excursionId: string, from: Date, to: Date)
       const existing = slotMap.get(key);
       const capacity = existing?.capacity ?? excursion.capacityDefault;
       const bookedCount = existing?.bookedCount ?? 0;
-      const cutoff = computeCutoffDateTime(new Date(d), excursion.cutoffTime);
+      const cutoff = computeCutoffDateTime(new Date(d), excursion.cutoffTime, timezone);
       days.push({
         date: dateStr,
         time: dt.time,

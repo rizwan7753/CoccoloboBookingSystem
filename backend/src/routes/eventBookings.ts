@@ -5,6 +5,7 @@ import { createEventBooking, markEventBookingPaid, EventError } from "../service
 import { createEventPaymentIntent, isStripeConfigured } from "../services/stripeService";
 import { chargeNmiToken } from "../services/nmiService";
 import { sendEventBookingConfirmationEmail, sendOfflinePaymentPendingEmail } from "../services/emailService";
+import { streamBookingConfirmationPdf, PdfRow } from "../lib/bookingPdf";
 
 const router = Router();
 
@@ -171,6 +172,37 @@ router.get("/:id", async (req, res) => {
   });
   if (!booking) return res.status(404).json({ error: "Booking not found" });
   res.json(booking);
+});
+
+// GET /api/event-bookings/:id/pdf — see bookings.ts for the pattern.
+router.get("/:id/pdf", async (req, res) => {
+  const [booking, location] = await Promise.all([
+    prisma.eventBooking.findUnique({ where: { id: req.params.id }, include: { event: true, tier: true } }),
+    prisma.location.findFirst(),
+  ]);
+  if (!booking) return res.status(404).json({ error: "Booking not found" });
+
+  const paid = booking.paymentStatus === "PAID";
+  const rows: PdfRow[] = [
+    { label: "Tickets", value: booking.tier ? `${booking.quantity} x ${booking.tier.name}` : String(booking.quantity) },
+    ...(booking.event
+      ? [{ label: "Date & time", value: `${booking.event.eventDate.toISOString().slice(0, 10)} at ${booking.event.startTime}` }]
+      : []),
+    ...(booking.event?.venue ? [{ label: "Venue", value: booking.event.venue }] : []),
+    ...(booking.roomNumber ? [{ label: "Room/Villa", value: booking.roomNumber }] : []),
+    { label: "Payment status", value: paid ? "Paid" : "Pending" },
+    { label: "Total", value: `$${booking.amountTotal}` },
+  ];
+
+  streamBookingConfirmationPdf(res, {
+    type: "event",
+    locationName: location?.name || "Booking confirmation",
+    heading: booking.event?.title ?? "Booking confirmation",
+    guestName: booking.guestName,
+    statusLabel: paid ? "Your tickets are confirmed." : "Your booking is pending payment confirmation.",
+    rows,
+    bookingCode: booking.bookingCode ?? booking.id,
+  });
 });
 
 export default router;

@@ -25,6 +25,7 @@ import adminHolidaysRouter from "./routes/admin/holidays";
 import adminSettingsRouter from "./routes/admin/settings";
 import settingsRouter from "./routes/settings";
 import adminUploadsRouter from "./routes/admin/uploads";
+import bookingLookupRouter from "./routes/bookingLookup";
 
 const app = express();
 
@@ -63,6 +64,7 @@ app.use("/api/admin/holidays", adminHolidaysRouter);
 app.use("/api/admin/settings", adminSettingsRouter);
 app.use("/api/settings", settingsRouter);
 app.use("/api/admin/uploads", adminUploadsRouter);
+app.use("/api/booking-lookup", bookingLookupRouter);
 
 // Centralized error handler (catches anything thrown in async route handlers below Express 5,
 // or rejected promises not already try/caught).

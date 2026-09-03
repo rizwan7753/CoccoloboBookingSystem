@@ -6,10 +6,13 @@ import { PageHeader, cardClass } from "@/components/admin/ui";
 import StatCard from "@/components/admin/StatCard";
 import BookingCalendar from "@/components/admin/BookingCalendar";
 
+// `from`/`to` are local-midnight Date objects — toISOString() would convert
+// to UTC first, shifting the requested range by a day for any timezone
+// ahead of UTC (same bug as BookingCalendar's toISODate, see its comment).
 function monthRange(month: Date) {
   const from = new Date(month.getFullYear(), month.getMonth(), 1);
   const to = new Date(month.getFullYear(), month.getMonth() + 1, 0);
-  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   return { from: iso(from), to: iso(to) };
 }
 

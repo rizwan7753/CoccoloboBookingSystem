@@ -5,6 +5,7 @@ import { createRentalBooking, markRentalBookingPaid, RentalError } from "../serv
 import { createRentalPaymentIntent, isStripeConfigured } from "../services/stripeService";
 import { chargeNmiToken } from "../services/nmiService";
 import { sendRentalBookingConfirmationEmail, sendOfflinePaymentPendingEmail } from "../services/emailService";
+import { streamBookingConfirmationPdf, PdfRow } from "../lib/bookingPdf";
 
 const router = Router();
 
@@ -178,6 +179,42 @@ router.get("/:id", async (req, res) => {
   });
   if (!booking) return res.status(404).json({ error: "Booking not found" });
   res.json(booking);
+});
+
+// GET /api/rental-bookings/:id/pdf — see bookings.ts for the pattern.
+router.get("/:id/pdf", async (req, res) => {
+  const [booking, location] = await Promise.all([
+    prisma.rentalBooking.findUnique({
+      where: { id: req.params.id },
+      include: { rentalItem: true, spot: true, timeSlot: true },
+    }),
+    prisma.location.findFirst(),
+  ]);
+  if (!booking) return res.status(404).json({ error: "Booking not found" });
+
+  const paid = booking.paymentStatus === "PAID";
+  const rows: PdfRow[] = [
+    { label: "Rental", value: booking.rentalItem?.name ?? "" },
+    { label: "Date", value: booking.date.toISOString().slice(0, 10) },
+    ...(booking.timeSlot
+      ? [{ label: "Time slot", value: `${booking.timeSlot.label} (${booking.timeSlot.startTime}-${booking.timeSlot.endTime})` }]
+      : []),
+    ...(booking.spot ? [{ label: "Spot", value: booking.spot.code }] : []),
+    { label: "Chairs reserved", value: String(booking.quantity) },
+    ...(booking.roomNumber ? [{ label: "Room/Villa", value: booking.roomNumber }] : []),
+    { label: "Payment status", value: paid ? "Paid" : "Pending" },
+    { label: "Total", value: `$${booking.amountTotal}` },
+  ];
+
+  streamBookingConfirmationPdf(res, {
+    type: "rental",
+    locationName: location?.name || "Booking confirmation",
+    heading: booking.rentalItem?.name ?? "Booking confirmation",
+    guestName: booking.guestName,
+    statusLabel: paid ? "Your spot is reserved." : "Your booking is pending payment confirmation.",
+    rows,
+    bookingCode: booking.bookingCode ?? booking.id,
+  });
 });
 
 export default router;

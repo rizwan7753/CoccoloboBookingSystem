@@ -145,7 +145,8 @@ export default function AdminHolidaysPage() {
         ) : holidays.length === 0 ? (
           <p className="p-6 text-sm text-stone-400">No holidays or closures configured.</p>
         ) : (
-          <table className="w-full text-left text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[550px] text-left text-sm">
             <thead className="border-b border-stone-100 text-xs uppercase tracking-wide text-stone-400">
               <tr>
                 <th className="px-5 py-3 font-medium">Date</th>
@@ -183,6 +184,7 @@ export default function AdminHolidaysPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

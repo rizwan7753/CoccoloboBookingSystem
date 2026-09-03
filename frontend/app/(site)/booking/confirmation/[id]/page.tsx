@@ -3,6 +3,7 @@ import { api } from "@/lib/api";
 import { notFound } from "next/navigation";
 import { formatTimeRange } from "@/lib/time";
 import { settingsApi } from "@/lib/settingsApi";
+import BookingActions from "@/components/site/BookingActions";
 
 export default async function ConfirmationPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -84,7 +85,9 @@ export default async function ConfirmationPage({ params }: { params: Promise<{ i
         </div>
       </div>
 
-      <Link href="/" className="mt-8 inline-block text-sm font-medium text-teal-700 hover:text-teal-800">
+      <BookingActions pdfPath={`/bookings/${booking.id}/pdf`} />
+
+      <Link href="/" className="mt-8 inline-block text-sm font-medium text-teal-700 hover:text-teal-800 print:hidden">
         ← Browse more excursions
       </Link>
     </main>

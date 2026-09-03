@@ -9,17 +9,22 @@ const router = Router();
 // GET /api/excursions — public listing (active only), each with its next
 // bookable departure so the guest site can show an "upcoming" list.
 router.get("/", async (_req, res) => {
-  const excursions = await prisma.excursion.findMany({
-    where: { status: "ACTIVE" },
-    include: { departureTimes: { where: { isActive: true } } },
-    orderBy: { title: "asc" },
-  });
+  const [excursions, location] = await Promise.all([
+    prisma.excursion.findMany({
+      where: { status: "ACTIVE" },
+      include: { departureTimes: { where: { isActive: true } } },
+      orderBy: { title: "asc" },
+    }),
+    prisma.location.findFirst(),
+  ]);
+  const timezone = location?.timezone || "UTC";
 
   const withNextDeparture = excursions.map((ex) => ({
     ...ex,
     nextDeparture: getNextDeparture(
       ex.departureTimes.map((dt) => ({ time: dt.time, daysOfWeek: dt.daysOfWeek as number[], isActive: dt.isActive })),
-      ex.cutoffTime
+      ex.cutoffTime,
+      timezone
     ),
   }));
 

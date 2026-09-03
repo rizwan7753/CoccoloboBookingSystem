@@ -30,10 +30,15 @@ export default function Sidebar({
   admin,
   systemName,
   onSignOut,
+  open,
+  onClose,
 }: {
   admin: AdminSession | null;
   systemName: string;
   onSignOut: () => void;
+  /** Mobile-only drawer state — the sidebar is always visible at the lg breakpoint and up. */
+  open: boolean;
+  onClose: () => void;
 }) {
   const pathname = usePathname();
 
@@ -51,8 +56,9 @@ export default function Sidebar({
   ];
 
   const otherItems: NavItem[] = [
-    { href: "/admin/users", label: "Staff", icon: "staff", show: canManageUsers(admin?.role) },
-    { href: "/admin/audit-log", label: "Activity log", icon: "activity", show: canManageUsers(admin?.role) },
+    // Hidden for now per request — routes/pages still exist, just unlinked from the nav.
+    { href: "/admin/users", label: "Staff", icon: "staff", show: false },
+    { href: "/admin/audit-log", label: "Activity log", icon: "activity", show: false },
     { href: "/admin/settings", label: "Settings", icon: "settings", show: canManageUsers(admin?.role) },
   ];
 
@@ -67,6 +73,7 @@ export default function Sidebar({
         <Link
           key={item.href}
           href={item.href}
+          onClick={onClose}
           className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
             isActive(item.href) ? "bg-teal-50 text-teal-800" : "text-stone-600 hover:bg-stone-50 hover:text-stone-900"
           }`}
@@ -78,20 +85,36 @@ export default function Sidebar({
   }
 
   return (
-    <aside className="flex h-screen w-64 flex-shrink-0 flex-col overflow-y-auto border-r border-stone-200 bg-white">
+    <>
+      {open && <div className="fixed inset-0 z-40 bg-black/40 lg:hidden" onClick={onClose} />}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex h-screen w-64 flex-shrink-0 flex-col overflow-y-auto border-r border-stone-200 bg-white transition-transform duration-200 lg:static lg:z-auto lg:translate-x-0 ${
+          open ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
       <div className="flex items-center gap-2 px-5 py-5">
         <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-teal-700 text-sm font-bold text-white">
           {systemName.slice(0, 1).toUpperCase()}
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-stone-900">{systemName}</p>
           <p className="text-xs text-stone-400">Booking Admin</p>
         </div>
+        <button
+          onClick={onClose}
+          aria-label="Close menu"
+          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-stone-500 hover:bg-stone-100 lg:hidden"
+        >
+          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+            <path d="M6 6l12 12M18 6 6 18" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
       </div>
 
       <nav className="flex-1 space-y-5 px-3">
         <Link
           href="/admin"
+          onClick={onClose}
           className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
             pathname === "/admin" ? "bg-teal-50 text-teal-800" : "text-stone-600 hover:bg-stone-50 hover:text-stone-900"
           }`}
@@ -140,6 +163,7 @@ export default function Sidebar({
           Sign out
         </button>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }

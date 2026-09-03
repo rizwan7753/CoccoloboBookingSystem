@@ -5,8 +5,16 @@ import { DashboardDay } from "@/lib/adminApi";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+// `d` is always a local-midnight Date built from (year, monthIndex, day) —
+// going through toISOString() here would convert to UTC first, shifting the
+// date by a day for any timezone ahead of UTC (the day number shown on the
+// cell wouldn't match the date the "view bookings" link actually opens).
+// Reading the local getters directly keeps the two in sync.
 function toISODate(d: Date) {
-  return d.toISOString().slice(0, 10);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 export default function BookingCalendar({
@@ -103,7 +111,7 @@ export default function BookingCalendar({
                   )}
                   {info.eventBookings > 0 && (
                     <Link
-                      href="/admin/event-bookings"
+                      href={`/admin/event-bookings?date=${key}`}
                       className="truncate rounded bg-fuchsia-100 px-1 py-0.5 text-[10px] font-medium text-fuchsia-800 hover:bg-fuchsia-200"
                     >
                       {info.eventBookings} event

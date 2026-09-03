@@ -182,7 +182,8 @@ export default function StaffPage() {
         {loading ? (
           <p className="p-6 text-sm text-stone-400">Loading…</p>
         ) : (
-          <table className="w-full text-left text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[650px] text-left text-sm">
             <thead className="border-b border-stone-100 text-xs uppercase tracking-wide text-stone-400">
               <tr>
                 <th className="px-5 py-3 font-medium">Name</th>
@@ -294,6 +295,7 @@ export default function StaffPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

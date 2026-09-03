@@ -44,7 +44,8 @@ export default function AdminExcursionsPage() {
         ) : excursions.length === 0 ? (
           <p className="p-6 text-sm text-stone-400">No excursions yet.</p>
         ) : (
-          <table className="w-full text-left text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[650px] text-left text-sm">
             <thead className="border-b border-stone-100 text-xs uppercase tracking-wide text-stone-400">
               <tr>
                 <th className="px-5 py-3 font-medium">Title</th>
@@ -83,6 +84,7 @@ export default function AdminExcursionsPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

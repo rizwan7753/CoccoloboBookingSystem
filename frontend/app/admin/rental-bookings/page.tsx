@@ -6,8 +6,11 @@ import { adminApi, AdminRentalItem, AdminRentalBooking, getStoredAdmin, canCance
 import { PageHeader, Badge, cardClass, primaryButtonClass, inputClass } from "@/components/admin/ui";
 import { DateRangeFilter } from "@/components/admin/DateRangeFilter";
 
+// toISOString() gives UTC's calendar date, which can be a day off from the
+// browser's actual local "today" — read the local getters instead.
 function todayISO() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 export default function RentalBookingsPage() {
@@ -22,8 +25,9 @@ function RentalBookingsPageInner() {
   const searchParams = useSearchParams();
   const [items, setItems] = useState<AdminRentalItem[]>([]);
   const [itemId, setItemId] = useState(searchParams.get("rentalItemId") || "");
-  const [from, setFrom] = useState(searchParams.get("date") || todayISO());
-  const [to, setTo] = useState("");
+  const dateParam = searchParams.get("date");
+  const [from, setFrom] = useState(dateParam || todayISO());
+  const [to, setTo] = useState(dateParam || "");
   const [bookings, setBookings] = useState<AdminRentalBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
@@ -132,55 +136,67 @@ function RentalBookingsPageInner() {
           {bookings.length === 0 ? (
             <p className="p-6 text-sm text-stone-400">No reservations found for this range.</p>
           ) : (
-            <table className="w-full text-left text-sm">
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[800px] text-left text-sm">
               <thead className="border-b border-stone-100 text-xs uppercase tracking-wide text-stone-400">
                 <tr>
-                  <th className="px-5 py-3 font-medium">Reference</th>
-                  {!itemId && <th className="px-5 py-3 font-medium">Item</th>}
-                  <th className="px-5 py-3 font-medium">Date</th>
-                  <th className="px-5 py-3 font-medium">Spot</th>
-                  <th className="px-5 py-3 font-medium">Guest</th>
-                  <th className="px-5 py-3 font-medium">Chairs</th>
-                  <th className="px-5 py-3 font-medium">Payment</th>
-                  {canCancel && <th className="px-5 py-3"></th>}
+                  <th className="px-4 py-2.5 font-medium">Reference</th>
+                  {!itemId && <th className="max-w-[160px] px-4 py-2.5 font-medium">Item</th>}
+                  <th className="px-4 py-2.5 font-medium">Date</th>
+                  <th className="px-4 py-2.5 font-medium">Spot</th>
+                  <th className="max-w-[180px] px-4 py-2.5 font-medium">Guest</th>
+                  <th className="px-4 py-2.5 font-medium">Chairs</th>
+                  <th className="px-4 py-2.5 font-medium">Payment</th>
+                  {canCancel && <th className="px-4 py-2.5"></th>}
                 </tr>
               </thead>
               <tbody>
                 {bookings.map((b) => (
-                  <tr key={b.id} className="border-b border-stone-50 last:border-0 hover:bg-stone-50/60">
-                    <td className="px-5 py-3 font-mono text-xs text-stone-500">{b.bookingCode ?? b.id}</td>
-                    {!itemId && <td className="px-5 py-3 text-stone-600">{b.rentalItem?.name}</td>}
-                    <td className="px-5 py-3 text-stone-600">{b.date.slice(0, 10)}</td>
-                    <td className="px-5 py-3 font-medium text-stone-900">{b.spot.code}</td>
-                    <td className="px-5 py-3 text-stone-600">
-                      {b.guestName}
-                      <div className="text-xs text-stone-400">{b.guestEmail}</div>
+                  <tr key={b.id} className="border-b border-stone-50 align-top last:border-0 hover:bg-stone-50/60">
+                    <td className="max-w-[130px] truncate px-4 py-2 font-mono text-xs text-stone-500" title={b.bookingCode ?? b.id}>
+                      {b.bookingCode ?? b.id}
                     </td>
-                    <td className="px-5 py-3 text-stone-600">
+                    {!itemId && (
+                      <td className="max-w-[160px] truncate px-4 py-2 text-stone-600" title={b.rentalItem?.name}>
+                        {b.rentalItem?.name}
+                      </td>
+                    )}
+                    <td className="whitespace-nowrap px-4 py-2 text-stone-600">{b.date.slice(0, 10)}</td>
+                    <td className="px-4 py-2 font-medium text-stone-900">{b.spot.code}</td>
+                    <td className="max-w-[180px] truncate px-4 py-2 text-stone-600" title={`${b.guestName} · ${b.guestEmail}`}>
+                      {b.guestName}
+                      <div className="truncate text-xs text-stone-400">{b.guestEmail}</div>
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-2 text-stone-600">
                       {b.quantity} <span className="text-stone-400">({b.adultCount}A / {b.childCount}C)</span>
                     </td>
-                    <td className="px-5 py-3">
-                      <Badge status={b.paymentStatus} />
+                    <td className="px-4 py-2">
+                      <Badge status={b.status === "CANCELLED" ? "CANCELLED" : b.paymentStatus} />
                     </td>
                     {canCancel && (
-                      <td className="px-5 py-3 text-right">
-                        {b.paymentMethod === "offline" && b.paymentStatus !== "PAID" && (
-                          <button
-                            onClick={() => handleMarkPaid(b.id)}
-                            className="mr-3 text-emerald-700 hover:text-emerald-900"
-                          >
-                            Mark as paid
-                          </button>
+                      <td className="whitespace-nowrap px-4 py-2 text-right">
+                        {b.status !== "CANCELLED" && (
+                          <>
+                            {b.paymentMethod === "offline" && b.paymentStatus !== "PAID" && (
+                              <button
+                                onClick={() => handleMarkPaid(b.id)}
+                                className="mr-3 text-emerald-700 hover:text-emerald-900"
+                              >
+                                Mark as paid
+                              </button>
+                            )}
+                            <button onClick={() => handleCancel(b.id)} className="text-rose-600 hover:text-rose-800">
+                              Cancel
+                            </button>
+                          </>
                         )}
-                        <button onClick={() => handleCancel(b.id)} className="text-rose-600 hover:text-rose-800">
-                          Cancel
-                        </button>
                       </td>
                     )}
                   </tr>
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       )}

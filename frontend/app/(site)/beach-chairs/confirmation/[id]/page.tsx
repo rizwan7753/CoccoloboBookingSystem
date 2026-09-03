@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { rentalApi } from "@/lib/rentalApi";
 import { settingsApi } from "@/lib/settingsApi";
+import BookingActions from "@/components/site/BookingActions";
 
 export default async function RentalConfirmationPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -74,7 +75,9 @@ export default async function RentalConfirmationPage({ params }: { params: Promi
         </div>
       </div>
 
-      <Link href="/beach-chairs" className="mt-8 inline-block text-sm font-medium text-amber-700 hover:text-amber-800">
+      <BookingActions pdfPath={`/rental-bookings/${booking.id}/pdf`} />
+
+      <Link href="/beach-chairs" className="mt-8 inline-block text-sm font-medium text-amber-700 hover:text-amber-800 print:hidden">
         ← Browse more rentals
       </Link>
     </main>

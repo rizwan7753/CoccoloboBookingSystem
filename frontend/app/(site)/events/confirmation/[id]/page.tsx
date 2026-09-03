@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { eventApi } from "@/lib/eventApi";
 import { settingsApi } from "@/lib/settingsApi";
+import BookingActions from "@/components/site/BookingActions";
 
 export default async function EventConfirmationPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -69,7 +70,9 @@ export default async function EventConfirmationPage({ params }: { params: Promis
         </div>
       </div>
 
-      <Link href="/events" className="mt-8 inline-block text-sm font-medium text-fuchsia-700 hover:text-fuchsia-800">
+      <BookingActions pdfPath={`/event-bookings/${booking.id}/pdf`} />
+
+      <Link href="/events" className="mt-8 inline-block text-sm font-medium text-fuchsia-700 hover:text-fuchsia-800 print:hidden">
         ← Browse more events
       </Link>
     </main>

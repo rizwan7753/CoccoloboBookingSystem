@@ -5,6 +5,7 @@ import { createBooking, markBookingPaid, BookingError } from "../services/bookin
 import { createPaymentIntent, isStripeConfigured } from "../services/stripeService";
 import { chargeNmiToken } from "../services/nmiService";
 import { sendBookingConfirmationEmail, sendOfflinePaymentPendingEmail } from "../services/emailService";
+import { streamBookingConfirmationPdf, PdfRow } from "../lib/bookingPdf";
 
 const router = Router();
 
@@ -187,6 +188,39 @@ router.get("/:id", async (req, res) => {
   });
   if (!booking) return res.status(404).json({ error: "Booking not found" });
   res.json(booking);
+});
+
+// GET /api/bookings/:id/pdf — printable/downloadable confirmation, same data
+// shown on the confirmation page. Public like that page (reachable by the
+// same unguessable booking id, or via booking-lookup).
+router.get("/:id/pdf", async (req, res) => {
+  const [booking, location] = await Promise.all([
+    prisma.booking.findUnique({ where: { id: req.params.id }, include: { excursion: true, slot: true } }),
+    prisma.location.findFirst(),
+  ]);
+  if (!booking) return res.status(404).json({ error: "Booking not found" });
+
+  const paid = booking.paymentStatus === "PAID";
+  const rows: PdfRow[] = [
+    { label: "Excursion", value: booking.excursion?.title ?? "" },
+    ...(booking.slot
+      ? [{ label: "Date & time", value: `${booking.slot.date.toISOString().slice(0, 10)} at ${booking.slot.time}` }]
+      : []),
+    { label: "Guests", value: `${booking.totalGuests} (${booking.adultCount} adult, ${booking.childCount} child)` },
+    ...(booking.roomNumber ? [{ label: "Room/Villa", value: booking.roomNumber }] : []),
+    { label: "Payment status", value: paid ? "Paid" : "Pending" },
+    { label: "Total", value: `$${booking.amountTotal}` },
+  ];
+
+  streamBookingConfirmationPdf(res, {
+    type: "excursion",
+    locationName: location?.name || "Booking confirmation",
+    heading: booking.excursion?.title ?? "Booking confirmation",
+    guestName: booking.guestName,
+    statusLabel: paid ? "Your booking is confirmed." : "Your booking is pending payment confirmation.",
+    rows,
+    bookingCode: booking.bookingCode ?? booking.id,
+  });
 });
 
 export default router;

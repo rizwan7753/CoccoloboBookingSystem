@@ -4,17 +4,125 @@ import { useEffect, useState } from "react";
 import { adminApi, AdminSettings } from "@/lib/adminApi";
 import { PageHeader, cardClass, inputClass, primaryButtonClass } from "@/components/admin/ui";
 
-const COMMON_TIMEZONES = [
-  "America/St_Thomas",
-  "America/New_York",
-  "America/Chicago",
-  "America/Denver",
-  "America/Los_Angeles",
-  "America/Toronto",
-  "America/Puerto_Rico",
-  "UTC",
-  "Europe/London",
+const TIMEZONE_GROUPS: { label: string; zones: string[] }[] = [
+  {
+    label: "Caribbean",
+    zones: [
+      "America/St_Thomas",
+      "America/Puerto_Rico",
+      "America/Barbados",
+      "America/Jamaica",
+      "America/Nassau",
+      "America/Santo_Domingo",
+      "America/Port_of_Spain",
+      "America/Grand_Turk",
+    ],
+  },
+  {
+    label: "North America",
+    zones: [
+      "America/New_York",
+      "America/Chicago",
+      "America/Denver",
+      "America/Phoenix",
+      "America/Los_Angeles",
+      "America/Anchorage",
+      "America/Toronto",
+      "America/Vancouver",
+      "America/Mexico_City",
+      "Pacific/Honolulu",
+    ],
+  },
+  {
+    label: "South America",
+    zones: [
+      "America/Bogota",
+      "America/Lima",
+      "America/Caracas",
+      "America/Santiago",
+      "America/Sao_Paulo",
+      "America/Buenos_Aires",
+    ],
+  },
+  {
+    label: "Europe",
+    zones: [
+      "Europe/London",
+      "Europe/Dublin",
+      "Europe/Lisbon",
+      "Europe/Madrid",
+      "Europe/Paris",
+      "Europe/Berlin",
+      "Europe/Rome",
+      "Europe/Amsterdam",
+      "Europe/Zurich",
+      "Europe/Athens",
+      "Europe/Istanbul",
+      "Europe/Moscow",
+    ],
+  },
+  {
+    label: "Africa & Middle East",
+    zones: [
+      "Africa/Casablanca",
+      "Africa/Lagos",
+      "Africa/Cairo",
+      "Africa/Johannesburg",
+      "Africa/Nairobi",
+      "Asia/Jerusalem",
+      "Asia/Dubai",
+      "Asia/Riyadh",
+    ],
+  },
+  {
+    label: "Asia",
+    zones: [
+      "Asia/Karachi",
+      "Asia/Kolkata",
+      "Asia/Dhaka",
+      "Asia/Bangkok",
+      "Asia/Jakarta",
+      "Asia/Singapore",
+      "Asia/Hong_Kong",
+      "Asia/Shanghai",
+      "Asia/Manila",
+      "Asia/Tokyo",
+      "Asia/Seoul",
+    ],
+  },
+  {
+    label: "Australia & Pacific",
+    zones: [
+      "Australia/Perth",
+      "Australia/Adelaide",
+      "Australia/Sydney",
+      "Australia/Brisbane",
+      "Pacific/Auckland",
+      "Pacific/Fiji",
+      "Pacific/Guam",
+    ],
+  },
+  {
+    label: "Other",
+    zones: ["UTC"],
+  },
 ];
+const COMMON_TIMEZONES = TIMEZONE_GROUPS.flatMap((g) => g.zones);
+
+// Current UTC offset for a zone, e.g. "UTC-04:00" — computed live (not
+// hardcoded) so it stays correct across DST changes.
+function offsetLabel(tz: string): string {
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", { timeZone: tz, timeZoneName: "shortOffset" }).formatToParts(new Date());
+    const raw = (parts.find((p) => p.type === "timeZoneName")?.value ?? "").replace("GMT", "UTC");
+    const match = raw.match(/^UTC([+-])(\d{1,2})(?::(\d{2}))?$/);
+    if (!match) return raw;
+    const [, sign, hh, mm] = match;
+    return `UTC${sign}${hh.padStart(2, "0")}:${mm ?? "00"}`;
+  } catch {
+    return "";
+  }
+}
 
 const COMMON_CURRENCIES = ["USD", "EUR", "GBP", "CAD", "XCD"];
 
@@ -187,11 +295,19 @@ export default function AdminSettingsPage() {
               <div>
                 <label className="mb-1 block text-sm font-medium text-stone-700">Timezone</label>
                 <select value={timezone} onChange={(e) => setTimezone(e.target.value)} className={inputClass}>
-                  {!COMMON_TIMEZONES.includes(timezone) && <option value={timezone}>{timezone}</option>}
-                  {COMMON_TIMEZONES.map((tz) => (
-                    <option key={tz} value={tz}>
-                      {tz}
+                  {!COMMON_TIMEZONES.includes(timezone) && timezone && (
+                    <option value={timezone}>
+                      {timezone} ({offsetLabel(timezone)})
                     </option>
+                  )}
+                  {TIMEZONE_GROUPS.map((group) => (
+                    <optgroup key={group.label} label={group.label}>
+                      {group.zones.map((tz) => (
+                        <option key={tz} value={tz}>
+                          {tz} ({offsetLabel(tz)})
+                        </option>
+                      ))}
+                    </optgroup>
                   ))}
                 </select>
               </div>

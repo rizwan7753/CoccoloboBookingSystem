@@ -14,6 +14,7 @@ export interface NextDeparture {
 export function getNextDeparture(
   departureTimes: { time: string; daysOfWeek: number[]; isActive: boolean }[],
   cutoffTime: string,
+  timezone: string,
   daysAhead = 21
 ): NextDeparture | null {
   const now = new Date();
@@ -29,7 +30,7 @@ export function getNextDeparture(
     const candidates = active.filter((dt) => dt.daysOfWeek.includes(dow)).sort((a, b) => a.time.localeCompare(b.time));
 
     for (const dt of candidates) {
-      const cutoff = computeCutoffDateTime(d, cutoffTime);
+      const cutoff = computeCutoffDateTime(d, cutoffTime, timezone);
       if (now < cutoff) {
         return { date: d.toISOString().slice(0, 10), time: dt.time };
       }
