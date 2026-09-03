@@ -80,7 +80,7 @@ router.post("/", async (req, res) => {
         guestName: booking.guestName,
         title: excursion?.title ?? "your excursion",
         amountTotal: booking.amountTotal,
-        bookingId: booking.id,
+        bookingId: booking.bookingCode ?? booking.id,
         details: [
           slot ? `Date & time: ${slot.date.toISOString().slice(0, 10)} at ${slot.time}` : "",
           `Guests: ${booking.totalGuests} (Adults: ${booking.adultCount}, Children: ${booking.childCount})`,
@@ -90,6 +90,7 @@ router.post("/", async (req, res) => {
       });
       return res.status(201).json({
         bookingId: booking.id,
+        bookingCode: booking.bookingCode,
         amountTotal: booking.amountTotal,
         clientSecret: null,
         offlinePending: true,
@@ -109,6 +110,7 @@ router.post("/", async (req, res) => {
       });
       return res.status(201).json({
         bookingId: booking.id,
+        bookingCode: booking.bookingCode,
         amountTotal: booking.amountTotal,
         clientSecret: null,
         nmiPending: true,
@@ -122,6 +124,7 @@ router.post("/", async (req, res) => {
 
       return res.status(201).json({
         bookingId: confirmed.id,
+        bookingCode: confirmed.bookingCode,
         amountTotal: confirmed.amountTotal,
         clientSecret: null,
         devBypass: true,
@@ -132,6 +135,7 @@ router.post("/", async (req, res) => {
     const paymentIntent = await createPaymentIntent(Number(booking.amountTotal), booking.id);
     res.status(201).json({
       bookingId: booking.id,
+      bookingCode: booking.bookingCode,
       amountTotal: booking.amountTotal,
       clientSecret: paymentIntent.client_secret,
     });

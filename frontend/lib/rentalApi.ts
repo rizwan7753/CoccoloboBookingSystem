@@ -41,6 +41,7 @@ export interface RentalAvailability {
 
 export interface RentalBooking {
   id: string;
+  bookingCode?: string | null;
   rentalItemId: string;
   spotId: string;
   timeSlotId: string;
@@ -99,6 +100,7 @@ export const rentalApi = {
   }) =>
     request<{
       bookingId: string;
+      bookingCode?: string | null;
       amountTotal: string;
       clientSecret: string | null;
       devBypass?: boolean;

@@ -67,6 +67,7 @@ export default function BookingWidget({ excursion }: { excursion: Excursion }) {
   const [error, setError] = useState<string | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [bookingId, setBookingId] = useState<string | null>(null);
+  const [bookingCode, setBookingCode] = useState<string | null>(null);
   const [offlinePending, setOfflinePending] = useState(false);
   const [nmiPending, setNmiPending] = useState(false);
 
@@ -127,6 +128,7 @@ export default function BookingWidget({ excursion }: { excursion: Excursion }) {
       if (result.offlinePending) {
         setOfflinePending(true);
         setBookingId(result.bookingId);
+        setBookingCode(result.bookingCode ?? null);
         setStep("payment");
         return;
       }
@@ -346,7 +348,8 @@ export default function BookingWidget({ excursion }: { excursion: Excursion }) {
             )}
             {settings?.offlinePaymentReceiptEmail && (
               <p className="mt-2">
-                Send your payment receipt — referencing booking ID <span className="font-semibold">{bookingId}</span> —
+                Send your payment receipt — referencing booking ID{" "}
+                <span className="font-semibold">{bookingCode ?? bookingId}</span> —
                 to{" "}
                 <a href={`mailto:${settings.offlinePaymentReceiptEmail}`} className="font-semibold underline">
                   {settings.offlinePaymentReceiptEmail}

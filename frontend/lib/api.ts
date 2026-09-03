@@ -37,6 +37,7 @@ export interface AvailabilityDay {
 
 export interface Booking {
   id: string;
+  bookingCode?: string | null;
   excursionId: string;
   slotId: string;
   guestName: string;
@@ -91,6 +92,7 @@ export const api = {
   }) =>
     request<{
       bookingId: string;
+      bookingCode?: string | null;
       amountTotal: string;
       clientSecret: string | null;
       devBypass?: boolean;

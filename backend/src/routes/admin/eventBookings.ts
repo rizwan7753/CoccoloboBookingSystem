@@ -43,6 +43,7 @@ router.get("/export", requireRole(...VIEW_ROLES), async (req, res) => {
     `event-bookings-${new Date().toISOString().slice(0, 10)}.xlsx`,
     "Event Bookings",
     [
+      { header: "Reference", key: "bookingCode", width: 24 },
       { header: "Event", key: "event", width: 26 },
       { header: "Event date", key: "eventDate", width: 12 },
       { header: "Ticket tier", key: "tier", width: 18 },
@@ -61,6 +62,7 @@ router.get("/export", requireRole(...VIEW_ROLES), async (req, res) => {
       { header: "Created", key: "createdAt", width: 20 },
     ],
     bookings.map((b) => ({
+      bookingCode: b.bookingCode ?? "",
       event: b.event?.title ?? "",
       eventDate: b.event?.eventDate.toISOString().slice(0, 10) ?? "",
       tier: b.tier?.name ?? "",

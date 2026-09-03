@@ -29,6 +29,7 @@ export interface TierAvailability {
 
 export interface EventBooking {
   id: string;
+  bookingCode?: string | null;
   eventId: string;
   tierId: string;
   guestName: string;
@@ -76,6 +77,7 @@ export const eventApi = {
   }) =>
     request<{
       bookingId: string;
+      bookingCode?: string | null;
       amountTotal: string;
       clientSecret: string | null;
       devBypass?: boolean;

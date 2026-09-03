@@ -91,6 +91,7 @@ export interface AdminRentalItemInput {
 
 export interface AdminRentalBooking {
   id: string;
+  bookingCode?: string | null;
   rentalItemId: string;
   spotId: string;
   timeSlotId: string;
@@ -156,6 +157,7 @@ export interface AdminEventInput {
 
 export interface AdminEventBooking {
   id: string;
+  bookingCode?: string | null;
   eventId: string;
   tierId: string;
   guestName: string;
@@ -259,6 +261,7 @@ export interface AdminUserInput {
 
 export interface AdminUserUpdateInput {
   name?: string;
+  email?: string;
   role?: AdminRole;
   locationId?: string | null;
   isActive?: boolean;

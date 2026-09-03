@@ -53,7 +53,7 @@ export default async function ConfirmationPage({ params }: { params: Promise<{ i
           {settings.offlinePaymentReceiptEmail && (
             <p className={settings.offlinePaymentInstructions ? "mt-3" : ""}>
               Send your payment receipt — referencing booking ID{" "}
-              <span className="font-semibold">{booking.id}</span> — to{" "}
+              <span className="font-semibold">{booking.bookingCode ?? booking.id}</span> — to{" "}
               <a href={`mailto:${settings.offlinePaymentReceiptEmail}`} className="font-semibold underline">
                 {settings.offlinePaymentReceiptEmail}
               </a>
@@ -80,7 +80,7 @@ export default async function ConfirmationPage({ params }: { params: Promise<{ i
         <Row label="Total" value={`$${booking.amountTotal}`} bold />
         <div className="flex justify-between py-1.5">
           <span className="text-stone-400">Booking reference</span>
-          <span className="font-mono text-xs text-stone-500">{booking.id}</span>
+          <span className="font-mono text-xs text-stone-500">{booking.bookingCode ?? booking.id}</span>
         </div>
       </div>
 

@@ -2,6 +2,7 @@ import { Prisma, BookingSource } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { logAudit } from "../lib/auditLog";
 import { getHolidayForDate } from "./holidayService";
+import { nextBookingCode } from "../lib/bookingCode";
 
 export class EventError extends Error {
   status: number;
@@ -71,11 +72,13 @@ export async function createEventBooking(input: CreateEventBookingInput) {
     }
 
     const amountTotal = Number(tier.price) * quantity;
+    const bookingCode = await nextBookingCode(tx, "EVT", event.eventDate);
 
     const created = await tx.eventBooking.create({
       data: {
         eventId: event.id,
         tierId: tier.id,
+        bookingCode,
         guestName: input.guestName,
         guestEmail: input.guestEmail,
         guestPhone: input.guestPhone,

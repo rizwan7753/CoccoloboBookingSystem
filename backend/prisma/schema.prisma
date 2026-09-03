@@ -239,6 +239,7 @@ model Booking {
   paymentStatus    PaymentStatus @default(PENDING)
   stripePaymentIntentId String?  @unique
   paymentMethod    String?       // "stripe" | "offline" — informational only, not indexed
+  bookingCode      String?       @unique // human-readable reference, e.g. COCO_EXC_20260903_0007 — see lib/bookingCode.ts
 
   source           BookingSource @default(DIRECT_WEBSITE)
   internalNotes    String?       @db.Text
@@ -342,6 +343,7 @@ model RentalBooking {
   paymentStatus  PaymentStatus @default(PENDING)
   stripePaymentIntentId String? @unique
   paymentMethod  String?       // "stripe" | "offline" — informational only, not indexed
+  bookingCode    String?       @unique // human-readable reference, e.g. COCO_BCH_20260903_0007 — see lib/bookingCode.ts
 
   source         BookingSource @default(DIRECT_WEBSITE)
 
@@ -430,6 +432,7 @@ model EventBooking {
   paymentStatus  PaymentStatus @default(PENDING)
   stripePaymentIntentId String? @unique
   paymentMethod  String?       // "stripe" | "offline" — informational only, not indexed
+  bookingCode    String?       @unique // human-readable reference, e.g. COCO_EVT_20260903_0007 — see lib/bookingCode.ts
 
   source         BookingSource @default(DIRECT_WEBSITE)
 
@@ -476,4 +479,17 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([adminUserId])
   @@map("audit_logs")
+}
+
+// Backs the human-readable booking codes (COCO_<type>_<yyyymmdd>_<serial>) —
+// id is the deterministic "<type>_<yyyymmdd>" key, so an atomic
+// INSERT...ON DUPLICATE KEY UPDATE against it (see lib/bookingCode.ts) is
+// enough to hand out a gapless per-day-per-type serial with no extra locking.
+model BookingSequence {
+  id      String @id
+  type    String
+  dateKey String
+  counter Int    @default(0)
+
+  @@map("booking_sequences")
 }

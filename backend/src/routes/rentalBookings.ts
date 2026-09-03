@@ -68,7 +68,7 @@ router.post("/", async (req, res) => {
         guestName: booking.guestName,
         title: item?.name ?? "your rental",
         amountTotal: booking.amountTotal,
-        bookingId: booking.id,
+        bookingId: booking.bookingCode ?? booking.id,
         details: [
           `Date: ${booking.date.toISOString().slice(0, 10)}`,
           timeSlot ? `Time slot: ${timeSlot.label} (${timeSlot.startTime}-${timeSlot.endTime})` : "",
@@ -80,6 +80,7 @@ router.post("/", async (req, res) => {
       });
       return res.status(201).json({
         bookingId: booking.id,
+        bookingCode: booking.bookingCode,
         amountTotal: booking.amountTotal,
         clientSecret: null,
         offlinePending: true,
@@ -95,6 +96,7 @@ router.post("/", async (req, res) => {
       });
       return res.status(201).json({
         bookingId: booking.id,
+        bookingCode: booking.bookingCode,
         amountTotal: booking.amountTotal,
         clientSecret: null,
         nmiPending: true,
@@ -112,6 +114,7 @@ router.post("/", async (req, res) => {
 
       return res.status(201).json({
         bookingId: confirmed.id,
+        bookingCode: confirmed.bookingCode,
         amountTotal: confirmed.amountTotal,
         clientSecret: null,
         devBypass: true,
@@ -122,6 +125,7 @@ router.post("/", async (req, res) => {
     const paymentIntent = await createRentalPaymentIntent(Number(booking.amountTotal), booking.id);
     res.status(201).json({
       bookingId: booking.id,
+      bookingCode: booking.bookingCode,
       amountTotal: booking.amountTotal,
       clientSecret: paymentIntent.client_secret,
     });

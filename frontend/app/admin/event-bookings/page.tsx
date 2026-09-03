@@ -122,6 +122,7 @@ function EventBookingsPageInner() {
             <table className="w-full text-left text-sm">
               <thead className="border-b border-stone-100 text-xs uppercase tracking-wide text-stone-400">
                 <tr>
+                  <th className="px-5 py-3 font-medium">Reference</th>
                   {!eventId && <th className="px-5 py-3 font-medium">Event</th>}
                   <th className="px-5 py-3 font-medium">Guest</th>
                   <th className="px-5 py-3 font-medium">Tier</th>
@@ -133,6 +134,7 @@ function EventBookingsPageInner() {
               <tbody>
                 {bookings.map((b) => (
                   <tr key={b.id} className="border-b border-stone-50 last:border-0 hover:bg-stone-50/60">
+                    <td className="px-5 py-3 font-mono text-xs text-stone-500">{b.bookingCode ?? b.id}</td>
                     {!eventId && (
                       <td className="px-5 py-3 text-stone-600">
                         {b.event?.title}

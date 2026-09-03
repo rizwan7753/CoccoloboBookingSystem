@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import {
   adminApi,
   AdminUserSummary,
@@ -26,6 +26,13 @@ export default function StaffPage() {
   const [role, setRole] = useState<AdminRole>("BOOKING_STAFF");
   const [locationId, setLocationId] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editPassword, setEditPassword] = useState("");
+  const [editError, setEditError] = useState<string | null>(null);
+  const [editSubmitting, setEditSubmitting] = useState(false);
 
   function load() {
     Promise.all([adminApi.listUsers(), adminApi.listLocations()])
@@ -66,6 +73,37 @@ export default function StaffPage() {
   async function handleToggleActive(u: AdminUserSummary) {
     await adminApi.updateUser(u.id, { isActive: !u.isActive });
     load();
+  }
+
+  function startEdit(u: AdminUserSummary) {
+    setEditingId(u.id);
+    setEditName(u.name);
+    setEditEmail(u.email);
+    setEditPassword("");
+    setEditError(null);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditError(null);
+  }
+
+  async function handleSaveEdit(id: string) {
+    setEditSubmitting(true);
+    setEditError(null);
+    try {
+      await adminApi.updateUser(id, {
+        name: editName,
+        email: editEmail,
+        ...(editPassword ? { password: editPassword } : {}),
+      });
+      setEditingId(null);
+      load();
+    } catch (err) {
+      setEditError(err instanceof Error ? err.message : "Failed to update user");
+    } finally {
+      setEditSubmitting(false);
+    }
   }
 
   async function handleDelete(id: string) {
@@ -156,44 +194,103 @@ export default function StaffPage() {
             </thead>
             <tbody>
               {users.map((u) => (
-                <tr key={u.id} className="border-b border-stone-50 last:border-0 hover:bg-stone-50/60">
-                  <td className="px-5 py-3 font-medium text-stone-900">
-                    {u.name} {u.id === currentAdminId && <span className="text-xs text-stone-400">(you)</span>}
-                  </td>
-                  <td className="px-5 py-3 text-stone-600">{u.email}</td>
-                  <td className="px-5 py-3">
-                    <select
-                      value={u.role}
-                      disabled={u.id === currentAdminId}
-                      onChange={(e) => handleRoleChange(u.id, e.target.value as AdminRole)}
-                      className="rounded-md border border-stone-300 px-2 py-1 text-sm disabled:opacity-50"
-                    >
-                      {ADMIN_ROLES.map((r) => (
-                        <option key={r} value={r}>
-                          {ROLE_LABELS[r]}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td className="px-5 py-3">
-                    <button
-                      onClick={() => handleToggleActive(u)}
-                      disabled={u.id === currentAdminId}
-                      className={`rounded-full px-2.5 py-0.5 text-xs font-medium disabled:opacity-50 ${
-                        u.isActive ? "bg-emerald-100 text-emerald-800" : "bg-stone-100 text-stone-600"
-                      }`}
-                    >
-                      {u.isActive ? "Active" : "Deactivated"}
-                    </button>
-                  </td>
-                  <td className="px-5 py-3 text-right">
-                    {u.id !== currentAdminId && (
-                      <button onClick={() => handleDelete(u.id)} className="text-rose-600 hover:text-rose-800">
-                        Delete
+                <Fragment key={u.id}>
+                  <tr className="border-b border-stone-50 last:border-0 hover:bg-stone-50/60">
+                    <td className="px-5 py-3 font-medium text-stone-900">
+                      {editingId === u.id ? (
+                        <input
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                          className="w-full rounded-md border border-stone-300 px-2 py-1 text-sm"
+                        />
+                      ) : (
+                        <>
+                          {u.name} {u.id === currentAdminId && <span className="text-xs text-stone-400">(you)</span>}
+                        </>
+                      )}
+                    </td>
+                    <td className="px-5 py-3 text-stone-600">
+                      {editingId === u.id ? (
+                        <input
+                          type="email"
+                          value={editEmail}
+                          onChange={(e) => setEditEmail(e.target.value)}
+                          className="w-full rounded-md border border-stone-300 px-2 py-1 text-sm"
+                        />
+                      ) : (
+                        u.email
+                      )}
+                    </td>
+                    <td className="px-5 py-3">
+                      <select
+                        value={u.role}
+                        disabled={u.id === currentAdminId}
+                        onChange={(e) => handleRoleChange(u.id, e.target.value as AdminRole)}
+                        className="rounded-md border border-stone-300 px-2 py-1 text-sm disabled:opacity-50"
+                      >
+                        {ADMIN_ROLES.map((r) => (
+                          <option key={r} value={r}>
+                            {ROLE_LABELS[r]}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-5 py-3">
+                      <button
+                        onClick={() => handleToggleActive(u)}
+                        disabled={u.id === currentAdminId}
+                        className={`rounded-full px-2.5 py-0.5 text-xs font-medium disabled:opacity-50 ${
+                          u.isActive ? "bg-emerald-100 text-emerald-800" : "bg-stone-100 text-stone-600"
+                        }`}
+                      >
+                        {u.isActive ? "Active" : "Deactivated"}
                       </button>
-                    )}
-                  </td>
-                </tr>
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      {editingId === u.id ? (
+                        <button onClick={cancelEdit} className="mr-3 text-stone-500 hover:text-stone-700">
+                          Cancel
+                        </button>
+                      ) : (
+                        <button onClick={() => startEdit(u)} className="mr-3 text-teal-700 hover:text-teal-900">
+                          Edit
+                        </button>
+                      )}
+                      {u.id !== currentAdminId && editingId !== u.id && (
+                        <button onClick={() => handleDelete(u.id)} className="text-rose-600 hover:text-rose-800">
+                          Delete
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                  {editingId === u.id && (
+                    <tr className="border-b border-stone-50 bg-stone-50/60 last:border-0">
+                      <td colSpan={5} className="px-5 py-3">
+                        <div className="flex flex-wrap items-end gap-3">
+                          <div>
+                            <label className="mb-1 block text-xs font-medium text-stone-500">New password (optional)</label>
+                            <input
+                              type="text"
+                              value={editPassword}
+                              onChange={(e) => setEditPassword(e.target.value)}
+                              placeholder="Leave blank to keep current password"
+                              minLength={8}
+                              className="w-72 rounded-md border border-stone-300 px-2 py-1 text-sm"
+                            />
+                          </div>
+                          <button
+                            onClick={() => handleSaveEdit(u.id)}
+                            disabled={editSubmitting}
+                            className={primaryButtonClass}
+                          >
+                            {editSubmitting ? "Saving…" : "Save changes"}
+                          </button>
+                          {editError && <p className="text-sm text-red-600">{editError}</p>}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
               ))}
             </tbody>
           </table>

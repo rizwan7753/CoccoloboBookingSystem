@@ -3,6 +3,7 @@ import { prisma } from "../lib/prisma";
 import { parseDateOnly } from "../lib/dateOnly";
 import { logAudit } from "../lib/auditLog";
 import { getHolidayForDate } from "./holidayService";
+import { nextBookingCode } from "../lib/bookingCode";
 
 export class RentalError extends Error {
   status: number;
@@ -89,12 +90,15 @@ export async function createRentalBooking(input: CreateRentalBookingInput) {
       );
     }
 
+    const bookingCode = await nextBookingCode(tx, "BCH", date);
+
     const created = await tx.rentalBooking.create({
       data: {
         rentalItemId: item.id,
         spotId: spot.id,
         timeSlotId: timeSlot.id,
         date,
+        bookingCode,
         guestName: input.guestName,
         guestEmail: input.guestEmail,
         guestPhone: input.guestPhone,

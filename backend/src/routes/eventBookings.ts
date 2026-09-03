@@ -64,7 +64,7 @@ router.post("/", async (req, res) => {
         guestName: booking.guestName,
         title: event?.title ?? "your event",
         amountTotal: booking.amountTotal,
-        bookingId: booking.id,
+        bookingId: booking.bookingCode ?? booking.id,
         details: [
           event ? `Event date: ${event.eventDate.toISOString().slice(0, 10)} at ${event.startTime}` : "",
           event?.venue ? `Venue: ${event.venue}` : "",
@@ -75,6 +75,7 @@ router.post("/", async (req, res) => {
       });
       return res.status(201).json({
         bookingId: booking.id,
+        bookingCode: booking.bookingCode,
         amountTotal: booking.amountTotal,
         clientSecret: null,
         offlinePending: true,
@@ -90,6 +91,7 @@ router.post("/", async (req, res) => {
       });
       return res.status(201).json({
         bookingId: booking.id,
+        bookingCode: booking.bookingCode,
         amountTotal: booking.amountTotal,
         clientSecret: null,
         nmiPending: true,
@@ -106,6 +108,7 @@ router.post("/", async (req, res) => {
 
       return res.status(201).json({
         bookingId: confirmed.id,
+        bookingCode: confirmed.bookingCode,
         amountTotal: confirmed.amountTotal,
         clientSecret: null,
         devBypass: true,
@@ -116,6 +119,7 @@ router.post("/", async (req, res) => {
     const paymentIntent = await createEventPaymentIntent(Number(booking.amountTotal), booking.id);
     res.status(201).json({
       bookingId: booking.id,
+      bookingCode: booking.bookingCode,
       amountTotal: booking.amountTotal,
       clientSecret: paymentIntent.client_secret,
     });

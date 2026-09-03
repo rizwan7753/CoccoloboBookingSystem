@@ -3,6 +3,7 @@ import { prisma } from "../lib/prisma";
 import { parseDateOnly, computeCutoffDateTime, dayOfWeek } from "../lib/dateOnly";
 import { logAudit } from "../lib/auditLog";
 import { getHolidayForDate, listHolidaysInRange } from "./holidayService";
+import { nextBookingCode } from "../lib/bookingCode";
 
 export class BookingError extends Error {
   status: number;
@@ -132,10 +133,13 @@ export async function createBooking(input: CreateBookingInput) {
       },
     });
 
+    const bookingCode = await nextBookingCode(tx, "EXC", departureDate);
+
     const created = await tx.booking.create({
       data: {
         excursionId: excursion.id,
         slotId: slot.id,
+        bookingCode,
         guestName: input.guestName,
         guestEmail: input.guestEmail,
         guestPhone: input.guestPhone,

@@ -135,6 +135,7 @@ function RentalBookingsPageInner() {
             <table className="w-full text-left text-sm">
               <thead className="border-b border-stone-100 text-xs uppercase tracking-wide text-stone-400">
                 <tr>
+                  <th className="px-5 py-3 font-medium">Reference</th>
                   {!itemId && <th className="px-5 py-3 font-medium">Item</th>}
                   <th className="px-5 py-3 font-medium">Date</th>
                   <th className="px-5 py-3 font-medium">Spot</th>
@@ -147,6 +148,7 @@ function RentalBookingsPageInner() {
               <tbody>
                 {bookings.map((b) => (
                   <tr key={b.id} className="border-b border-stone-50 last:border-0 hover:bg-stone-50/60">
+                    <td className="px-5 py-3 font-mono text-xs text-stone-500">{b.bookingCode ?? b.id}</td>
                     {!itemId && <td className="px-5 py-3 text-stone-600">{b.rentalItem?.name}</td>}
                     <td className="px-5 py-3 text-stone-600">{b.date.slice(0, 10)}</td>
                     <td className="px-5 py-3 font-medium text-stone-900">{b.spot.code}</td>

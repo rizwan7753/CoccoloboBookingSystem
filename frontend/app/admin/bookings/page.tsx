@@ -122,6 +122,7 @@ function BookingsPageInner() {
             <table className="w-full text-left text-sm">
               <thead className="border-b border-stone-100 text-xs uppercase tracking-wide text-stone-400">
                 <tr>
+                  <th className="px-5 py-3 font-medium">Reference</th>
                   <th className="px-5 py-3 font-medium">Excursion</th>
                   <th className="px-5 py-3 font-medium">Date/Time</th>
                   <th className="px-5 py-3 font-medium">Guest</th>
@@ -135,6 +136,7 @@ function BookingsPageInner() {
               <tbody>
                 {bookings.map((b) => (
                   <tr key={b.id} className="border-b border-stone-50 align-top last:border-0 hover:bg-stone-50/60">
+                    <td className="px-5 py-3 font-mono text-xs text-stone-500">{b.bookingCode ?? b.id}</td>
                     <td className="px-5 py-3 font-medium text-stone-900">{b.excursion?.title}</td>
                     <td className="px-5 py-3 text-stone-600">
                       {b.slot?.date.slice(0, 10)}

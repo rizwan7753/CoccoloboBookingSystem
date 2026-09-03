@@ -22,6 +22,7 @@ const createUserSchema = z.object({
 
 const updateUserSchema = z.object({
   name: z.string().min(1).optional(),
+  email: z.string().email().optional(),
   role: z.enum(ROLES).optional(),
   locationId: z.string().nullable().optional(),
   isActive: z.boolean().optional(),
@@ -85,6 +86,12 @@ router.put("/:id", async (req: AuthedRequest, res) => {
   }
   if (req.params.id === req.admin!.sub && parsed.data.isActive === false) {
     return res.status(400).json({ error: "You cannot deactivate your own account" });
+  }
+  if (parsed.data.email) {
+    const existing = await prisma.adminUser.findUnique({ where: { email: parsed.data.email } });
+    if (existing && existing.id !== req.params.id) {
+      return res.status(409).json({ error: "A user with this email already exists" });
+    }
   }
 
   const { password, ...rest } = parsed.data;
