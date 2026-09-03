@@ -56,8 +56,8 @@ export default function Sidebar({
   ];
 
   const otherItems: NavItem[] = [
-    // Hidden for now per request — routes/pages still exist, just unlinked from the nav.
-    { href: "/admin/users", label: "Staff", icon: "staff", show: false },
+    { href: "/admin/users", label: "Staff", icon: "staff", show: canManageUsers(admin?.role) },
+    // Hidden for now per request — route/page still exists, just unlinked from the nav.
     { href: "/admin/audit-log", label: "Activity log", icon: "activity", show: false },
     { href: "/admin/settings", label: "Settings", icon: "settings", show: canManageUsers(admin?.role) },
   ];
