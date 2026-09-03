@@ -314,6 +314,7 @@ export default function EventBookingWidget({ event }: { event: EventItem }) {
         <NmiCardForm
           tokenizationKey={settings.nmiTokenizationKey}
           gatewayDomain={settings.nmiGatewayDomain ?? "secure.nmi.com"}
+          amount={total.toFixed(2)}
           onToken={async (token) => {
             await eventApi.chargeNmi(bookingId, token);
             router.push(`/events/confirmation/${bookingId}`);

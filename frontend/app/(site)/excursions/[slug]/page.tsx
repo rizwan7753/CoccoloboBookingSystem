@@ -59,8 +59,10 @@ export default async function ExcursionDetailPage({ params }: { params: Promise<
             </svg>
             All excursions
           </Link>
-          <h1 className="font-display max-w-2xl text-3xl font-bold text-white sm:text-4xl">{excursion.title}</h1>
-          <p className="mt-2 text-sm text-teal-100">{excursion.durationMinutes} minutes</p>
+          <h1 className="animate-fade-in-up font-display max-w-2xl text-3xl font-bold text-white sm:text-4xl">{excursion.title}</h1>
+          <p className="animate-fade-in-up mt-2 text-sm text-teal-100" style={{ animationDelay: "80ms" }}>
+            {excursion.durationMinutes} minutes
+          </p>
         </div>
       </div>
 
@@ -125,7 +127,7 @@ const ICONS: Record<string, React.ReactNode> = {
 
 function InfoBlock({ icon, title, children }: { icon: keyof typeof ICONS; title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-stone-200 p-4">
+    <div className="animate-fade-in-up rounded-xl border border-stone-200 p-4 transition hover:-translate-y-0.5 hover:shadow-md hover:shadow-stone-200/60">
       <div className="flex items-center gap-2 text-stone-900">
         <svg className="h-4 w-4 text-teal-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
           {ICONS[icon]}

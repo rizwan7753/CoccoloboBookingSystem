@@ -31,13 +31,16 @@ export default async function BeachChairsPage() {
           style={{ backgroundImage: "radial-gradient(circle at 75% 30%, white 0, transparent 45%)" }}
         />
         <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
-          <span className="inline-block rounded-full bg-white/15 px-3 py-1 text-xs font-medium uppercase tracking-widest text-amber-50">
+          <span className="animate-fade-in-up inline-block rounded-full bg-white/15 px-3 py-1 text-xs font-medium uppercase tracking-widest text-amber-50">
             Same-day booking available
           </span>
-          <h1 className="font-display mt-5 max-w-2xl text-4xl font-bold leading-tight text-white sm:text-5xl">
+          <h1
+            className="animate-fade-in-up font-display mt-5 max-w-2xl text-4xl font-bold leading-tight text-white sm:text-5xl"
+            style={{ animationDelay: "80ms" }}
+          >
             Beach chairs &amp; loungers
           </h1>
-          <p className="mt-4 max-w-xl text-lg text-amber-50/90">
+          <p className="animate-fade-in-up mt-4 max-w-xl text-lg text-amber-50/90" style={{ animationDelay: "160ms" }}>
             Reserve your exact spot by the water — no advance booking required, book for today or plan ahead.
           </p>
         </div>
@@ -56,12 +59,17 @@ export default async function BeachChairsPage() {
                 <Link
                   key={item.id}
                   href={`/beach-chairs/${item.slug}`}
-                  className="group block overflow-hidden rounded-2xl border border-stone-200 bg-white transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-stone-200/60"
+                  className="animate-fade-in-up group block overflow-hidden rounded-2xl border border-stone-200 bg-white transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-stone-200/60"
+                  style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
                 >
-                  <div className="relative h-32 bg-gradient-to-br from-amber-500 to-orange-500">
+                  <div className="relative h-32 overflow-hidden bg-gradient-to-br from-amber-500 to-orange-500">
                     {item.cardImageUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={mediaUrl(item.cardImageUrl) ?? undefined} alt={item.name} className="h-full w-full object-cover" />
+                      <img
+                        src={mediaUrl(item.cardImageUrl) ?? undefined}
+                        alt={item.name}
+                        className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                      />
                     ) : (
                       <svg className="absolute bottom-2 right-3 h-16 w-16 text-white/20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.2}>
                         <path d="M4 20 12 4l8 16M8 12h8M6 16h12" strokeLinecap="round" strokeLinejoin="round" />

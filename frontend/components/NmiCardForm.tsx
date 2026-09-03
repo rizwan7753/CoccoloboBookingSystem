@@ -8,11 +8,14 @@ const fieldBoxClass = "rounded-lg border border-stone-300 px-3 py-2.5";
 export default function NmiCardForm({
   tokenizationKey,
   gatewayDomain,
+  amount,
   onToken,
   buttonClassName,
 }: {
   tokenizationKey: string;
   gatewayDomain: string;
+  /** Booking total, e.g. "42.00" — passed through to Collect.js as `price`. */
+  amount: string;
   /** Called with the Collect.js payment token — throw to show an error (e.g. a decline). */
   onToken: (token: string) => Promise<void>;
   buttonClassName?: string;
@@ -31,6 +34,14 @@ export default function NmiCardForm({
         window.CollectJS.configure({
           variant: "inline",
           styleSniffer: true,
+          // price/currency/country are required by Collect.js even for plain
+          // card entry — omitting them left its internal wallet-availability
+          // check ("PaymentRequestAbstraction") building an incomplete
+          // PaymentRequest and throwing. googlePay/applePay are not real
+          // config keys (per NMI's own docs) so they did nothing before.
+          price: amount,
+          currency: "USD",
+          country: "US",
           fields: {
             ccnumber: { selector: "#nmi-ccnumber", placeholder: "Card number" },
             ccexp: { selector: "#nmi-ccexp", placeholder: "MM / YY" },

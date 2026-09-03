@@ -37,10 +37,14 @@ export default function ExcursionCard({ excursion }: { excursion: Excursion }) {
       href={`/excursions/${excursion.slug}`}
       className="group block overflow-hidden rounded-2xl border border-stone-200 bg-white transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-stone-200/60"
     >
-      <div className={`relative h-36 bg-gradient-to-br ${gradientFor(excursion.id)}`}>
+      <div className={`relative h-36 overflow-hidden bg-gradient-to-br ${gradientFor(excursion.id)}`}>
         {excursion.cardImageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={mediaUrl(excursion.cardImageUrl) ?? undefined} alt={excursion.title} className="h-full w-full object-cover" />
+          <img
+            src={mediaUrl(excursion.cardImageUrl) ?? undefined}
+            alt={excursion.title}
+            className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+          />
         ) : (
           <svg
             className="absolute bottom-0 right-0 h-20 w-20 text-white/15"

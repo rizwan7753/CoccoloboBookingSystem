@@ -18,13 +18,16 @@ export default async function HomePage() {
           }}
         />
         <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
-          <span className="inline-block rounded-full bg-white/10 px-3 py-1 text-xs font-medium uppercase tracking-widest text-teal-100">
+          <span className="animate-fade-in-up inline-block rounded-full bg-white/10 px-3 py-1 text-xs font-medium uppercase tracking-widest text-teal-100">
             Advance booking required
           </span>
-          <h1 className="font-display mt-5 max-w-2xl text-4xl font-bold leading-tight text-white sm:text-5xl">
+          <h1
+            className="animate-fade-in-up font-display mt-5 max-w-2xl text-4xl font-bold leading-tight text-white sm:text-5xl"
+            style={{ animationDelay: "80ms" }}
+          >
             Excursions &amp; activities at {name}
           </h1>
-          <p className="mt-4 max-w-xl text-lg text-teal-100/90">
+          <p className="animate-fade-in-up mt-4 max-w-xl text-lg text-teal-100/90" style={{ animationDelay: "160ms" }}>
             Reserve your spot ahead of time — every excursion has a booking cut-off, so plan your stay and lock in
             your adventure before the evening before.
           </p>
@@ -33,7 +36,7 @@ export default async function HomePage() {
 
       <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
         <div className="flex items-baseline justify-between">
-          <h2 className="font-display text-2xl font-bold text-stone-900">Upcoming excursions</h2>
+          <h2 className="font-display text-2xl font-bold text-stone-900">Upcoming Excursions</h2>
           <span className="text-sm text-stone-400">{excursions.length} experience{excursions.length === 1 ? "" : "s"}</span>
         </div>
 
@@ -43,8 +46,10 @@ export default async function HomePage() {
           </div>
         ) : (
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {excursions.map((ex) => (
-              <ExcursionCard key={ex.id} excursion={ex} />
+            {excursions.map((ex, i) => (
+              <div key={ex.id} className="animate-fade-in-up" style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}>
+                <ExcursionCard excursion={ex} />
+              </div>
             ))}
           </div>
         )}

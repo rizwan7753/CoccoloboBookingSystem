@@ -369,6 +369,7 @@ export default function BookingWidget({ excursion }: { excursion: Excursion }) {
         <NmiCardForm
           tokenizationKey={settings.nmiTokenizationKey}
           gatewayDomain={settings.nmiGatewayDomain ?? "secure.nmi.com"}
+          amount={total.toFixed(2)}
           onToken={async (token) => {
             await api.chargeNmi(bookingId, token);
             router.push(`/booking/confirmation/${bookingId}`);

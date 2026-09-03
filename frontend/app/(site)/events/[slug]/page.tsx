@@ -60,9 +60,14 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
             </svg>
             All events
           </Link>
-          <p className="text-sm font-medium text-fuchsia-100">{formatEventDate(event.eventDate)}</p>
-          <h1 className="font-display max-w-2xl text-3xl font-bold text-white sm:text-4xl">{event.title}</h1>
-          <p className="mt-2 text-sm text-fuchsia-100">
+          <p className="animate-fade-in-up text-sm font-medium text-fuchsia-100">{formatEventDate(event.eventDate)}</p>
+          <h1
+            className="animate-fade-in-up font-display max-w-2xl text-3xl font-bold text-white sm:text-4xl"
+            style={{ animationDelay: "80ms" }}
+          >
+            {event.title}
+          </h1>
+          <p className="animate-fade-in-up mt-2 text-sm text-fuchsia-100" style={{ animationDelay: "160ms" }}>
             {event.startTime}
             {event.endTime ? ` – ${event.endTime}` : ""}
             {event.venue ? ` · ${event.venue}` : ""}
@@ -76,7 +81,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
             <p className="whitespace-pre-line text-stone-600 leading-relaxed">{event.description}</p>
 
             {event.venue && (
-              <div className="mt-8 rounded-xl border border-stone-200 p-4">
+              <div className="animate-fade-in-up mt-8 rounded-xl border border-stone-200 p-4 transition hover:-translate-y-0.5 hover:shadow-md hover:shadow-stone-200/60">
                 <div className="flex items-center gap-2 text-stone-900">
                   <svg className="h-4 w-4 text-fuchsia-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                     <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0ZM12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" strokeLinecap="round" strokeLinejoin="round" />

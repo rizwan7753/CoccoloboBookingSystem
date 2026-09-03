@@ -27,13 +27,16 @@ export default async function EventsPage() {
           style={{ backgroundImage: "radial-gradient(circle at 75% 30%, white 0, transparent 45%)" }}
         />
         <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
-          <span className="inline-block rounded-full bg-white/15 px-3 py-1 text-xs font-medium uppercase tracking-widest text-fuchsia-50">
+          <span className="animate-fade-in-up inline-block rounded-full bg-white/15 px-3 py-1 text-xs font-medium uppercase tracking-widest text-fuchsia-50">
             Tickets available now
           </span>
-          <h1 className="font-display mt-5 max-w-2xl text-4xl font-bold leading-tight text-white sm:text-5xl">
+          <h1
+            className="animate-fade-in-up font-display mt-5 max-w-2xl text-4xl font-bold leading-tight text-white sm:text-5xl"
+            style={{ animationDelay: "80ms" }}
+          >
             Upcoming events at {name}
           </h1>
-          <p className="mt-4 max-w-xl text-lg text-fuchsia-50/90">
+          <p className="animate-fade-in-up mt-4 max-w-xl text-lg text-fuchsia-50/90" style={{ animationDelay: "160ms" }}>
             Parties, live music, and one-off nights on the beach — ticket sales stay open right up to each event.
           </p>
         </div>
@@ -46,16 +49,21 @@ export default async function EventsPage() {
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {events.map((event) => (
+            {events.map((event, i) => (
               <Link
                 key={event.id}
                 href={`/events/${event.slug}`}
-                className="group block overflow-hidden rounded-2xl border border-stone-200 bg-white transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-stone-200/60"
+                className="animate-fade-in-up group block overflow-hidden rounded-2xl border border-stone-200 bg-white transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-stone-200/60"
+                style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
               >
-                <div className="relative h-32 bg-gradient-to-br from-fuchsia-600 to-purple-600">
+                <div className="relative h-32 overflow-hidden bg-gradient-to-br from-fuchsia-600 to-purple-600">
                   {event.cardImageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={mediaUrl(event.cardImageUrl) ?? undefined} alt={event.title} className="h-full w-full object-cover" />
+                    <img
+                      src={mediaUrl(event.cardImageUrl) ?? undefined}
+                      alt={event.title}
+                      className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                    />
                   ) : (
                     <svg className="absolute bottom-2 right-3 h-16 w-16 text-white/20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.2}>
                       <path d="M9 18V5l12-2v13M9 9l12-2M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM18 19a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" strokeLinecap="round" strokeLinejoin="round" />

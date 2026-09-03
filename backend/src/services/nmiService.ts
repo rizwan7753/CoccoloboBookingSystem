@@ -47,10 +47,13 @@ export async function chargeNmiToken(amountUsd: number, paymentToken: string, or
     order_id: orderId,
   });
 
+  // Without a timeout, a stalled connection to the gateway would leave the
+  // guest's booking request hanging indefinitely with no error at all.
   const res = await fetch(`https://${domain}/api/transact.php`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: body.toString(),
+    signal: AbortSignal.timeout(20000),
   });
 
   // NMI's classic API replies as form-encoded key=value pairs, not JSON.

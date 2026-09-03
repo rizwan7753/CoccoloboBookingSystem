@@ -40,8 +40,10 @@ export default async function RentalDetailPage({ params }: { params: Promise<{ s
             </svg>
             All rentals
           </Link>
-          <h1 className="font-display max-w-2xl text-3xl font-bold text-white sm:text-4xl">{item.name}</h1>
-          <p className="mt-2 text-sm text-amber-100">{Math.round(item.durationMinutes / 60)}-hour sessions</p>
+          <h1 className="animate-fade-in-up font-display max-w-2xl text-3xl font-bold text-white sm:text-4xl">{item.name}</h1>
+          <p className="animate-fade-in-up mt-2 text-sm text-amber-100" style={{ animationDelay: "80ms" }}>
+            {Math.round(item.durationMinutes / 60)}-hour sessions
+          </p>
         </div>
       </div>
 
