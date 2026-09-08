@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 
 const PREFIX = "COCO";
 
-export type BookingCodeType = "EXC" | "BCH" | "EVT";
+export type BookingCodeType = "EXC" | "BCH" | "EVT" | "RES";
 
 function dateKeyFor(date: Date): string {
   return date.toISOString().slice(0, 10).replace(/-/g, "");

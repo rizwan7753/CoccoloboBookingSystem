@@ -506,10 +506,12 @@ model RestaurantMenu {
   id         String   @id @default(cuid())
   locationId String
   location   Location @relation(fields: [locationId], references: [id])
-  title      String // "Dinner Menu"
-  slug       String   @unique
-  imageUrl   String?
-  sortOrder  Int      @default(0)
+  title       String // "Dinner Menu"
+  slug        String   @unique
+  description String?  @db.Text // short overview shown at the top of the menu page
+  timings     String?  // e.g. "7:00 AM - 11:00 AM"
+  imageUrl    String?
+  sortOrder   Int      @default(0)
   isActive   Boolean  @default(true)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -559,6 +561,7 @@ model RestaurantReservation {
   id              String   @id @default(cuid())
   locationId      String
   location        Location @relation(fields: [locationId], references: [id])
+  bookingCode     String?  @unique // human-readable reference, e.g. COCO_RES_20260904_0007 — see lib/bookingCode.ts
   guestName       String
   guestEmail      String
   guestPhone      String?

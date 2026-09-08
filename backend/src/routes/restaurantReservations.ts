@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { parseDateOnly } from "../lib/dateOnly";
+import { nextBookingCode } from "../lib/bookingCode";
 import { sendRestaurantReservationAcknowledgement, sendRestaurantReservationNotification } from "../services/emailService";
 
 const router = Router();
@@ -27,17 +28,22 @@ router.post("/", async (req, res) => {
   const location = await prisma.location.findFirst();
   if (!location) return res.status(500).json({ error: "No location configured" });
 
-  const reservation = await prisma.restaurantReservation.create({
-    data: {
-      locationId: location.id,
-      guestName: parsed.data.guestName,
-      guestEmail: parsed.data.guestEmail,
-      guestPhone: parsed.data.guestPhone,
-      partySize: parsed.data.partySize,
-      date: parseDateOnly(parsed.data.date),
-      time: parsed.data.time,
-      specialRequests: parsed.data.specialRequests,
-    },
+  const date = parseDateOnly(parsed.data.date);
+  const reservation = await prisma.$transaction(async (tx) => {
+    const bookingCode = await nextBookingCode(tx, "RES", date);
+    return tx.restaurantReservation.create({
+      data: {
+        locationId: location.id,
+        bookingCode,
+        guestName: parsed.data.guestName,
+        guestEmail: parsed.data.guestEmail,
+        guestPhone: parsed.data.guestPhone,
+        partySize: parsed.data.partySize,
+        date,
+        time: parsed.data.time,
+        specialRequests: parsed.data.specialRequests,
+      },
+    });
   });
 
   await Promise.all([
@@ -45,7 +51,7 @@ router.post("/", async (req, res) => {
     sendRestaurantReservationNotification(reservation),
   ]);
 
-  res.status(201).json({ id: reservation.id });
+  res.status(201).json({ id: reservation.id, bookingCode: reservation.bookingCode });
 });
 
 export default router;

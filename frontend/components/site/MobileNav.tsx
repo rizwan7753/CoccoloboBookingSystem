@@ -83,15 +83,6 @@ export default function MobileNav({ restaurantMenus = [] }: { restaurantMenus?: 
                       </Link>
                     </li>
                   ))}
-                  <li>
-                    <Link
-                      href="/restaurant/reservations"
-                      onClick={closeAll}
-                      className="block rounded-lg px-3 py-2 text-sm font-semibold text-teal-700 transition hover:bg-teal-50"
-                    >
-                      Reservations
-                    </Link>
-                  </li>
                 </ul>
               )}
             </li>

@@ -213,6 +213,8 @@ export interface AdminRestaurantMenu {
   locationId: string;
   title: string;
   slug: string;
+  description?: string | null;
+  timings?: string | null;
   imageUrl?: string | null;
   sortOrder: number;
   isActive: boolean;
@@ -235,6 +237,8 @@ export interface AdminRestaurantMenuInput {
   locationId: string;
   title: string;
   slug: string;
+  description?: string;
+  timings?: string;
   imageUrl?: string;
   sortOrder?: number;
   isActive?: boolean;
@@ -245,6 +249,7 @@ export type RestaurantReservationStatus = "NEW" | "CONTACTED" | "CONFIRMED" | "D
 
 export interface AdminRestaurantReservation {
   id: string;
+  bookingCode?: string | null;
   guestName: string;
   guestEmail: string;
   guestPhone?: string | null;

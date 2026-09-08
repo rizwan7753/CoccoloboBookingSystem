@@ -21,7 +21,16 @@ interface SectionDraft {
 
 const emptyItem = (): ItemDraft => ({ name: "", description: "", price: "" });
 const emptySection = (): SectionDraft => ({ heading: "", subheading: "", items: [emptyItem()] });
-const emptyForm = { title: "", slug: "", imageUrl: "", sortOrder: 0, isActive: true, sections: [emptySection()] };
+const emptyForm = {
+  title: "",
+  slug: "",
+  description: "",
+  timings: "",
+  imageUrl: "",
+  sortOrder: 0,
+  isActive: true,
+  sections: [emptySection()],
+};
 
 export default function AdminRestaurantMenusPage() {
   const [menus, setMenus] = useState<AdminRestaurantMenu[]>([]);
@@ -55,6 +64,8 @@ export default function AdminRestaurantMenusPage() {
     setForm({
       title: menu.title,
       slug: menu.slug,
+      description: menu.description ?? "",
+      timings: menu.timings ?? "",
       imageUrl: menu.imageUrl ?? "",
       sortOrder: menu.sortOrder,
       isActive: menu.isActive,
@@ -134,6 +145,8 @@ export default function AdminRestaurantMenusPage() {
       const payload = {
         title: form.title,
         slug: form.slug,
+        description: form.description || undefined,
+        timings: form.timings || undefined,
         imageUrl: form.imageUrl || undefined,
         sortOrder: form.sortOrder,
         isActive: form.isActive,
@@ -198,6 +211,28 @@ export default function AdminRestaurantMenusPage() {
                 onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
                 placeholder="dinner-menu"
                 required
+                className={inputClass}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-stone-700">Description (optional)</label>
+              <textarea
+                value={form.description}
+                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                rows={2}
+                placeholder="A short overview shown at the top of the menu page."
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-stone-700">Timings (optional)</label>
+              <input
+                value={form.timings}
+                onChange={(e) => setForm((f) => ({ ...f, timings: e.target.value }))}
+                placeholder="7:00 AM – 11:00 AM"
                 className={inputClass}
               />
             </div>

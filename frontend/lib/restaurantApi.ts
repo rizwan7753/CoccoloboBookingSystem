@@ -20,6 +20,8 @@ export interface RestaurantMenu {
   id: string;
   title: string;
   slug: string;
+  description?: string | null;
+  timings?: string | null;
   imageUrl?: string | null;
   sortOrder: number;
   isActive: boolean;
@@ -53,5 +55,8 @@ export const restaurantApi = {
   listMenus: () => request<RestaurantMenu[]>("/restaurant-menus"),
   getMenu: (slug: string) => request<RestaurantMenu>(`/restaurant-menus/${slug}`),
   createReservation: (payload: CreateReservationInput) =>
-    request<{ id: string }>("/restaurant-reservations", { method: "POST", body: JSON.stringify(payload) }),
+    request<{ id: string; bookingCode?: string | null }>("/restaurant-reservations", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
 };

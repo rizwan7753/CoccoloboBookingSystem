@@ -40,13 +40,6 @@ export default async function Header() {
                     {m.title}
                   </Link>
                 ))}
-                {menus.length > 0 && <div className="my-1 border-t border-stone-100" />}
-                <Link
-                  href="/restaurant/reservations"
-                  className="block rounded-lg px-3 py-2 text-sm font-medium text-teal-700 transition hover:bg-teal-50"
-                >
-                  Reservations
-                </Link>
               </div>
             </div>
           </div>

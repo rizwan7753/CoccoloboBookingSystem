@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { restaurantApi } from "@/lib/restaurantApi";
 import { mediaUrl } from "@/lib/media";
+import ReservationForm from "@/components/site/ReservationForm";
 
 export const revalidate = 60;
 
@@ -29,13 +30,13 @@ export default async function RestaurantPage() {
           <p className="animate-fade-in-up mt-4 max-w-xl text-lg text-rose-50/90" style={{ animationDelay: "160ms" }}>
             Browse our menus, then reserve a table — no card required, we&apos;ll confirm your booking by phone or email.
           </p>
-          <Link
-            href="/restaurant/reservations"
+          <a
+            href="#reserve"
             className="animate-fade-in-up mt-6 inline-block rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-stone-900 transition hover:bg-rose-50"
             style={{ animationDelay: "220ms" }}
           >
             Reserve a table
-          </Link>
+          </a>
         </div>
       </section>
 
@@ -69,8 +70,17 @@ export default async function RestaurantPage() {
                 </div>
                 <div className="p-5">
                   <h2 className="font-display text-lg font-bold text-stone-900 group-hover:text-rose-800">{menu.title}</h2>
+                  {menu.timings && (
+                    <p className="mt-1 flex items-center gap-1.5 text-xs font-medium text-stone-400">
+                      <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                        <circle cx="12" cy="12" r="9" />
+                        <path d="M12 7v5l3 3" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      {menu.timings}
+                    </p>
+                  )}
                   <p className="mt-2 line-clamp-2 text-sm text-stone-500">
-                    {menu.sections.map((s) => s.heading).join(" · ") || "Menu coming soon"}
+                    {menu.description || menu.sections.map((s) => s.heading).join(" · ") || "Menu coming soon"}
                   </p>
                   <div className="mt-4 flex items-center justify-between border-t border-stone-100 pt-3">
                     <span className="text-sm font-medium text-rose-800">View menu →</span>
@@ -80,6 +90,10 @@ export default async function RestaurantPage() {
             ))}
           </div>
         )}
+
+        <div className="mt-16">
+          <ReservationForm menus={menus.map((m) => ({ slug: m.slug, title: m.title }))} />
+        </div>
       </section>
     </main>
   );

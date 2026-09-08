@@ -37,6 +37,8 @@ const menuSchema = z.object({
     .string()
     .min(1)
     .regex(/^[a-z0-9-]+$/, "slug must be lowercase, alphanumeric, hyphen-separated"),
+  description: z.string().optional(),
+  timings: z.string().optional(),
   imageUrl: z.string().optional(),
   sortOrder: z.number().int().optional(),
   isActive: z.boolean().optional(),

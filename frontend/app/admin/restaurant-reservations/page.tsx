@@ -104,13 +104,14 @@ export default function AdminRestaurantReservationsPage() {
             <p className="p-6 text-sm text-stone-400">No reservation requests found for this range.</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[750px] text-left text-sm">
+              <table className="w-full min-w-[850px] text-left text-sm">
                 <thead className="border-b border-stone-100 text-xs uppercase tracking-wide text-stone-400">
                   <tr>
+                    <th className="px-4 py-2.5 font-medium">Reference</th>
                     <th className="px-4 py-2.5 font-medium">Date/Time</th>
                     <th className="px-4 py-2.5 font-medium">Guest</th>
                     <th className="px-4 py-2.5 font-medium">Contact</th>
-                    <th className="px-4 py-2.5 font-medium">Party</th>
+                    <th className="px-4 py-2.5 font-medium">No of People</th>
                     <th className="max-w-[200px] px-4 py-2.5 font-medium">Notes</th>
                     <th className="px-4 py-2.5 font-medium">Status</th>
                     {canManage && <th className="px-4 py-2.5"></th>}
@@ -119,6 +120,9 @@ export default function AdminRestaurantReservationsPage() {
                 <tbody>
                   {reservations.map((r) => (
                     <tr key={r.id} className="border-b border-stone-50 align-top last:border-0 hover:bg-stone-50/60">
+                      <td className="max-w-[130px] truncate px-4 py-2 font-mono text-xs text-stone-500" title={r.bookingCode ?? r.id}>
+                        {r.bookingCode ?? r.id}
+                      </td>
                       <td className="whitespace-nowrap px-4 py-2 text-stone-600">
                         {r.date.slice(0, 10)}
                         <div className="text-xs text-stone-400">{r.time}</div>

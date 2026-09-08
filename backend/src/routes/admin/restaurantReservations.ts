@@ -42,10 +42,11 @@ router.get("/export", requireRole(...VIEW_ROLES), async (req, res) => {
     `restaurant-reservations-${new Date().toISOString().slice(0, 10)}.xlsx`,
     "Reservations",
     [
+      { header: "Reference", key: "bookingCode", width: 24 },
       { header: "Guest name", key: "guestName", width: 22 },
       { header: "Email", key: "guestEmail", width: 26 },
       { header: "Phone", key: "guestPhone", width: 16 },
-      { header: "Party size", key: "partySize", width: 10 },
+      { header: "No of People", key: "partySize", width: 12 },
       { header: "Date", key: "date", width: 12 },
       { header: "Time", key: "time", width: 10 },
       { header: "Status", key: "status", width: 14 },
@@ -53,6 +54,7 @@ router.get("/export", requireRole(...VIEW_ROLES), async (req, res) => {
       { header: "Created", key: "createdAt", width: 20 },
     ],
     reservations.map((r) => ({
+      bookingCode: r.bookingCode ?? "",
       guestName: r.guestName,
       guestEmail: r.guestEmail,
       guestPhone: r.guestPhone ?? "",

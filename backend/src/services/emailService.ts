@@ -420,8 +420,9 @@ export async function sendAdminNewBookingNotification(params: {
  *  actually confirm the table. */
 export async function sendRestaurantReservationAcknowledgement(reservation: RestaurantReservation) {
   const locationName = await getLocationName();
+  const refCode = reservation.bookingCode ?? reservation.id;
   const rows: Row[] = [
-    { label: "Party size", value: `${reservation.partySize} guest${reservation.partySize === 1 ? "" : "s"}` },
+    { label: "No of People", value: `${reservation.partySize} guest${reservation.partySize === 1 ? "" : "s"}` },
     { label: "Date", value: reservation.date.toISOString().slice(0, 10) },
     { label: "Time", value: reservation.time },
     ...(reservation.specialRequests ? [{ label: "Notes", value: reservation.specialRequests }] : []),
@@ -435,6 +436,7 @@ export async function sendRestaurantReservationAcknowledgement(reservation: Rest
       ``,
       `Thanks for your table reservation request — we haven't confirmed it yet, but a member of staff will be in touch shortly to finalize the details.`,
       ...rows.map((r) => `${r.label}: ${r.value}`),
+      `Booking reference: ${refCode}`,
     ].join("\n"),
     html: renderEmailShell({
       accent: "#78350f",
@@ -443,7 +445,7 @@ export async function sendRestaurantReservationAcknowledgement(reservation: Rest
       heading: "We'll be in touch shortly",
       intro: `Hi ${escapeHtml(reservation.guestName)}, thanks for your request — we haven't confirmed it yet, but a member of staff will reach out shortly to finalize the details.`,
       rows,
-      bookingId: reservation.id,
+      bookingId: refCode,
     }),
   });
 }
@@ -455,11 +457,12 @@ export async function sendRestaurantReservationNotification(reservation: Restaur
   const location = await prisma.location.findFirst();
   if (!location?.adminNotificationEmail) return;
 
+  const refCode = reservation.bookingCode ?? reservation.id;
   const rows: Row[] = [
     { label: "Guest", value: reservation.guestName },
     { label: "Email", value: reservation.guestEmail },
     ...(reservation.guestPhone ? [{ label: "Phone", value: reservation.guestPhone }] : []),
-    { label: "Party size", value: String(reservation.partySize) },
+    { label: "No of People", value: String(reservation.partySize) },
     { label: "Date", value: reservation.date.toISOString().slice(0, 10) },
     { label: "Time", value: reservation.time },
     ...(reservation.specialRequests ? [{ label: "Notes", value: reservation.specialRequests }] : []),
@@ -468,9 +471,12 @@ export async function sendRestaurantReservationNotification(reservation: Restaur
   await sendEmail({
     to: location.adminNotificationEmail,
     subject: `New restaurant reservation request: ${reservation.guestName}`,
-    text: ["A new restaurant reservation request was just submitted.", ``, ...rows.map((r) => `${r.label}: ${r.value}`)].join(
-      "\n"
-    ),
+    text: [
+      "A new restaurant reservation request was just submitted.",
+      ``,
+      ...rows.map((r) => `${r.label}: ${r.value}`),
+      `Booking reference: ${refCode}`,
+    ].join("\n"),
     html: renderEmailShell({
       accent: "#78350f",
       locationName: location.name || "Booking system",
@@ -478,7 +484,7 @@ export async function sendRestaurantReservationNotification(reservation: Restaur
       heading: reservation.guestName,
       intro: "A new restaurant reservation request was just submitted — details below.",
       rows,
-      bookingId: reservation.id,
+      bookingId: refCode,
     }),
   });
 }
