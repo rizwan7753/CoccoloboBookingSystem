@@ -14,6 +14,7 @@ const ICONS: Record<string, React.ReactNode> = {
   settings: <><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" strokeLinecap="round" strokeLinejoin="round" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" strokeLinecap="round" strokeLinejoin="round" /></>,
   staff: <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" strokeLinecap="round" strokeLinejoin="round" />,
   activity: <path d="M22 12h-4l-3 9L9 3l-3 9H2" strokeLinecap="round" strokeLinejoin="round" />,
+  restaurant: <path d="M8 2v6a2 2 0 0 0 2 2v12M8 2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2M16 2v20M16 2a4 4 0 0 1 4 4v4a2 2 0 0 1-2 2h-2" strokeLinecap="round" strokeLinejoin="round" />,
 };
 
 function Icon({ name }: { name: keyof typeof ICONS }) {
@@ -47,12 +48,14 @@ export default function Sidebar({
     { href: "/admin/rentals", label: "Beach Chairs", icon: "beachChair", show: true },
     { href: "/admin/events", label: "Events", icon: "events", show: true },
     { href: "/admin/holidays", label: "Holidays & Closures", icon: "holiday", show: true },
+    { href: "/admin/restaurant-menus", label: "Restaurant Menus", icon: "restaurant", show: true },
   ];
 
   const bookingItems: NavItem[] = [
     { href: "/admin/bookings", label: "Excursion Manifest", icon: "manifest", show: true },
     { href: "/admin/rental-bookings", label: "Beach Chair Bookings", icon: "beachChair", show: true },
     { href: "/admin/event-bookings", label: "Event Bookings", icon: "events", show: true },
+    { href: "/admin/restaurant-reservations", label: "Restaurant Reservations", icon: "restaurant", show: true },
   ];
 
   const otherItems: NavItem[] = [

@@ -192,6 +192,70 @@ export interface AdminHolidayInput {
   appliesToEvents?: boolean;
 }
 
+export interface AdminRestaurantMenuItem {
+  id: string;
+  name: string;
+  description?: string | null;
+  price?: string | null;
+  sortOrder: number;
+}
+
+export interface AdminRestaurantMenuSection {
+  id: string;
+  heading: string;
+  subheading?: string | null;
+  sortOrder: number;
+  items: AdminRestaurantMenuItem[];
+}
+
+export interface AdminRestaurantMenu {
+  id: string;
+  locationId: string;
+  title: string;
+  slug: string;
+  imageUrl?: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  sections: AdminRestaurantMenuSection[];
+}
+
+export interface AdminRestaurantMenuItemInput {
+  name: string;
+  description?: string;
+  price?: number;
+}
+
+export interface AdminRestaurantMenuSectionInput {
+  heading: string;
+  subheading?: string;
+  items?: AdminRestaurantMenuItemInput[];
+}
+
+export interface AdminRestaurantMenuInput {
+  locationId: string;
+  title: string;
+  slug: string;
+  imageUrl?: string;
+  sortOrder?: number;
+  isActive?: boolean;
+  sections?: AdminRestaurantMenuSectionInput[];
+}
+
+export type RestaurantReservationStatus = "NEW" | "CONTACTED" | "CONFIRMED" | "DECLINED";
+
+export interface AdminRestaurantReservation {
+  id: string;
+  guestName: string;
+  guestEmail: string;
+  guestPhone?: string | null;
+  partySize: number;
+  date: string;
+  time: string;
+  specialRequests?: string | null;
+  status: RestaurantReservationStatus;
+  createdAt: string;
+}
+
 export interface AdminSettings {
   id: string;
   name: string;
@@ -208,6 +272,7 @@ export interface AdminSettings {
   offlinePaymentEnabled: boolean;
   offlinePaymentInstructions?: string | null;
   offlinePaymentReceiptEmail?: string | null;
+  adminNotificationEmail?: string | null;
   stripePublishableKey?: string | null;
   stripeSecretKeySet: boolean;
   stripeWebhookSecretSet: boolean;
@@ -232,6 +297,7 @@ export interface AdminSettingsInput {
   offlinePaymentEnabled?: boolean;
   offlinePaymentInstructions?: string;
   offlinePaymentReceiptEmail?: string;
+  adminNotificationEmail?: string;
   stripePublishableKey?: string;
   stripeSecretKey?: string; // blank/omitted = keep existing
   stripeWebhookSecret?: string; // blank/omitted = keep existing
@@ -566,6 +632,32 @@ export const adminApi = {
     data: { label?: string; appliesToExcursions?: boolean; appliesToRentals?: boolean; appliesToEvents?: boolean }
   ) => authedRequest<AdminHoliday>(`/admin/holidays/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   deleteHoliday: (id: string) => authedRequest<void>(`/admin/holidays/${id}`, { method: "DELETE" }),
+
+  listRestaurantMenus: () => authedRequest<AdminRestaurantMenu[]>("/admin/restaurant-menus"),
+  createRestaurantMenu: (data: AdminRestaurantMenuInput) =>
+    authedRequest<AdminRestaurantMenu>("/admin/restaurant-menus", { method: "POST", body: JSON.stringify(data) }),
+  updateRestaurantMenu: (id: string, data: Partial<AdminRestaurantMenuInput>) =>
+    authedRequest<AdminRestaurantMenu>(`/admin/restaurant-menus/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  deleteRestaurantMenu: (id: string) => authedRequest<void>(`/admin/restaurant-menus/${id}`, { method: "DELETE" }),
+
+  listRestaurantReservations: (params: { from: string; to?: string; status?: string }) =>
+    authedRequest<AdminRestaurantReservation[]>(
+      `/admin/restaurant-reservations?${new URLSearchParams(
+        Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined && v !== "")) as Record<
+          string,
+          string
+        >
+      )}`
+    ),
+  updateRestaurantReservationStatus: (id: string, status: RestaurantReservationStatus) =>
+    authedRequest<AdminRestaurantReservation>(`/admin/restaurant-reservations/${id}/status`, {
+      method: "PUT",
+      body: JSON.stringify({ status }),
+    }),
+  deleteRestaurantReservation: (id: string) =>
+    authedRequest<void>(`/admin/restaurant-reservations/${id}`, { method: "DELETE" }),
+  exportRestaurantReservations: (params: { from: string; to?: string; status?: string }) =>
+    authedDownload("/admin/restaurant-reservations/export", params),
 
   getSettings: () => authedRequest<AdminSettings>("/admin/settings"),
   updateSettings: (data: AdminSettingsInput) =>

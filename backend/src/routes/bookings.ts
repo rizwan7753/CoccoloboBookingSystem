@@ -4,7 +4,11 @@ import { prisma } from "../lib/prisma";
 import { createBooking, markBookingPaid, BookingError } from "../services/bookingService";
 import { createPaymentIntent, isStripeConfigured } from "../services/stripeService";
 import { chargeNmiToken } from "../services/nmiService";
-import { sendBookingConfirmationEmail, sendOfflinePaymentPendingEmail } from "../services/emailService";
+import {
+  sendBookingConfirmationEmail,
+  sendOfflinePaymentPendingEmail,
+  sendAdminNewBookingNotification,
+} from "../services/emailService";
 import { streamBookingConfirmationPdf, PdfRow } from "../lib/bookingPdf";
 
 const router = Router();
@@ -62,6 +66,26 @@ router.post("/", async (req, res) => {
     }
 
     const booking = await createBooking(parsed.data);
+
+    const [excursionForNotify, slotForNotify] = await Promise.all([
+      prisma.excursion.findUnique({ where: { id: booking.excursionId } }),
+      prisma.departureSlot.findUnique({ where: { id: booking.slotId } }),
+    ]);
+    await sendAdminNewBookingNotification({
+      type: "excursion",
+      title: excursionForNotify?.title ?? "Excursion booking",
+      guestName: booking.guestName,
+      guestEmail: booking.guestEmail,
+      guestPhone: booking.guestPhone,
+      roomNumber: booking.roomNumber,
+      amountTotal: booking.amountTotal,
+      paymentMethod: requestedMethod,
+      bookingCode: booking.bookingCode ?? booking.id,
+      details: [
+        slotForNotify ? `Date & time: ${slotForNotify.date.toISOString().slice(0, 10)} at ${slotForNotify.time}` : "",
+        `Guests: ${booking.totalGuests} (Adults: ${booking.adultCount}, Children: ${booking.childCount})`,
+      ].filter(Boolean),
+    });
 
     // Offline is checked first and unconditionally — an explicit guest
     // choice to pay offline must never be silently overridden by the dev

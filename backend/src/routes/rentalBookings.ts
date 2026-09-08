@@ -4,7 +4,11 @@ import { prisma } from "../lib/prisma";
 import { createRentalBooking, markRentalBookingPaid, RentalError } from "../services/rentalService";
 import { createRentalPaymentIntent, isStripeConfigured } from "../services/stripeService";
 import { chargeNmiToken } from "../services/nmiService";
-import { sendRentalBookingConfirmationEmail, sendOfflinePaymentPendingEmail } from "../services/emailService";
+import {
+  sendRentalBookingConfirmationEmail,
+  sendOfflinePaymentPendingEmail,
+  sendAdminNewBookingNotification,
+} from "../services/emailService";
 import { streamBookingConfirmationPdf, PdfRow } from "../lib/bookingPdf";
 
 const router = Router();
@@ -52,6 +56,29 @@ router.post("/", async (req, res) => {
     }
 
     const booking = await createRentalBooking(parsed.data);
+
+    const [itemForNotify, timeSlotForNotify, spotForNotify] = await Promise.all([
+      prisma.rentalItem.findUnique({ where: { id: booking.rentalItemId } }),
+      prisma.rentalTimeSlot.findUnique({ where: { id: booking.timeSlotId } }),
+      prisma.rentalSpot.findUnique({ where: { id: booking.spotId } }),
+    ]);
+    await sendAdminNewBookingNotification({
+      type: "rental",
+      title: itemForNotify?.name ?? "Beach chair booking",
+      guestName: booking.guestName,
+      guestEmail: booking.guestEmail,
+      guestPhone: booking.guestPhone,
+      roomNumber: booking.roomNumber,
+      amountTotal: booking.amountTotal,
+      paymentMethod: requestedMethod,
+      bookingCode: booking.bookingCode ?? booking.id,
+      details: [
+        `Date: ${booking.date.toISOString().slice(0, 10)}`,
+        timeSlotForNotify ? `Time slot: ${timeSlotForNotify.label} (${timeSlotForNotify.startTime}-${timeSlotForNotify.endTime})` : "",
+        spotForNotify ? `Spot: ${spotForNotify.code}` : "",
+        `Chairs reserved: ${booking.quantity}`,
+      ].filter(Boolean),
+    });
 
     // Offline is checked first and unconditionally — see bookings.ts for why.
     if (requestedMethod === "offline") {

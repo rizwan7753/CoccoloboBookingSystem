@@ -9,6 +9,7 @@ import {
   Event,
   EventBooking,
   EventTicketTier,
+  RestaurantReservation,
 } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 
@@ -355,6 +356,129 @@ export async function sendEventBookingConfirmationEmail(booking: EventBooking, e
       intro: `Hi ${escapeHtml(booking.guestName)}, your tickets are confirmed — we'll see you there!`,
       rows,
       bookingId: refCode,
+    }),
+  });
+}
+
+/** Staff-facing "new booking" alert — sent to Location.adminNotificationEmail
+ *  (a no-op if that isn't set) whenever a guest creates any booking, so staff
+ *  don't have to keep checking the admin panel to notice new activity.
+ *  `details` follows the same "Label: value" convention as the offline
+ *  pending email so both can share the same string-building at the call site. */
+export async function sendAdminNewBookingNotification(params: {
+  type: "excursion" | "rental" | "event";
+  title: string;
+  guestName: string;
+  guestEmail: string;
+  guestPhone?: string | null;
+  roomNumber?: string | null;
+  amountTotal: string | number | { toString(): string };
+  paymentMethod: string;
+  bookingCode: string;
+  details?: string[];
+}) {
+  const location = await prisma.location.findFirst();
+  if (!location?.adminNotificationEmail) return;
+
+  const rows: Row[] = [
+    { label: "Guest", value: params.guestName },
+    { label: "Email", value: params.guestEmail },
+    ...(params.guestPhone ? [{ label: "Phone", value: params.guestPhone }] : []),
+    ...(params.roomNumber ? [{ label: "Room/Villa", value: params.roomNumber }] : []),
+    ...(params.details ?? []).map((d) => {
+      const [label, ...rest] = d.split(":");
+      return rest.length > 0 ? { label: label.trim(), value: rest.join(":").trim() } : { label: "Detail", value: d };
+    }),
+    { label: "Amount", value: `$${params.amountTotal}` },
+    { label: "Payment method", value: formatPaymentMethod(params.paymentMethod) },
+  ];
+
+  await sendEmail({
+    to: location.adminNotificationEmail,
+    subject: `New booking: ${params.title}`,
+    text: [
+      `A new ${params.type} booking was just placed.`,
+      ``,
+      ...rows.map((r) => `${r.label}: ${r.value}`),
+      `Booking reference: ${params.bookingCode}`,
+    ].join("\n"),
+    html: renderEmailShell({
+      accent: "#44403c",
+      locationName: location.name || "Booking system",
+      eyebrow: "New booking alert",
+      heading: params.title,
+      intro: `A new ${params.type} booking was just placed — details below.`,
+      rows,
+      bookingId: params.bookingCode,
+    }),
+  });
+}
+
+/** Sent to the guest right after they submit a restaurant reservation
+ *  enquiry — this is an acknowledgement, not a confirmation: there's no
+ *  payment or live table availability, so staff still have to follow up to
+ *  actually confirm the table. */
+export async function sendRestaurantReservationAcknowledgement(reservation: RestaurantReservation) {
+  const locationName = await getLocationName();
+  const rows: Row[] = [
+    { label: "Party size", value: `${reservation.partySize} guest${reservation.partySize === 1 ? "" : "s"}` },
+    { label: "Date", value: reservation.date.toISOString().slice(0, 10) },
+    { label: "Time", value: reservation.time },
+    ...(reservation.specialRequests ? [{ label: "Notes", value: reservation.specialRequests }] : []),
+  ];
+
+  await sendEmail({
+    to: reservation.guestEmail,
+    subject: `Reservation request received — ${locationName}`,
+    text: [
+      `Hi ${reservation.guestName},`,
+      ``,
+      `Thanks for your table reservation request — we haven't confirmed it yet, but a member of staff will be in touch shortly to finalize the details.`,
+      ...rows.map((r) => `${r.label}: ${r.value}`),
+    ].join("\n"),
+    html: renderEmailShell({
+      accent: "#78350f",
+      locationName,
+      eyebrow: "Reservation request received",
+      heading: "We'll be in touch shortly",
+      intro: `Hi ${escapeHtml(reservation.guestName)}, thanks for your request — we haven't confirmed it yet, but a member of staff will reach out shortly to finalize the details.`,
+      rows,
+      bookingId: reservation.id,
+    }),
+  });
+}
+
+/** Staff-facing alert for a new restaurant reservation enquiry — sent to
+ *  Location.adminNotificationEmail, a no-op if that isn't set (same
+ *  convention as sendAdminNewBookingNotification). */
+export async function sendRestaurantReservationNotification(reservation: RestaurantReservation) {
+  const location = await prisma.location.findFirst();
+  if (!location?.adminNotificationEmail) return;
+
+  const rows: Row[] = [
+    { label: "Guest", value: reservation.guestName },
+    { label: "Email", value: reservation.guestEmail },
+    ...(reservation.guestPhone ? [{ label: "Phone", value: reservation.guestPhone }] : []),
+    { label: "Party size", value: String(reservation.partySize) },
+    { label: "Date", value: reservation.date.toISOString().slice(0, 10) },
+    { label: "Time", value: reservation.time },
+    ...(reservation.specialRequests ? [{ label: "Notes", value: reservation.specialRequests }] : []),
+  ];
+
+  await sendEmail({
+    to: location.adminNotificationEmail,
+    subject: `New restaurant reservation request: ${reservation.guestName}`,
+    text: ["A new restaurant reservation request was just submitted.", ``, ...rows.map((r) => `${r.label}: ${r.value}`)].join(
+      "\n"
+    ),
+    html: renderEmailShell({
+      accent: "#78350f",
+      locationName: location.name || "Booking system",
+      eyebrow: "New reservation request",
+      heading: reservation.guestName,
+      intro: "A new restaurant reservation request was just submitted — details below.",
+      rows,
+      bookingId: reservation.id,
     }),
   });
 }

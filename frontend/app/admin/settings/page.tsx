@@ -144,6 +144,7 @@ export default function AdminSettingsPage() {
   const [name, setName] = useState("");
   const [timezone, setTimezone] = useState("");
   const [currency, setCurrency] = useState("");
+  const [adminNotificationEmail, setAdminNotificationEmail] = useState("");
 
   const [smtpHost, setSmtpHost] = useState("");
   const [smtpPort, setSmtpPort] = useState(587);
@@ -180,6 +181,7 @@ export default function AdminSettingsPage() {
     setName(s.name);
     setTimezone(s.timezone);
     setCurrency(s.currency);
+    setAdminNotificationEmail(s.adminNotificationEmail ?? "");
     setSmtpHost(s.smtpHost ?? "");
     setSmtpPort(s.smtpPort ?? 587);
     setSmtpUsername(s.smtpUsername ?? "");
@@ -213,6 +215,7 @@ export default function AdminSettingsPage() {
         name,
         timezone,
         currency,
+        adminNotificationEmail: adminNotificationEmail || undefined,
         smtpHost: smtpHost || undefined,
         smtpPort: smtpHost ? Number(smtpPort) : undefined,
         smtpUsername: smtpUsername || undefined,
@@ -322,6 +325,20 @@ export default function AdminSettingsPage() {
                   ))}
                 </select>
               </div>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-stone-700">Admin notification email</label>
+              <input
+                type="email"
+                value={adminNotificationEmail}
+                onChange={(e) => setAdminNotificationEmail(e.target.value)}
+                placeholder="staff@example.com"
+                className={inputClass}
+              />
+              <p className="mt-1 text-xs text-stone-400">
+                Staff get a &quot;new booking&quot; email here whenever a guest books anything. Leave blank to disable.
+              </p>
             </div>
           </>
         )}

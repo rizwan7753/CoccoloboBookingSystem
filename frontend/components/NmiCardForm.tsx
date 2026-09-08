@@ -24,6 +24,13 @@ export default function NmiCardForm({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const configuredRef = useRef(false);
+  // Collect.js validates each field client-side and won't tokenize an
+  // invalid one (e.g. an expired date) — without validationCallback wired
+  // up, that failure was invisible: the button just spun forever with no
+  // error, since our own callback was never going to fire for a field
+  // Collect.js itself refuses to submit.
+  const fieldErrors = useRef<Record<string, string | null>>({});
+  const submitTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -47,7 +54,14 @@ export default function NmiCardForm({
             ccexp: { selector: "#nmi-ccexp", placeholder: "MM / YY" },
             cvv: { selector: "#nmi-cvv", placeholder: "CVV" },
           },
+          validationCallback: (field: string, status: boolean, message: string) => {
+            fieldErrors.current[field] = status ? null : message || "Please check this field.";
+          },
           callback: async (response: { token?: string }) => {
+            if (submitTimeoutRef.current) {
+              clearTimeout(submitTimeoutRef.current);
+              submitTimeoutRef.current = null;
+            }
             if (!response.token) {
               setError("Could not process card — check the details and try again.");
               setSubmitting(false);
@@ -67,6 +81,7 @@ export default function NmiCardForm({
       .catch(() => setError("Could not load the payment form — please refresh and try again."));
     return () => {
       cancelled = true;
+      if (submitTimeoutRef.current) clearTimeout(submitTimeoutRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tokenizationKey, gatewayDomain]);
@@ -74,9 +89,24 @@ export default function NmiCardForm({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!ready || submitting || !window.CollectJS) return;
+
+    const invalidField = Object.values(fieldErrors.current).find((msg) => msg);
+    if (invalidField) {
+      setError(invalidField);
+      return;
+    }
+
     setSubmitting(true);
     setError(null);
     window.CollectJS.startPaymentRequest();
+    // Collect.js silently never calls back for some rejected states (e.g. an
+    // expired card that validationCallback didn't catch in time) — this is
+    // the last-resort guarantee the button never spins forever with no
+    // explanation, regardless of the exact reason.
+    submitTimeoutRef.current = setTimeout(() => {
+      setSubmitting(false);
+      setError("This is taking longer than expected — please check your card details and try again.");
+    }, 15000);
   }
 
   return (

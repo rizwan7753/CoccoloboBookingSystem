@@ -13,6 +13,20 @@ bookings, etc.) is already shaped so those phases don't require a rewrite.
 - **Payments:** Stripe (test mode)
 - **Auth:** JWT (admin/staff)
 
+## Hosting requirements
+
+- **Node.js hosting for two apps** — this is a Next.js frontend + separate Express backend, each a long-running Node process (not static hosting). Any host that can keep two Node processes alive works: a VPS, or shared hosting with cPanel's "Setup Node.js App" (LiteSpeed) — confirmed working there, see notes below.
+- **Node.js 18+** and **MySQL 8** (or compatible, e.g. MariaDB 10.6+)
+- **HTTPS on the public domain(s)** — required for Stripe/NMI's card tokenization scripts and payment webhooks to work at all
+- **Outbound HTTPS access** from the server to Stripe, NMI, and your SMTP provider's APIs
+- **Persistent disk storage** for `backend/uploads/` (excursion/event/rental images) — must survive redeploys, not be wiped on each `git pull`
+- **SMTP credentials** (any provider) for booking confirmation and admin notification emails
+- Minimum ~1GB RAM recommended — the Next.js production build is memory-hungry
+
+If deploying to shared/CloudLinux hosting (cPanel-style), two things this project has hit in practice:
+- Build with `next build --webpack` — Turbopack can fail on older host glibc versions
+- Cap the build to fewer CPU threads (see `frontend/next.config.ts`) — CloudLinux's per-account process/thread limits (LVE) are often lower than Next.js's default worker-pool assumption, causing `pthread_create: Resource temporarily unavailable` otherwise
+
 ## What's built
 
 - Guest site: excursion listing, excursion detail page (SEO metadata + JSON-LD), date/time picker with live availability, guest details, Stripe checkout, confirmation page

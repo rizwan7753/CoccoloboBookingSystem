@@ -4,7 +4,11 @@ import { prisma } from "../lib/prisma";
 import { createEventBooking, markEventBookingPaid, EventError } from "../services/eventService";
 import { createEventPaymentIntent, isStripeConfigured } from "../services/stripeService";
 import { chargeNmiToken } from "../services/nmiService";
-import { sendEventBookingConfirmationEmail, sendOfflinePaymentPendingEmail } from "../services/emailService";
+import {
+  sendEventBookingConfirmationEmail,
+  sendOfflinePaymentPendingEmail,
+  sendAdminNewBookingNotification,
+} from "../services/emailService";
 import { streamBookingConfirmationPdf, PdfRow } from "../lib/bookingPdf";
 
 const router = Router();
@@ -49,6 +53,27 @@ router.post("/", async (req, res) => {
     }
 
     const booking = await createEventBooking(parsed.data);
+
+    const [eventForNotify, tierForNotify] = await Promise.all([
+      prisma.event.findUnique({ where: { id: booking.eventId } }),
+      prisma.eventTicketTier.findUnique({ where: { id: booking.tierId } }),
+    ]);
+    await sendAdminNewBookingNotification({
+      type: "event",
+      title: eventForNotify?.title ?? "Event booking",
+      guestName: booking.guestName,
+      guestEmail: booking.guestEmail,
+      guestPhone: booking.guestPhone,
+      roomNumber: booking.roomNumber,
+      amountTotal: booking.amountTotal,
+      paymentMethod: requestedMethod,
+      bookingCode: booking.bookingCode ?? booking.id,
+      details: [
+        eventForNotify ? `Event date: ${eventForNotify.eventDate.toISOString().slice(0, 10)} at ${eventForNotify.startTime}` : "",
+        eventForNotify?.venue ? `Venue: ${eventForNotify.venue}` : "",
+        tierForNotify ? `${booking.quantity} x ${tierForNotify.name}` : `Quantity: ${booking.quantity}`,
+      ].filter(Boolean),
+    });
 
     // Offline is checked first and unconditionally — see bookings.ts for why.
     if (requestedMethod === "offline") {

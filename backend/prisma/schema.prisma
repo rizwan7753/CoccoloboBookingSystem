@@ -95,6 +95,7 @@ model Location {
   offlinePaymentEnabled      Boolean @default(false)
   offlinePaymentInstructions String? @db.Text // guest-visible bank/deposit instructions
   offlinePaymentReceiptEmail String?          // guest sends their payment receipt here, referencing the booking ID
+  adminNotificationEmail    String?          // staff get a "new booking" email here when set; unset = no admin notifications
 
   // Stripe API keys — configurable here instead of only via env vars/.env, so
   // they can be changed without a redeploy. DB value takes priority over the
@@ -125,6 +126,8 @@ model Location {
   events      Event[]
   adminUsers AdminUser[]
   holidays    Holiday[]
+  restaurantMenus        RestaurantMenu[]
+  restaurantReservations RestaurantReservation[]
 
   @@map("locations")
 }
@@ -492,4 +495,80 @@ model BookingSequence {
   counter Int    @default(0)
 
   @@map("booking_sequences")
+}
+
+// A named menu (Dinner Menu, Lunch Menu, Children's Menu, Seasonal Specials,
+// etc.) shown under the site's "Restaurant" nav dropdown. Structured as
+// Menu -> Sections (Seafood, Desserts, ...) -> Items (name/description/price)
+// rather than free text, so the guest-facing page can lay out a real
+// two-column priced menu instead of just rendering a text block.
+model RestaurantMenu {
+  id         String   @id @default(cuid())
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id])
+  title      String // "Dinner Menu"
+  slug       String   @unique
+  imageUrl   String?
+  sortOrder  Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  sections RestaurantMenuSection[]
+
+  @@index([locationId])
+  @@map("restaurant_menus")
+}
+
+// A category within a menu (e.g. "Seafood", eyebrow subheading "Fresh from
+// the ocean"). Deleting a menu/section cascades to its sections/items — the
+// admin save flow always replaces a menu's whole section list wholesale
+// (same pattern as Excursion.departureTimes), so nothing needs to survive
+// independently of its parent.
+model RestaurantMenuSection {
+  id         String         @id @default(cuid())
+  menuId     String
+  menu       RestaurantMenu @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  heading    String // "Seafood"
+  subheading String? // "Fresh from the ocean"
+  sortOrder  Int            @default(0)
+
+  items RestaurantMenuItem[]
+
+  @@index([menuId])
+  @@map("restaurant_menu_sections")
+}
+
+model RestaurantMenuItem {
+  id          String                @id @default(cuid())
+  sectionId   String
+  section     RestaurantMenuSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  name        String
+  description String?               @db.Text
+  price       Decimal?              @db.Decimal(10, 2)
+  sortOrder   Int                   @default(0)
+
+  @@index([sectionId])
+  @@map("restaurant_menu_items")
+}
+
+// A table reservation enquiry — no payment, no live seat availability/count.
+// Staff follow up by phone/email to actually confirm the table; `status`
+// just tracks where that follow-up stands.
+model RestaurantReservation {
+  id              String   @id @default(cuid())
+  locationId      String
+  location        Location @relation(fields: [locationId], references: [id])
+  guestName       String
+  guestEmail      String
+  guestPhone      String?
+  partySize       Int
+  date            DateTime @db.Date
+  time            String
+  specialRequests String?  @db.Text
+  status          String   @default("NEW") // NEW | CONTACTED | CONFIRMED | DECLINED
+  createdAt       DateTime @default(now())
+
+  @@index([locationId, date])
+  @@map("restaurant_reservations")
 }

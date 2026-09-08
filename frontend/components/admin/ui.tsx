@@ -17,6 +17,9 @@ const STATUS_STYLES: Record<string, string> = {
   CANCELLED: "bg-rose-100 text-rose-700",
   FAILED: "bg-rose-100 text-rose-700",
   REFUNDED: "bg-stone-100 text-stone-600",
+  NEW: "bg-amber-100 text-amber-800",
+  CONTACTED: "bg-sky-100 text-sky-800",
+  DECLINED: "bg-rose-100 text-rose-700",
 };
 
 export function Badge({ status, children }: { status: string; children?: React.ReactNode }) {

@@ -26,6 +26,10 @@ import adminSettingsRouter from "./routes/admin/settings";
 import settingsRouter from "./routes/settings";
 import adminUploadsRouter from "./routes/admin/uploads";
 import bookingLookupRouter from "./routes/bookingLookup";
+import restaurantMenusRouter from "./routes/restaurantMenus";
+import restaurantReservationsRouter from "./routes/restaurantReservations";
+import adminRestaurantMenusRouter from "./routes/admin/restaurantMenus";
+import adminRestaurantReservationsRouter from "./routes/admin/restaurantReservations";
 
 const app = express();
 
@@ -65,6 +69,10 @@ app.use("/api/admin/settings", adminSettingsRouter);
 app.use("/api/settings", settingsRouter);
 app.use("/api/admin/uploads", adminUploadsRouter);
 app.use("/api/booking-lookup", bookingLookupRouter);
+app.use("/api/restaurant-menus", restaurantMenusRouter);
+app.use("/api/restaurant-reservations", restaurantReservationsRouter);
+app.use("/api/admin/restaurant-menus", adminRestaurantMenusRouter);
+app.use("/api/admin/restaurant-reservations", adminRestaurantReservationsRouter);
 
 // Centralized error handler (catches anything thrown in async route handlers below Express 5,
 // or rejected promises not already try/caught).

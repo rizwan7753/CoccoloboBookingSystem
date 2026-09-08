@@ -48,6 +48,7 @@ const settingsSchema = z.object({
   offlinePaymentEnabled: z.boolean().optional(),
   offlinePaymentInstructions: z.string().optional(),
   offlinePaymentReceiptEmail: z.union([z.string().email(), z.literal("")]).optional(),
+  adminNotificationEmail: z.union([z.string().email(), z.literal("")]).optional(),
   stripePublishableKey: z.string().optional(),
   stripeSecretKey: z.string().optional(), // omitted or blank = keep existing
   stripeWebhookSecret: z.string().optional(), // omitted or blank = keep existing
