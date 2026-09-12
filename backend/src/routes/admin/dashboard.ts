@@ -1,12 +1,12 @@
 import { Router } from "express";
 import { prisma } from "../../lib/prisma";
 import { requireAdmin } from "../../middleware/requireAdmin";
-import { requireRole } from "../../middleware/requireRole";
+import { requirePermission } from "../../middleware/requirePermission";
 import { parseDateOnly } from "../../lib/dateOnly";
 
 const router = Router();
 router.use(requireAdmin);
-router.use(requireRole("SUPER_ADMIN", "LOCATION_MANAGER", "BOOKING_STAFF", "FINANCE"));
+router.use(requirePermission("dashboard.view"));
 
 function dayOfWeek(date: Date): number {
   return date.getUTCDay();

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { adminApi, AdminRentalItem, getStoredAdmin, canEditExcursions } from "@/lib/adminApi";
+import { adminApi, AdminRentalItem, getStoredAdmin, canManageRentals } from "@/lib/adminApi";
 import RentalItemForm from "@/components/RentalItemForm";
 import { PageHeader, cardClass, inputClass, primaryButtonClass } from "@/components/admin/ui";
 
@@ -25,7 +25,7 @@ export default function EditRentalPage() {
   const [generateMessage, setGenerateMessage] = useState<string | null>(null);
   const [generateError, setGenerateError] = useState<string | null>(null);
 
-  const canEdit = canEditExcursions(getStoredAdmin()?.role);
+  const canEdit = canManageRentals(getStoredAdmin()?.permissions);
 
   function loadItem() {
     adminApi

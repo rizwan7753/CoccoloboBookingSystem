@@ -2,15 +2,12 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
 import { requireAdmin, AuthedRequest } from "../../middleware/requireAdmin";
-import { requireRole } from "../../middleware/requireRole";
+import { requirePermission } from "../../middleware/requirePermission";
 import { parseDateOnly } from "../../lib/dateOnly";
 import { logAudit } from "../../lib/auditLog";
 
 const router = Router();
 router.use(requireAdmin);
-
-const VIEW_ROLES = ["SUPER_ADMIN", "LOCATION_MANAGER", "BOOKING_STAFF", "FINANCE"] as const;
-const EDIT_ROLES = ["SUPER_ADMIN", "LOCATION_MANAGER"] as const;
 
 const eventSchema = z.object({
   locationId: z.string(),
@@ -32,7 +29,7 @@ const eventSchema = z.object({
 });
 
 // GET /api/admin/events — all events regardless of status/date
-router.get("/", requireRole(...VIEW_ROLES), async (_req, res) => {
+router.get("/", requirePermission("events.view"), async (_req, res) => {
   const events = await prisma.event.findMany({
     include: { ticketTiers: true, _count: { select: { bookings: true } } },
     orderBy: { eventDate: "desc" },
@@ -40,7 +37,7 @@ router.get("/", requireRole(...VIEW_ROLES), async (_req, res) => {
   res.json(events);
 });
 
-router.get("/:id", requireRole(...VIEW_ROLES), async (req, res) => {
+router.get("/:id", requirePermission("events.view"), async (req, res) => {
   const event = await prisma.event.findUnique({
     where: { id: req.params.id },
     include: { ticketTiers: { orderBy: { price: "asc" } } },
@@ -50,7 +47,7 @@ router.get("/:id", requireRole(...VIEW_ROLES), async (req, res) => {
 });
 
 // POST /api/admin/events — create
-router.post("/", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) => {
+router.post("/", requirePermission("events.manage"), async (req: AuthedRequest, res) => {
   const parsed = eventSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid input", details: parsed.error.flatten() });
 
@@ -69,7 +66,7 @@ router.post("/", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) => 
 });
 
 // PUT /api/admin/events/:id — update
-router.put("/:id", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) => {
+router.put("/:id", requirePermission("events.manage"), async (req: AuthedRequest, res) => {
   const parsed = eventSchema.partial().safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid input", details: parsed.error.flatten() });
 
@@ -91,7 +88,7 @@ router.put("/:id", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) =
 });
 
 // DELETE /api/admin/events/:id
-router.delete("/:id", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) => {
+router.delete("/:id", requirePermission("events.manage"), async (req: AuthedRequest, res) => {
   await prisma.event.delete({ where: { id: req.params.id } });
 
   await logAudit(
@@ -107,7 +104,7 @@ router.delete("/:id", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res
 // --- Ticket tier management ---
 
 // POST /api/admin/events/:id/tiers — add a ticket tier
-router.post("/:id/tiers", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) => {
+router.post("/:id/tiers", requirePermission("events.manage"), async (req: AuthedRequest, res) => {
   const schema = z.object({
     name: z.string().min(1),
     description: z.string().optional(),
@@ -133,7 +130,7 @@ router.post("/:id/tiers", requireRole(...EDIT_ROLES), async (req: AuthedRequest,
 });
 
 // PUT /api/admin/events/tiers/:tierId
-router.put("/tiers/:tierId", requireRole(...EDIT_ROLES), async (req, res) => {
+router.put("/tiers/:tierId", requirePermission("events.manage"), async (req, res) => {
   const schema = z.object({
     name: z.string().min(1).optional(),
     description: z.string().optional(),
@@ -149,7 +146,7 @@ router.put("/tiers/:tierId", requireRole(...EDIT_ROLES), async (req, res) => {
 });
 
 // DELETE /api/admin/events/tiers/:tierId
-router.delete("/tiers/:tierId", requireRole(...EDIT_ROLES), async (req, res) => {
+router.delete("/tiers/:tierId", requirePermission("events.manage"), async (req, res) => {
   await prisma.eventTicketTier.delete({ where: { id: req.params.tierId } });
   res.status(204).send();
 });

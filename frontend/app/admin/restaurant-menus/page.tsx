@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { adminApi, AdminRestaurantMenu, getStoredAdmin, canEditExcursions } from "@/lib/adminApi";
+import { adminApi, AdminRestaurantMenu, getStoredAdmin, canManageRestaurantMenus } from "@/lib/adminApi";
 import { PageHeader, cardClass, inputClass, primaryButtonClass, Badge } from "@/components/admin/ui";
 import ImageUploadField from "@/components/ImageUploadField";
 
@@ -41,7 +41,7 @@ export default function AdminRestaurantMenusPage() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const canEdit = canEditExcursions(getStoredAdmin()?.role);
+  const canEdit = canManageRestaurantMenus(getStoredAdmin()?.permissions);
 
   function load() {
     adminApi

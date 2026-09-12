@@ -1,11 +1,11 @@
 import { Router } from "express";
 import { prisma } from "../../lib/prisma";
 import { requireAdmin } from "../../middleware/requireAdmin";
-import { requireRole } from "../../middleware/requireRole";
+import { requirePermission } from "../../middleware/requirePermission";
 
 const router = Router();
 router.use(requireAdmin);
-router.use(requireRole("SUPER_ADMIN"));
+router.use(requirePermission("audit.view"));
 
 // GET /api/admin/audit-log?entityType=&entityId=&limit=
 router.get("/", async (req, res) => {

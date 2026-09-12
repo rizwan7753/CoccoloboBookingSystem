@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>Booking System Features</title>
+<meta name="description" content="Complete feature reference for the Cocolobo Beach Club booking system." />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap"
+/>
+<style>
+  :root {
+    --bg: #faf9f7;
+    --surface: #ffffff;
+    --surface-2: #f4f2ef;
+    --ink: #201c19;
+    --ink-soft: #4a4440;
+    --muted: #837a73;
+    --border: #e6e1db;
+    --border-soft: #efece7;
+    --teal: #0f766e;
+    --teal-soft: #e3f2f0;
+    --amber: #b45309;
+    --amber-soft: #f8ecdf;
+    --fuchsia: #86198f;
+    --fuchsia-soft: #f6e7f7;
+    --rose: #9f1239;
+    --rose-soft: #fbe8ee;
+    --accent: var(--teal);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #16130f;
+      --surface: #1e1a15;
+      --surface-2: #241f19;
+      --ink: #f3efe9;
+      --ink-soft: #d9d2c8;
+      --muted: #9a9086;
+      --border: #362f27;
+      --border-soft: #2c2620;
+      --teal: #5eead4;
+      --teal-soft: #12302c;
+      --amber: #fbbf6d;
+      --amber-soft: #33230f;
+      --fuchsia: #f0abfc;
+      --fuchsia-soft: #33163a;
+      --rose: #fda4af;
+      --rose-soft: #3a1220;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #16130f;
+    --surface: #1e1a15;
+    --surface-2: #241f19;
+    --ink: #f3efe9;
+    --ink-soft: #d9d2c8;
+    --muted: #9a9086;
+    --border: #362f27;
+    --border-soft: #2c2620;
+    --teal: #5eead4;
+    --teal-soft: #12302c;
+    --amber: #fbbf6d;
+    --amber-soft: #33230f;
+    --fuchsia: #f0abfc;
+    --fuchsia-soft: #33163a;
+    --rose: #fda4af;
+    --rose-soft: #3a1220;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Libre Franklin", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    line-height: 1.55;
+  }
+  img { max-width: 100%; }
+  h1, h2, h3 {
+    font-family: "Fraunces", Georgia, serif;
+    text-wrap: balance;
+    color: var(--ink);
+    margin: 0;
+  }
+  .mono {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+  }
+  a { color: inherit; }
+
+  .shell {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 56px 32px 96px;
+  }
+
+  /* ---- Masthead ---- */
+  .masthead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    padding-bottom: 36px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 48px;
+  }
+  .masthead .eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 10px;
+  }
+  .masthead h1 {
+    font-size: clamp(32px, 4.2vw, 46px);
+    font-weight: 600;
+    line-height: 1.08;
+  }
+  .masthead p {
+    max-width: 46ch;
+    color: var(--ink-soft);
+    margin: 14px 0 0;
+    font-size: 15.5px;
+  }
+  .masthead .meta {
+    text-align: right;
+    font-size: 13px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .masthead .meta strong {
+    display: block;
+    color: var(--ink-soft);
+    font-weight: 600;
+    margin-bottom: 3px;
+  }
+
+  /* ---- Layout: TOC + content ---- */
+  .layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 56px;
+    align-items: start;
+  }
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; }
+    .toc { display: none; }
+  }
+
+  .toc {
+    position: sticky;
+    top: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .toc a {
+    text-decoration: none;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--muted);
+    padding: 7px 10px;
+    border-radius: 7px;
+    border-left: 2px solid transparent;
+    transition: color 0.15s, background 0.15s, border-color 0.15s;
+  }
+  .toc a:hover {
+    color: var(--ink);
+    background: var(--surface-2);
+  }
+
+  /* ---- Sections ---- */
+  section.group {
+    padding-top: 8px;
+    margin-bottom: 60px;
+    scroll-margin-top: 32px;
+  }
+  .group-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+  .tag.teal { background: var(--teal-soft); color: var(--teal); }
+  .tag.amber { background: var(--amber-soft); color: var(--amber); }
+  .tag.fuchsia { background: var(--fuchsia-soft); color: var(--fuchsia); }
+  .tag.rose { background: var(--rose-soft); color: var(--rose); }
+  .tag.neutral { background: var(--surface-2); color: var(--ink-soft); border: 1px solid var(--border); }
+
+  .group-head h2 {
+    font-size: 22px;
+    font-weight: 600;
+  }
+  .group-sub {
+    margin: 0 0 26px;
+    color: var(--muted);
+    font-size: 14px;
+    max-width: 62ch;
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1px;
+    background: var(--border-soft);
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .feature {
+    background: var(--surface);
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .feature h3 {
+    font-family: "Libre Franklin", sans-serif;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .feature p {
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  footer {
+    margin-top: 24px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <div class="masthead">
+    <div>
+      <p class="eyebrow">Cocolobo Beach Club &middot; Booking System</p>
+      <h1>What the system does</h1>
+      <p>A single reference of every capability currently built and live &mdash; guest booking, payments, the restaurant section, and the admin panel that runs it all.</p>
+    </div>
+    <div class="meta">
+      <strong>Reference build</strong>
+      September 2026
+    </div>
+  </div>
+
+  <div class="layout">
+    <nav class="toc">
+      <a href="#guest">Guest booking</a>
+      <a href="#restaurant">Restaurant</a>
+      <a href="#payments">Payments</a>
+      <a href="#comms">Emails &amp; notifications</a>
+      <a href="#admin">Admin panel</a>
+      <a href="#platform">Platform &amp; reliability</a>
+    </nav>
+
+    <div>
+
+      <section class="group" id="guest">
+        <div class="group-head">
+          <span class="tag teal">Guest-facing</span>
+          <h2>Guest booking</h2>
+        </div>
+        <p class="group-sub">Three bookable experiences, each with live availability so nothing can be oversold.</p>
+        <div class="feature-grid">
+          <div class="feature">
+            <h3>Excursions</h3>
+            <p>Live date/time availability, adult &amp; child pricing, flat-rate or per-guest pricing modes, and a booking cut-off enforced the evening before departure.</p>
+          </div>
+          <div class="feature">
+            <h3>Beach chairs</h3>
+            <p>Same-day booking against a specific numbered spot and time slot &mdash; no advance cut-off.</p>
+          </div>
+          <div class="feature">
+            <h3>Events</h3>
+            <p>Ticket tiers with per-tier pricing and quantity selection for one-off happenings.</p>
+          </div>
+          <div class="feature">
+            <h3>Oversell-proof capacity</h3>
+            <p>Row-level database locking holds capacity during checkout, so two simultaneous bookings can never both win the last spot.</p>
+          </div>
+          <div class="feature">
+            <h3>Mobile navigation</h3>
+            <p>Hamburger menu with expandable submenus, matching the desktop hover dropdowns.</p>
+          </div>
+          <div class="feature">
+            <h3>Find my booking</h3>
+            <p>Self-service lookup by reference code + email, for a guest who's lost their confirmation email.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="group" id="restaurant">
+        <div class="group-head">
+          <span class="tag rose">Restaurant</span>
+          <h2>Dining &amp; reservations</h2>
+        </div>
+        <p class="group-sub">A full restaurant section: browsable menus and a no-payment table request, built into the same system.</p>
+        <div class="feature-grid">
+          <div class="feature">
+            <h3>Structured menus</h3>
+            <p>Each menu is built from sections and priced items &mdash; not a block of text &mdash; so pricing lines up cleanly on the page.</p>
+          </div>
+          <div class="feature">
+            <h3>Menu descriptions &amp; timings</h3>
+            <p>An overview line and serving hours (e.g. <span class="mono">6:00 PM &ndash; 10:00 PM</span>) shown on every menu's card and page.</p>
+          </div>
+          <div class="feature">
+            <h3>Embedded reservation form</h3>
+            <p>No linking away &mdash; a request-a-table form sits directly on every menu page and the restaurant overview, with a menu-of-interest picker where there's no fixed menu.</p>
+          </div>
+          <div class="feature">
+            <h3>No payment, no live count</h3>
+            <p>Purely an enquiry: staff follow up by phone or email to actually confirm the table.</p>
+          </div>
+          <div class="feature">
+            <h3>Status workflow</h3>
+            <p>Each request moves New &rarr; Contacted &rarr; Confirmed or Declined as staff work through it.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="group" id="payments">
+        <div class="group-head">
+          <span class="tag amber">Payments</span>
+          <h2>Checkout &amp; confirmation</h2>
+        </div>
+        <p class="group-sub">Three independent payment methods, and a reference scheme that makes every booking easy to talk about on the phone.</p>
+        <div class="feature-grid">
+          <div class="feature">
+            <h3>Stripe &amp; NMI card payments</h3>
+            <p>Two independent card gateways, each switchable on or off &mdash; the guest picks when more than one is enabled.</p>
+          </div>
+          <div class="feature">
+            <h3>Offline / bank transfer</h3>
+            <p>Guest sees bank details at checkout; the booking is held pending until staff manually verify and confirm payment.</p>
+          </div>
+          <div class="feature">
+            <h3>Human-readable booking codes</h3>
+            <p>Every booking &mdash; excursion, chair, event, or table request &mdash; gets a code like <span class="mono">COCO_EXC_20260904_0007</span> instead of an opaque ID.</p>
+          </div>
+          <div class="feature">
+            <h3>Print &amp; PDF confirmation</h3>
+            <p>Every confirmation page can be printed or downloaded as a branded PDF.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="group" id="comms">
+        <div class="group-head">
+          <span class="tag fuchsia">Communication</span>
+          <h2>Emails &amp; notifications</h2>
+        </div>
+        <p class="group-sub">Guests and staff both stay in the loop automatically.</p>
+        <div class="feature-grid">
+          <div class="feature">
+            <h3>Branded confirmation emails</h3>
+            <p>Styled HTML (with a plain-text fallback) for every booking type, showing full details and payment status.</p>
+          </div>
+          <div class="feature">
+            <h3>Admin new-booking alerts</h3>
+            <p>An optional notification address gets emailed the moment any booking or table request comes in.</p>
+          </div>
+          <div class="feature">
+            <h3>Offline payment instructions</h3>
+            <p>Guests who choose bank transfer get the account details and a reminder to send their receipt.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="group" id="admin">
+        <div class="group-head">
+          <span class="tag neutral">Admin panel</span>
+          <h2>Running the property</h2>
+        </div>
+        <p class="group-sub">Everything guest-facing has a matching admin surface to manage it.</p>
+        <div class="feature-grid">
+          <div class="feature">
+            <h3>Full content management</h3>
+            <p>Excursions, beach chairs, events, restaurant menus, and holiday closures &mdash; all editable, including card/header photo uploads.</p>
+          </div>
+          <div class="feature">
+            <h3>Booking lists &amp; exports</h3>
+            <p>Search and date-range filters per booking type, with one-click Excel export.</p>
+          </div>
+          <div class="feature">
+            <h3>Interactive dashboard calendar</h3>
+            <p>Click any date to jump straight to that day's bookings, filtered exactly to it.</p>
+          </div>
+          <div class="feature">
+            <h3>Staff roles</h3>
+            <p>Super Admin, Location Manager, Booking Staff, Finance, and Travel Agent &mdash; each with different edit permissions.</p>
+          </div>
+          <div class="feature">
+            <h3>System settings</h3>
+            <p>Property name, timezone (with live UTC offset), currency, SMTP, payment gateway keys, and notification addresses &mdash; all in one place.</p>
+          </div>
+          <div class="feature">
+            <h3>Responsive on any device</h3>
+            <p>A slide-in sidebar on mobile and horizontally-scrolling tables, so the panel is usable from a phone in the field.</p>
+          </div>
+          <div class="feature">
+            <h3>Audit log</h3>
+            <p>Every staff action &mdash; created, edited, cancelled, marked paid &mdash; is recorded with who and when.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="group" id="platform">
+        <div class="group-head">
+          <span class="tag neutral">Under the hood</span>
+          <h2>Platform &amp; reliability</h2>
+        </div>
+        <p class="group-sub">The details that don't show up in a screenshot but decide whether the system holds up in production.</p>
+        <div class="feature-grid">
+          <div class="feature">
+            <h3>Timezone-correct cut-offs</h3>
+            <p>Booking cut-offs and "next departure" calculations use the property's own timezone, not the server's.</p>
+          </div>
+          <div class="feature">
+            <h3>Graceful payment-form failures</h3>
+            <p>Card validation errors surface immediately, and a safety timeout guarantees checkout never spins forever with no explanation.</p>
+          </div>
+          <div class="feature">
+            <h3>Production-hosting ready</h3>
+            <p>Runs on shared cPanel/LiteSpeed hosting &mdash; the build and deploy path is tuned for that environment's constraints.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <footer>
+    <span>Cocolobo Beach Club &mdash; Booking System</span>
+    <span>Internal feature reference</span>
+  </footer>
+</div>
+
+</body>
+</html>

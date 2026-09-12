@@ -9,7 +9,7 @@ import { PageHeader, Badge, cardClass, primaryButtonClass } from "@/components/a
 export default function AdminExcursionsPage() {
   const [excursions, setExcursions] = useState<Excursion[]>([]);
   const [loading, setLoading] = useState(true);
-  const canEdit = canEditExcursions(getStoredAdmin()?.role);
+  const canEdit = canEditExcursions(getStoredAdmin()?.permissions);
 
   useEffect(() => {
     adminApi

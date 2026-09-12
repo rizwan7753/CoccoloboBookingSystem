@@ -59,16 +59,35 @@ enum BookingSource {
   CRUISE
 }
 
-// Mirrors the roles defined in the requirements spec (§14 Staff Roles & Permissions).
-// TRAVEL_AGENT is reserved for the agent/tour-operator portal (a later phase) — the
-// enum value exists now so that phase doesn't require a migration, but no agent-facing
-// routes exist yet in this MVP.
-enum AdminRole {
-  SUPER_ADMIN
-  LOCATION_MANAGER
-  BOOKING_STAFF
-  FINANCE
-  TRAVEL_AGENT
+// Roles are now admin-managed rows rather than a fixed enum (§14 Staff Roles &
+// Permissions has become user-editable). Five built-in roles are seeded with the
+// same ids the old AdminRole enum used (SUPER_ADMIN, LOCATION_MANAGER,
+// BOOKING_STAFF, FINANCE, TRAVEL_AGENT) so existing admin_users.role values kept
+// working unchanged across the migration — see lib/permissions.ts for the fixed
+// catalog of permission keys a role can be granted.
+model Role {
+  id         String   @id @default(cuid())
+  name       String   @unique
+  // Built-in roles (seeded at migration time) can't be renamed or deleted from
+  // the admin UI, only have their permissions adjusted — keeps the five
+  // historical roles from disappearing out from under existing staff accounts.
+  isSystem   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  permissions RolePermission[]
+  adminUsers  AdminUser[]
+
+  @@map("roles")
+}
+
+model RolePermission {
+  id         String @id @default(cuid())
+  roleId     String
+  role       Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission String // one of the keys in lib/permissions.ts's PERMISSIONS list
+
+  @@unique([roleId, permission])
+  @@map("role_permissions")
 }
 
 model Location {
@@ -456,12 +475,17 @@ model AdminUser {
   id           String    @id @default(cuid())
   locationId   String?
   location     Location? @relation(fields: [locationId], references: [id])
-  email        String    @unique
+  email        String   @unique
   passwordHash String
   name         String
-  role         AdminRole @default(BOOKING_STAFF)
-  createdAt    DateTime  @default(now())
-  isActive     Boolean   @default(true)
+  // Stores a Role.id — kept the column name/type-compatible "role" (now a plain
+  // string instead of the old AdminRole enum) so the migration is a column-type
+  // change with no data remapping: the enum's string values already match the
+  // seeded built-in Role ids.
+  role         String   @default("BOOKING_STAFF")
+  roleRef      Role     @relation(fields: [role], references: [id])
+  createdAt    DateTime @default(now())
+  isActive     Boolean  @default(true)
 
   @@map("admin_users")
 }

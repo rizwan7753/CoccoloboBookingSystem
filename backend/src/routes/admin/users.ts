@@ -2,32 +2,34 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
 import { requireAdmin, AuthedRequest } from "../../middleware/requireAdmin";
-import { requireRole } from "../../middleware/requireRole";
+import { requirePermission } from "../../middleware/requirePermission";
 import { hashPassword } from "../../lib/auth";
 import { logAudit } from "../../lib/auditLog";
 
 const router = Router();
 router.use(requireAdmin);
-router.use(requireRole("SUPER_ADMIN")); // staff/role management is Super Admin only (spec §14)
-
-const ROLES = ["SUPER_ADMIN", "LOCATION_MANAGER", "BOOKING_STAFF", "FINANCE", "TRAVEL_AGENT"] as const;
+router.use(requirePermission("staff.manage")); // staff/role management is a single permission
 
 const createUserSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  role: z.enum(ROLES),
+  role: z.string().min(1), // Role.id
   locationId: z.string().nullable().optional(),
 });
 
 const updateUserSchema = z.object({
   name: z.string().min(1).optional(),
   email: z.string().email().optional(),
-  role: z.enum(ROLES).optional(),
+  role: z.string().min(1).optional(), // Role.id
   locationId: z.string().nullable().optional(),
   isActive: z.boolean().optional(),
   password: z.string().min(8).optional(),
 });
+
+async function roleExists(roleId: string): Promise<boolean> {
+  return (await prisma.role.findUnique({ where: { id: roleId }, select: { id: true } })) !== null;
+}
 
 // GET /api/admin/users — list all staff/admin accounts
 router.get("/", async (_req, res) => {
@@ -37,19 +39,22 @@ router.get("/", async (_req, res) => {
       name: true,
       email: true,
       role: true,
+      roleRef: { select: { name: true } },
       locationId: true,
       isActive: true,
       createdAt: true,
     },
     orderBy: { createdAt: "asc" },
   });
-  res.json(users);
+  res.json(users.map(({ roleRef, ...u }) => ({ ...u, roleName: roleRef.name })));
 });
 
 // POST /api/admin/users — create a new staff/admin account
 router.post("/", async (req: AuthedRequest, res) => {
   const parsed = createUserSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid input", details: parsed.error.flatten() });
+
+  if (!(await roleExists(parsed.data.role))) return res.status(400).json({ error: "Unknown role" });
 
   const existing = await prisma.adminUser.findUnique({ where: { email: parsed.data.email } });
   if (existing) return res.status(409).json({ error: "A user with this email already exists" });
@@ -62,7 +67,7 @@ router.post("/", async (req: AuthedRequest, res) => {
       locationId: parsed.data.locationId ?? null,
       passwordHash: await hashPassword(parsed.data.password),
     },
-    select: { id: true, name: true, email: true, role: true, locationId: true, isActive: true, createdAt: true },
+    select: { id: true, name: true, email: true, role: true, roleRef: { select: { name: true } }, locationId: true, isActive: true, createdAt: true },
   });
 
   await logAudit(
@@ -73,7 +78,8 @@ router.post("/", async (req: AuthedRequest, res) => {
     { email: user.email, role: user.role }
   );
 
-  res.status(201).json(user);
+  const { roleRef, ...rest } = user;
+  res.status(201).json({ ...rest, roleName: roleRef.name });
 });
 
 // PUT /api/admin/users/:id — update role, location, active status, or reset password
@@ -81,8 +87,12 @@ router.put("/:id", async (req: AuthedRequest, res) => {
   const parsed = updateUserSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid input", details: parsed.error.flatten() });
 
-  if (req.params.id === req.admin!.sub && parsed.data.role && parsed.data.role !== "SUPER_ADMIN") {
-    return res.status(400).json({ error: "You cannot demote your own account" });
+  if (parsed.data.role) {
+    const targetRole = await prisma.role.findUnique({ where: { id: parsed.data.role }, include: { permissions: true } });
+    if (!targetRole) return res.status(400).json({ error: "Unknown role" });
+    if (req.params.id === req.admin!.sub && !targetRole.permissions.some((p) => p.permission === "staff.manage")) {
+      return res.status(400).json({ error: "You cannot switch your own account to a role that can't manage staff" });
+    }
   }
   if (req.params.id === req.admin!.sub && parsed.data.isActive === false) {
     return res.status(400).json({ error: "You cannot deactivate your own account" });
@@ -98,7 +108,7 @@ router.put("/:id", async (req: AuthedRequest, res) => {
   const user = await prisma.adminUser.update({
     where: { id: req.params.id },
     data: { ...rest, ...(password ? { passwordHash: await hashPassword(password) } : {}) },
-    select: { id: true, name: true, email: true, role: true, locationId: true, isActive: true, createdAt: true },
+    select: { id: true, name: true, email: true, role: true, roleRef: { select: { name: true } }, locationId: true, isActive: true, createdAt: true },
   });
 
   await logAudit(
@@ -109,7 +119,8 @@ router.put("/:id", async (req: AuthedRequest, res) => {
     { changedFields: Object.keys(rest) }
   );
 
-  res.json(user);
+  const { roleRef, ...userRest } = user;
+  res.json({ ...userRest, roleName: roleRef.name });
 });
 
 // DELETE /api/admin/users/:id

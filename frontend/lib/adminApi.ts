@@ -2,22 +2,30 @@ import { Excursion, Booking } from "./api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
 
-export const ADMIN_ROLES = ["SUPER_ADMIN", "LOCATION_MANAGER", "BOOKING_STAFF", "FINANCE", "TRAVEL_AGENT"] as const;
-export type AdminRole = (typeof ADMIN_ROLES)[number];
+// Grouped list of permission keys shown on the admin "Roles" screen — mirrors
+// backend/src/lib/permissions.ts's PERMISSION_GROUPS (fetched fresh from
+// GET /admin/roles at render time, this constant is just the type).
+export interface PermissionGroup {
+  label: string;
+  permissions: { key: string; label: string }[];
+}
 
-export const ROLE_LABELS: Record<AdminRole, string> = {
-  SUPER_ADMIN: "Super Admin",
-  LOCATION_MANAGER: "Location Manager",
-  BOOKING_STAFF: "Booking Staff / Concierge",
-  FINANCE: "Finance / Reporting",
-  TRAVEL_AGENT: "Travel Agent (external)",
-};
+export interface AdminRoleSummary {
+  id: string;
+  name: string;
+  isSystem: boolean;
+  permissions: string[];
+  staffCount: number;
+  createdAt: string;
+}
 
 export interface AdminSession {
   id: string;
   name: string;
   email: string;
-  role: AdminRole;
+  roleId: string;
+  roleName: string;
+  permissions: string[];
   locationId: string | null;
 }
 
@@ -316,7 +324,8 @@ export interface AdminUserSummary {
   id: string;
   name: string;
   email: string;
-  role: AdminRole;
+  role: string; // Role.id
+  roleName: string;
   locationId: string | null;
   isActive: boolean;
   createdAt: string;
@@ -326,14 +335,14 @@ export interface AdminUserInput {
   name: string;
   email: string;
   password: string;
-  role: AdminRole;
+  role: string; // Role.id
   locationId?: string | null;
 }
 
 export interface AdminUserUpdateInput {
   name?: string;
   email?: string;
-  role?: AdminRole;
+  role?: string; // Role.id
   locationId?: string | null;
   isActive?: boolean;
   password?: string;
@@ -416,19 +425,55 @@ export function clearSession() {
   localStorage.removeItem("admin_user");
 }
 
-/** Roles allowed to edit excursions/schedule/capacity (spec §14). */
-export function canEditExcursions(role: AdminRole | undefined): boolean {
-  return role === "SUPER_ADMIN" || role === "LOCATION_MANAGER";
+/**
+ * Permission gates for the admin UI — each takes the current admin's
+ * `permissions` array (from AdminSession, or getStoredAdmin()?.permissions)
+ * rather than a role name, since roles/their permissions are now admin-
+ * editable (see /admin/roles). Mirrors backend/src/lib/permissions.ts.
+ */
+function hasPermission(permissions: string[] | undefined, ...keys: string[]): boolean {
+  return keys.some((k) => permissions?.includes(k));
 }
 
-/** Roles allowed to cancel bookings — Finance is view-only (spec §14). */
-export function canCancelBookings(role: AdminRole | undefined): boolean {
-  return role === "SUPER_ADMIN" || role === "LOCATION_MANAGER" || role === "BOOKING_STAFF";
+export function canEditExcursions(permissions: string[] | undefined): boolean {
+  return hasPermission(permissions, "excursions.manage");
 }
 
-/** Staff/role management is Super Admin only (spec §14). */
-export function canManageUsers(role: AdminRole | undefined): boolean {
-  return role === "SUPER_ADMIN";
+export function canManageRentals(permissions: string[] | undefined): boolean {
+  return hasPermission(permissions, "rentals.manage");
+}
+
+export function canManageEvents(permissions: string[] | undefined): boolean {
+  return hasPermission(permissions, "events.manage");
+}
+
+export function canManageHolidays(permissions: string[] | undefined): boolean {
+  return hasPermission(permissions, "holidays.manage");
+}
+
+export function canManageRestaurantMenus(permissions: string[] | undefined): boolean {
+  return hasPermission(permissions, "restaurant.manage");
+}
+
+export function canManageRestaurantReservations(permissions: string[] | undefined): boolean {
+  return hasPermission(permissions, "restaurant.manage_reservations");
+}
+
+/** Covers excursion, beach-chair, and event bookings — one permission for all three, as before. */
+export function canCancelBookings(permissions: string[] | undefined): boolean {
+  return hasPermission(permissions, "bookings.manage");
+}
+
+export function canManageUsers(permissions: string[] | undefined): boolean {
+  return hasPermission(permissions, "staff.manage");
+}
+
+export function canManageSettings(permissions: string[] | undefined): boolean {
+  return hasPermission(permissions, "settings.manage");
+}
+
+export function canViewAuditLog(permissions: string[] | undefined): boolean {
+  return hasPermission(permissions, "audit.view");
 }
 
 async function authedRequest<T>(path: string, init?: RequestInit): Promise<T> {
@@ -676,6 +721,13 @@ export const adminApi = {
   updateUser: (id: string, data: AdminUserUpdateInput) =>
     authedRequest<AdminUserSummary>(`/admin/users/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   deleteUser: (id: string) => authedRequest<void>(`/admin/users/${id}`, { method: "DELETE" }),
+
+  listRoles: () => authedRequest<{ permissionGroups: PermissionGroup[]; roles: AdminRoleSummary[] }>("/admin/roles"),
+  createRole: (data: { name: string; permissions: string[] }) =>
+    authedRequest<AdminRoleSummary>("/admin/roles", { method: "POST", body: JSON.stringify(data) }),
+  updateRole: (id: string, data: { name?: string; permissions?: string[] }) =>
+    authedRequest<AdminRoleSummary>(`/admin/roles/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  deleteRole: (id: string) => authedRequest<void>(`/admin/roles/${id}`, { method: "DELETE" }),
 
   getAuditLog: (params: Record<string, string> = {}) =>
     authedRequest<AuditLogEntry[]>(`/admin/audit-log?${new URLSearchParams(params)}`),

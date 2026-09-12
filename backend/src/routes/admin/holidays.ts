@@ -2,15 +2,13 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
 import { requireAdmin, AuthedRequest } from "../../middleware/requireAdmin";
-import { requireRole } from "../../middleware/requireRole";
+import { requirePermission } from "../../middleware/requirePermission";
 import { parseDateOnly } from "../../lib/dateOnly";
 import { logAudit } from "../../lib/auditLog";
 
 const router = Router();
 router.use(requireAdmin);
 
-const VIEW_ROLES = ["SUPER_ADMIN", "LOCATION_MANAGER", "BOOKING_STAFF", "FINANCE"] as const;
-const EDIT_ROLES = ["SUPER_ADMIN", "LOCATION_MANAGER"] as const;
 
 const holidaySchema = z.object({
   locationId: z.string(),
@@ -22,13 +20,13 @@ const holidaySchema = z.object({
 });
 
 // GET /api/admin/holidays — every holiday, upcoming and past
-router.get("/", requireRole(...VIEW_ROLES), async (_req, res) => {
+router.get("/", requirePermission("holidays.view"), async (_req, res) => {
   const holidays = await prisma.holiday.findMany({ orderBy: { date: "asc" } });
   res.json(holidays);
 });
 
 // POST /api/admin/holidays — create
-router.post("/", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) => {
+router.post("/", requirePermission("holidays.manage"), async (req: AuthedRequest, res) => {
   const parsed = holidaySchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid input", details: parsed.error.flatten() });
 
@@ -50,7 +48,7 @@ router.post("/", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) => 
 });
 
 // PUT /api/admin/holidays/:id — update label/scope (date is immutable — delete and recreate to move it)
-router.put("/:id", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) => {
+router.put("/:id", requirePermission("holidays.manage"), async (req: AuthedRequest, res) => {
   const schema = z.object({
     label: z.string().min(1).optional(),
     appliesToExcursions: z.boolean().optional(),
@@ -72,7 +70,7 @@ router.put("/:id", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) =
 });
 
 // DELETE /api/admin/holidays/:id
-router.delete("/:id", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) => {
+router.delete("/:id", requirePermission("holidays.manage"), async (req: AuthedRequest, res) => {
   await prisma.holiday.delete({ where: { id: req.params.id } });
   await logAudit(
     { adminUserId: req.admin!.sub, actorLabel: req.admin!.email },

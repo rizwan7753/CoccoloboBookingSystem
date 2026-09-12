@@ -16,7 +16,10 @@ router.post("/login", async (req, res) => {
   if (!parsed.success) return res.status(400).json({ error: "Invalid input" });
 
   const { email, password } = parsed.data;
-  const admin = await prisma.adminUser.findUnique({ where: { email } });
+  const admin = await prisma.adminUser.findUnique({
+    where: { email },
+    include: { roleRef: { include: { permissions: true } } },
+  });
   if (!admin || !(await verifyPassword(password, admin.passwordHash))) {
     return res.status(401).json({ error: "Invalid email or password" });
   }
@@ -24,12 +27,7 @@ router.post("/login", async (req, res) => {
     return res.status(403).json({ error: "This account has been deactivated. Contact your administrator." });
   }
 
-  const token = signAdminToken({
-    sub: admin.id,
-    email: admin.email,
-    role: admin.role,
-    locationId: admin.locationId,
-  });
+  const token = signAdminToken({ sub: admin.id });
 
   res.json({
     token,
@@ -37,8 +35,10 @@ router.post("/login", async (req, res) => {
       id: admin.id,
       name: admin.name,
       email: admin.email,
-      role: admin.role,
+      roleId: admin.role,
+      roleName: admin.roleRef.name,
       locationId: admin.locationId,
+      permissions: admin.roleRef.permissions.map((p) => p.permission),
     },
   });
 });

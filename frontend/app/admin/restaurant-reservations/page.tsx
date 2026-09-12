@@ -6,7 +6,7 @@ import {
   AdminRestaurantReservation,
   RestaurantReservationStatus,
   getStoredAdmin,
-  canCancelBookings,
+  canManageRestaurantReservations,
 } from "@/lib/adminApi";
 import { PageHeader, Badge, cardClass, inputClass } from "@/components/admin/ui";
 import { DateRangeFilter } from "@/components/admin/DateRangeFilter";
@@ -26,7 +26,7 @@ export default function AdminRestaurantReservationsPage() {
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
-  const canManage = canCancelBookings(getStoredAdmin()?.role);
+  const canManage = canManageRestaurantReservations(getStoredAdmin()?.permissions);
 
   async function search() {
     setLoading(true);

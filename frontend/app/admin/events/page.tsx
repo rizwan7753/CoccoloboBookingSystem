@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { adminApi, getStoredAdmin, canEditExcursions, AdminEvent } from "@/lib/adminApi";
+import { adminApi, getStoredAdmin, canManageEvents, AdminEvent } from "@/lib/adminApi";
 import { PageHeader, Badge, cardClass, primaryButtonClass } from "@/components/admin/ui";
 
 function formatEventDate(iso: string) {
@@ -16,7 +16,7 @@ function formatEventDate(iso: string) {
 export default function AdminEventsPage() {
   const [events, setEvents] = useState<AdminEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const canEdit = canEditExcursions(getStoredAdmin()?.role);
+  const canEdit = canManageEvents(getStoredAdmin()?.permissions);
 
   useEffect(() => {
     adminApi

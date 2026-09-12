@@ -1,20 +1,13 @@
 "use client";
 
 import { Fragment, useEffect, useState } from "react";
-import {
-  adminApi,
-  AdminUserSummary,
-  Location,
-  ADMIN_ROLES,
-  ROLE_LABELS,
-  AdminRole,
-  getStoredAdmin,
-} from "@/lib/adminApi";
+import { adminApi, AdminUserSummary, AdminRoleSummary, Location, getStoredAdmin } from "@/lib/adminApi";
 import { PageHeader, cardClass, inputClass, primaryButtonClass } from "@/components/admin/ui";
 
 export default function StaffPage() {
   const [users, setUsers] = useState<AdminUserSummary[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
+  const [roles, setRoles] = useState<AdminRoleSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +16,7 @@ export default function StaffPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<AdminRole>("BOOKING_STAFF");
+  const [role, setRole] = useState("");
   const [locationId, setLocationId] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -35,16 +28,22 @@ export default function StaffPage() {
   const [editSubmitting, setEditSubmitting] = useState(false);
 
   function load() {
-    Promise.all([adminApi.listUsers(), adminApi.listLocations()])
-      .then(([u, l]) => {
+    Promise.all([adminApi.listUsers(), adminApi.listLocations(), adminApi.listRoles()])
+      .then(([u, l, r]) => {
         setUsers(u);
         setLocations(l);
+        setRoles(r.roles);
         if (l[0]) setLocationId(l[0].id);
+        if (r.roles[0]) setRole(r.roles[0].id);
       })
       .finally(() => setLoading(false));
   }
 
   useEffect(load, []);
+
+  function roleLabel(roleId: string) {
+    return roles.find((r) => r.id === roleId)?.name ?? roleId;
+  }
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -55,7 +54,6 @@ export default function StaffPage() {
       setName("");
       setEmail("");
       setPassword("");
-      setRole("BOOKING_STAFF");
       setShowForm(false);
       load();
     } catch (err) {
@@ -65,7 +63,7 @@ export default function StaffPage() {
     }
   }
 
-  async function handleRoleChange(id: string, newRole: AdminRole) {
+  async function handleRoleChange(id: string, newRole: string) {
     await adminApi.updateUser(id, { role: newRole });
     load();
   }
@@ -120,7 +118,7 @@ export default function StaffPage() {
     <div>
       <PageHeader
         title="Staff & role management"
-        description="Role-based access control — Super Admin only. See spec §14 for what each role can do."
+        description="Role-based access control. Manage what each role can do from Roles & Permissions."
         actions={
           <button onClick={() => setShowForm((v) => !v)} className={primaryButtonClass}>
             {showForm ? "Cancel" : "+ New staff account"}
@@ -152,10 +150,10 @@ export default function StaffPage() {
             </div>
             <div>
               <label className="mb-1 block text-sm font-medium text-stone-700">Role</label>
-              <select value={role} onChange={(e) => setRole(e.target.value as AdminRole)} className={inputClass}>
-                {ADMIN_ROLES.map((r) => (
-                  <option key={r} value={r}>
-                    {ROLE_LABELS[r]}
+              <select value={role} onChange={(e) => setRole(e.target.value)} className={inputClass}>
+                {roles.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.name}
                   </option>
                 ))}
               </select>
@@ -226,14 +224,15 @@ export default function StaffPage() {
                       <select
                         value={u.role}
                         disabled={u.id === currentAdminId}
-                        onChange={(e) => handleRoleChange(u.id, e.target.value as AdminRole)}
+                        onChange={(e) => handleRoleChange(u.id, e.target.value)}
                         className="rounded-md border border-stone-300 px-2 py-1 text-sm disabled:opacity-50"
                       >
-                        {ADMIN_ROLES.map((r) => (
-                          <option key={r} value={r}>
-                            {ROLE_LABELS[r]}
+                        {roles.map((r) => (
+                          <option key={r.id} value={r.id}>
+                            {r.name}
                           </option>
                         ))}
+                        {!roles.some((r) => r.id === u.role) && <option value={u.role}>{roleLabel(u.role)}</option>}
                       </select>
                     </td>
                     <td className="px-5 py-3">

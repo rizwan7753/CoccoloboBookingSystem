@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { adminApi, getStoredAdmin, canEditExcursions, AdminRentalItem } from "@/lib/adminApi";
+import { adminApi, getStoredAdmin, canManageRentals, AdminRentalItem } from "@/lib/adminApi";
 import { PageHeader, Badge, cardClass, primaryButtonClass } from "@/components/admin/ui";
 
 export default function AdminRentalsPage() {
   const [items, setItems] = useState<AdminRentalItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const canEdit = canEditExcursions(getStoredAdmin()?.role);
+  const canEdit = canManageRentals(getStoredAdmin()?.permissions);
 
   useEffect(() => {
     adminApi

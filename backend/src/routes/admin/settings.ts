@@ -2,17 +2,14 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
 import { requireAdmin, AuthedRequest } from "../../middleware/requireAdmin";
-import { requireRole } from "../../middleware/requireRole";
+import { requirePermission } from "../../middleware/requirePermission";
 import { logAudit } from "../../lib/auditLog";
 import { sendEmail, invalidateEmailTransport } from "../../services/emailService";
 import { invalidateStripeClient } from "../../services/stripeService";
 
 const router = Router();
 router.use(requireAdmin);
-
-// System settings (including SMTP credentials) are Super Admin only —
-// stricter than the usual Location Manager+ EDIT_ROLES used elsewhere.
-router.use(requireRole("SUPER_ADMIN"));
+router.use(requirePermission("settings.manage"));
 
 function serialize(location: NonNullable<Awaited<ReturnType<typeof prisma.location.findFirst>>>) {
   const { smtpPassword, stripeSecretKey, stripeWebhookSecret, nmiSecurityKey, ...rest } = location;

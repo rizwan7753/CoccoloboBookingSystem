@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../../lib/prisma";
 import { requireAdmin, AuthedRequest } from "../../middleware/requireAdmin";
-import { requireRole } from "../../middleware/requireRole";
+import { requirePermission } from "../../middleware/requirePermission";
 import { releaseBooking, markBookingPaidManually, BookingError } from "../../services/bookingService";
 import { sendBookingConfirmationEmail } from "../../services/emailService";
 import { parseDateOnly } from "../../lib/dateOnly";
@@ -9,10 +9,6 @@ import { sendExcel } from "../../lib/excelExport";
 
 const router = Router();
 router.use(requireAdmin);
-
-// Every staff role can view bookings/manifests; only Finance is read-only (spec §14).
-const VIEW_ROLES = ["SUPER_ADMIN", "LOCATION_MANAGER", "BOOKING_STAFF", "FINANCE"] as const;
-const CANCEL_ROLES = ["SUPER_ADMIN", "LOCATION_MANAGER", "BOOKING_STAFF"] as const;
 
 // Shared by GET / and GET /export — defaults to every excursion, from today
 // onward, when excursionId/from/to are omitted.
@@ -32,13 +28,13 @@ function queryBookings(query: { excursionId?: string; from?: string; to?: string
 }
 
 // GET /api/admin/bookings?excursionId=&from=&to=&status=
-router.get("/", requireRole(...VIEW_ROLES), async (req, res) => {
+router.get("/", requirePermission("bookings.view"), async (req, res) => {
   res.json(await queryBookings(req.query as any));
 });
 
 // GET /api/admin/bookings/export?excursionId=&from=&to=&status= — same
 // filters as the list view, downloaded as an .xlsx workbook.
-router.get("/export", requireRole(...VIEW_ROLES), async (req, res) => {
+router.get("/export", requirePermission("bookings.view"), async (req, res) => {
   const bookings = await queryBookings(req.query as any);
   await sendExcel(
     res,
@@ -88,7 +84,7 @@ router.get("/export", requireRole(...VIEW_ROLES), async (req, res) => {
 });
 
 // GET /api/admin/bookings/manifest?excursionId=&date=&time= — daily passenger manifest
-router.get("/manifest", requireRole(...VIEW_ROLES), async (req, res) => {
+router.get("/manifest", requirePermission("bookings.view"), async (req, res) => {
   const { excursionId, date, time } = req.query as { excursionId?: string; date?: string; time?: string };
   if (!excursionId || !date || !time) {
     return res.status(400).json({ error: "excursionId, date, and time are required" });
@@ -108,7 +104,7 @@ router.get("/manifest", requireRole(...VIEW_ROLES), async (req, res) => {
 });
 
 // POST /api/admin/bookings/:id/cancel — staff-initiated cancellation, releases capacity
-router.post("/:id/cancel", requireRole(...CANCEL_ROLES), async (req: AuthedRequest, res) => {
+router.post("/:id/cancel", requirePermission("bookings.manage"), async (req: AuthedRequest, res) => {
   const { reason } = req.body as { reason?: string };
   await releaseBooking(
     req.params.id,
@@ -120,7 +116,7 @@ router.post("/:id/cancel", requireRole(...CANCEL_ROLES), async (req: AuthedReque
 
 // POST /api/admin/bookings/:id/mark-paid — confirm an offline (bank
 // deposit/transfer) booking once staff have verified the payment arrived.
-router.post("/:id/mark-paid", requireRole(...CANCEL_ROLES), async (req: AuthedRequest, res) => {
+router.post("/:id/mark-paid", requirePermission("bookings.manage"), async (req: AuthedRequest, res) => {
   try {
     const booking = await markBookingPaidManually(req.params.id, {
       adminUserId: req.admin!.sub,

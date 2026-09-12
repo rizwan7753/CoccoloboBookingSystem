@@ -33,7 +33,7 @@ function RentalBookingsPageInner() {
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
-  const canCancel = canCancelBookings(getStoredAdmin()?.role);
+  const canCancel = canCancelBookings(getStoredAdmin()?.permissions);
 
   useEffect(() => {
     adminApi.listRentals().then(setItems);

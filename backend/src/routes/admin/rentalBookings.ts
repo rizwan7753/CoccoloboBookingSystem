@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../../lib/prisma";
 import { requireAdmin, AuthedRequest } from "../../middleware/requireAdmin";
-import { requireRole } from "../../middleware/requireRole";
+import { requirePermission } from "../../middleware/requirePermission";
 import { cancelRentalBooking, markRentalBookingPaidManually, RentalError } from "../../services/rentalService";
 import { sendRentalBookingConfirmationEmail } from "../../services/emailService";
 import { parseDateOnly } from "../../lib/dateOnly";
@@ -10,8 +10,6 @@ import { sendExcel } from "../../lib/excelExport";
 const router = Router();
 router.use(requireAdmin);
 
-const VIEW_ROLES = ["SUPER_ADMIN", "LOCATION_MANAGER", "BOOKING_STAFF", "FINANCE"] as const;
-const CANCEL_ROLES = ["SUPER_ADMIN", "LOCATION_MANAGER", "BOOKING_STAFF"] as const;
 
 // Shared by GET / and GET /export — defaults to every rental item, from
 // today onward, when rentalItemId/from/to are omitted.
@@ -31,12 +29,12 @@ function queryRentalBookings(query: { rentalItemId?: string; from?: string; to?:
 }
 
 // GET /api/admin/rental-bookings?rentalItemId=&from=&to=&timeSlotId=
-router.get("/", requireRole(...VIEW_ROLES), async (req, res) => {
+router.get("/", requirePermission("bookings.view"), async (req, res) => {
   res.json(await queryRentalBookings(req.query as any));
 });
 
 // GET /api/admin/rental-bookings/export?rentalItemId=&from=&to=&timeSlotId=
-router.get("/export", requireRole(...VIEW_ROLES), async (req, res) => {
+router.get("/export", requirePermission("bookings.view"), async (req, res) => {
   const bookings = await queryRentalBookings(req.query as any);
   await sendExcel(
     res,
@@ -90,14 +88,14 @@ router.get("/export", requireRole(...VIEW_ROLES), async (req, res) => {
 });
 
 // POST /api/admin/rental-bookings/:id/cancel
-router.post("/:id/cancel", requireRole(...CANCEL_ROLES), async (req: AuthedRequest, res) => {
+router.post("/:id/cancel", requirePermission("bookings.manage"), async (req: AuthedRequest, res) => {
   const { reason } = req.body as { reason?: string };
   await cancelRentalBooking(req.params.id, { adminUserId: req.admin!.sub, actorLabel: req.admin!.email }, reason);
   res.json({ ok: true });
 });
 
 // POST /api/admin/rental-bookings/:id/mark-paid
-router.post("/:id/mark-paid", requireRole(...CANCEL_ROLES), async (req: AuthedRequest, res) => {
+router.post("/:id/mark-paid", requirePermission("bookings.manage"), async (req: AuthedRequest, res) => {
   try {
     const booking = await markRentalBookingPaidManually(req.params.id, {
       adminUserId: req.admin!.sub,

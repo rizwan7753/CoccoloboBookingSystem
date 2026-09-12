@@ -84,7 +84,7 @@ function BookingsPageInner() {
     }
   }
 
-  const canCancel = canCancelBookings(getStoredAdmin()?.role);
+  const canCancel = canCancelBookings(getStoredAdmin()?.permissions);
 
   return (
     <div>

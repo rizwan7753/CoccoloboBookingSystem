@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { AdminSession, canManageUsers, ROLE_LABELS } from "@/lib/adminApi";
+import { AdminSession, canManageUsers, canManageSettings } from "@/lib/adminApi";
 
 const ICONS: Record<string, React.ReactNode> = {
   dashboard: <path d="M3 13h8V3H3v10ZM13 21h8V11h-8v10ZM13 3v6h8V3h-8ZM3 21h8v-6H3v6Z" strokeLinecap="round" strokeLinejoin="round" />,
@@ -59,10 +59,11 @@ export default function Sidebar({
   ];
 
   const otherItems: NavItem[] = [
-    { href: "/admin/users", label: "Staff", icon: "staff", show: canManageUsers(admin?.role) },
+    { href: "/admin/users", label: "Staff", icon: "staff", show: canManageUsers(admin?.permissions) },
+    { href: "/admin/roles", label: "Roles & Permissions", icon: "staff", show: canManageUsers(admin?.permissions) },
     // Hidden for now per request — route/page still exists, just unlinked from the nav.
     { href: "/admin/audit-log", label: "Activity log", icon: "activity", show: false },
-    { href: "/admin/settings", label: "Settings", icon: "settings", show: canManageUsers(admin?.role) },
+    { href: "/admin/settings", label: "Settings", icon: "settings", show: canManageSettings(admin?.permissions) },
   ];
 
   function isActive(href: string) {
@@ -152,7 +153,7 @@ export default function Sidebar({
             </div>
             <div className="min-w-0">
               <p className="truncate text-sm font-medium text-stone-900">{admin.name}</p>
-              <p className="truncate text-xs text-stone-400">{ROLE_LABELS[admin.role]}</p>
+              <p className="truncate text-xs text-stone-400">{admin.roleName}</p>
             </div>
           </div>
         )}

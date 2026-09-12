@@ -2,14 +2,12 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
 import { requireAdmin, AuthedRequest } from "../../middleware/requireAdmin";
-import { requireRole } from "../../middleware/requireRole";
+import { requirePermission } from "../../middleware/requirePermission";
 import { logAudit } from "../../lib/auditLog";
 
 const router = Router();
 router.use(requireAdmin);
 
-const VIEW_ROLES = ["SUPER_ADMIN", "LOCATION_MANAGER", "BOOKING_STAFF", "FINANCE"] as const;
-const EDIT_ROLES = ["SUPER_ADMIN", "LOCATION_MANAGER"] as const;
 
 const rentalItemSchema = z.object({
   locationId: z.string(),
@@ -29,7 +27,7 @@ const rentalItemSchema = z.object({
 });
 
 // GET /api/admin/rentals — all rental items regardless of status
-router.get("/", requireRole(...VIEW_ROLES), async (_req, res) => {
+router.get("/", requirePermission("rentals.view"), async (_req, res) => {
   const items = await prisma.rentalItem.findMany({
     include: { spots: true, timeSlots: true, _count: { select: { bookings: true } } },
     orderBy: { createdAt: "desc" },
@@ -37,7 +35,7 @@ router.get("/", requireRole(...VIEW_ROLES), async (_req, res) => {
   res.json(items);
 });
 
-router.get("/:id", requireRole(...VIEW_ROLES), async (req, res) => {
+router.get("/:id", requirePermission("rentals.view"), async (req, res) => {
   const item = await prisma.rentalItem.findUnique({
     where: { id: req.params.id },
     include: {
@@ -50,7 +48,7 @@ router.get("/:id", requireRole(...VIEW_ROLES), async (req, res) => {
 });
 
 // POST /api/admin/rentals — create
-router.post("/", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) => {
+router.post("/", requirePermission("rentals.manage"), async (req: AuthedRequest, res) => {
   const parsed = rentalItemSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid input", details: parsed.error.flatten() });
 
@@ -68,7 +66,7 @@ router.post("/", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) => 
 });
 
 // PUT /api/admin/rentals/:id — update
-router.put("/:id", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) => {
+router.put("/:id", requirePermission("rentals.manage"), async (req: AuthedRequest, res) => {
   const parsed = rentalItemSchema.partial().safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid input", details: parsed.error.flatten() });
 
@@ -86,7 +84,7 @@ router.put("/:id", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) =
 });
 
 // DELETE /api/admin/rentals/:id
-router.delete("/:id", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) => {
+router.delete("/:id", requirePermission("rentals.manage"), async (req: AuthedRequest, res) => {
   await prisma.rentalItem.delete({ where: { id: req.params.id } });
 
   await logAudit(
@@ -102,7 +100,7 @@ router.delete("/:id", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res
 // --- Spot management ---
 
 // POST /api/admin/rentals/:id/spots — add a spot (e.g. "Row A", holding `quantity` chairs)
-router.post("/:id/spots", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) => {
+router.post("/:id/spots", requirePermission("rentals.manage"), async (req: AuthedRequest, res) => {
   const schema = z.object({ code: z.string().min(1), quantity: z.number().int().positive() });
   const parsed = schema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid input", details: parsed.error.flatten() });
@@ -125,7 +123,7 @@ router.post("/:id/spots", requireRole(...EDIT_ROLES), async (req: AuthedRequest,
 });
 
 // PUT /api/admin/rentals/spots/:spotId — rename, change quantity, or activate/deactivate a spot
-router.put("/spots/:spotId", requireRole(...EDIT_ROLES), async (req, res) => {
+router.put("/spots/:spotId", requirePermission("rentals.manage"), async (req, res) => {
   const schema = z.object({
     code: z.string().min(1).optional(),
     quantity: z.number().int().positive().optional(),
@@ -139,7 +137,7 @@ router.put("/spots/:spotId", requireRole(...EDIT_ROLES), async (req, res) => {
 });
 
 // DELETE /api/admin/rentals/spots/:spotId
-router.delete("/spots/:spotId", requireRole(...EDIT_ROLES), async (req, res) => {
+router.delete("/spots/:spotId", requirePermission("rentals.manage"), async (req, res) => {
   await prisma.rentalSpot.delete({ where: { id: req.params.spotId } });
   res.status(204).send();
 });
@@ -147,7 +145,7 @@ router.delete("/spots/:spotId", requireRole(...EDIT_ROLES), async (req, res) => 
 // --- Time slot management ---
 
 // POST /api/admin/rentals/:id/time-slots — add a bookable time window (e.g. "Morning", 09:00-13:00)
-router.post("/:id/time-slots", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) => {
+router.post("/:id/time-slots", requirePermission("rentals.manage"), async (req: AuthedRequest, res) => {
   const schema = z.object({
     label: z.string().min(1),
     startTime: z.string().regex(/^\d{2}:\d{2}$/),
@@ -188,7 +186,7 @@ function addMinutes(time: string, minutes: number): string {
 // window into consecutive slots of the item's durationMinutes (e.g.
 // 09:00-17:00 with a 4h duration -> "9:00 AM - 1:00 PM", "1:00 PM - 5:00 PM").
 // Skips any slot whose label already exists rather than erroring.
-router.post("/:id/time-slots/generate", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) => {
+router.post("/:id/time-slots/generate", requirePermission("rentals.manage"), async (req: AuthedRequest, res) => {
   const schema = z.object({
     operatingStart: z.string().regex(/^\d{2}:\d{2}$/),
     operatingEnd: z.string().regex(/^\d{2}:\d{2}$/),
@@ -237,7 +235,7 @@ router.post("/:id/time-slots/generate", requireRole(...EDIT_ROLES), async (req: 
 });
 
 // PUT /api/admin/rentals/time-slots/:timeSlotId
-router.put("/time-slots/:timeSlotId", requireRole(...EDIT_ROLES), async (req, res) => {
+router.put("/time-slots/:timeSlotId", requirePermission("rentals.manage"), async (req, res) => {
   const schema = z.object({
     label: z.string().min(1).optional(),
     startTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
@@ -252,7 +250,7 @@ router.put("/time-slots/:timeSlotId", requireRole(...EDIT_ROLES), async (req, re
 });
 
 // DELETE /api/admin/rentals/time-slots/:timeSlotId
-router.delete("/time-slots/:timeSlotId", requireRole(...EDIT_ROLES), async (req, res) => {
+router.delete("/time-slots/:timeSlotId", requirePermission("rentals.manage"), async (req, res) => {
   await prisma.rentalTimeSlot.delete({ where: { id: req.params.timeSlotId } });
   res.status(204).send();
 });

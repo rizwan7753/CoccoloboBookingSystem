@@ -8,11 +8,11 @@ if (!JWT_SECRET) {
   throw new Error("JWT_SECRET is not set. Copy .env.example to .env and configure it.");
 }
 
+// Kept deliberately minimal — permissions and role are re-read from the
+// database on every request (see requireAdmin.ts) rather than baked into the
+// token, so editing a role's permissions takes effect without re-login.
 export interface AdminTokenPayload {
   sub: string; // admin user id
-  email: string;
-  role: string;
-  locationId: string | null;
 }
 
 export function hashPassword(plain: string): Promise<string> {

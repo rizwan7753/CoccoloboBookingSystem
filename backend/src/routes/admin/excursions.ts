@@ -2,17 +2,12 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
 import { requireAdmin, AuthedRequest } from "../../middleware/requireAdmin";
-import { requireRole } from "../../middleware/requireRole";
+import { requirePermission } from "../../middleware/requirePermission";
 import { parseDateOnly } from "../../lib/dateOnly";
 import { logAudit } from "../../lib/auditLog";
 
 const router = Router();
 router.use(requireAdmin);
-
-// Excursion/capacity/schedule config is Location Manager+ per spec §14 —
-// Booking Staff and Finance can view but not edit excursion setup.
-const VIEW_ROLES = ["SUPER_ADMIN", "LOCATION_MANAGER", "BOOKING_STAFF", "FINANCE"] as const;
-const EDIT_ROLES = ["SUPER_ADMIN", "LOCATION_MANAGER"] as const;
 
 const departureTimeSchema = z.object({
   time: z.string().regex(/^\d{2}:\d{2}$/),
@@ -46,7 +41,7 @@ const excursionSchema = z.object({
 });
 
 // GET /api/admin/excursions — all excursions regardless of status
-router.get("/", requireRole(...VIEW_ROLES), async (_req, res) => {
+router.get("/", requirePermission("excursions.view"), async (_req, res) => {
   const excursions = await prisma.excursion.findMany({
     include: { departureTimes: true },
     orderBy: { createdAt: "desc" },
@@ -54,7 +49,7 @@ router.get("/", requireRole(...VIEW_ROLES), async (_req, res) => {
   res.json(excursions);
 });
 
-router.get("/:id", requireRole(...VIEW_ROLES), async (req, res) => {
+router.get("/:id", requirePermission("excursions.view"), async (req, res) => {
   const excursion = await prisma.excursion.findUnique({
     where: { id: req.params.id },
     include: { departureTimes: true },
@@ -64,7 +59,7 @@ router.get("/:id", requireRole(...VIEW_ROLES), async (req, res) => {
 });
 
 // POST /api/admin/excursions — create
-router.post("/", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) => {
+router.post("/", requirePermission("excursions.manage"), async (req: AuthedRequest, res) => {
   const parsed = excursionSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid input", details: parsed.error.flatten() });
 
@@ -89,7 +84,7 @@ router.post("/", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) => 
 });
 
 // PUT /api/admin/excursions/:id — update
-router.put("/:id", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) => {
+router.put("/:id", requirePermission("excursions.manage"), async (req: AuthedRequest, res) => {
   const parsed = excursionSchema.partial().safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid input", details: parsed.error.flatten() });
 
@@ -124,7 +119,7 @@ router.put("/:id", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) =
 });
 
 // DELETE /api/admin/excursions/:id
-router.delete("/:id", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) => {
+router.delete("/:id", requirePermission("excursions.manage"), async (req: AuthedRequest, res) => {
   await prisma.excursion.delete({ where: { id: req.params.id } });
 
   await logAudit(
@@ -138,7 +133,7 @@ router.delete("/:id", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res
 });
 
 // POST /api/admin/excursions/:id/capacity-override — one-off capacity change for a specific date
-router.post("/:id/capacity-override", requireRole(...EDIT_ROLES), async (req, res) => {
+router.post("/:id/capacity-override", requirePermission("excursions.manage"), async (req, res) => {
   const schema = z.object({ date: z.string(), time: z.string(), capacity: z.number().int().min(0) });
   const parsed = schema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid input" });

@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
 import { requireAdmin, AuthedRequest } from "../../middleware/requireAdmin";
-import { requireRole } from "../../middleware/requireRole";
+import { requirePermission } from "../../middleware/requirePermission";
 import { parseDateOnly } from "../../lib/dateOnly";
 import { logAudit } from "../../lib/auditLog";
 import { sendExcel } from "../../lib/excelExport";
@@ -10,8 +10,6 @@ import { sendExcel } from "../../lib/excelExport";
 const router = Router();
 router.use(requireAdmin);
 
-const VIEW_ROLES = ["SUPER_ADMIN", "LOCATION_MANAGER", "BOOKING_STAFF", "FINANCE"] as const;
-const MANAGE_ROLES = ["SUPER_ADMIN", "LOCATION_MANAGER", "BOOKING_STAFF"] as const;
 const STATUSES = ["NEW", "CONTACTED", "CONFIRMED", "DECLINED"] as const;
 
 // Shared by GET / and GET /export — defaults to today onward when from/to are omitted.
@@ -29,13 +27,13 @@ function queryReservations(query: { from?: string; to?: string; status?: string 
 }
 
 // GET /api/admin/restaurant-reservations?from=&to=&status=
-router.get("/", requireRole(...VIEW_ROLES), async (req, res) => {
+router.get("/", requirePermission("restaurant.view"), async (req, res) => {
   const reservations = await queryReservations(req.query as { from?: string; to?: string; status?: string });
   res.json(reservations);
 });
 
 // GET /api/admin/restaurant-reservations/export?from=&to=&status=
-router.get("/export", requireRole(...VIEW_ROLES), async (req, res) => {
+router.get("/export", requirePermission("restaurant.view"), async (req, res) => {
   const reservations = await queryReservations(req.query as { from?: string; to?: string; status?: string });
   await sendExcel(
     res,
@@ -69,7 +67,7 @@ router.get("/export", requireRole(...VIEW_ROLES), async (req, res) => {
 });
 
 // PUT /api/admin/restaurant-reservations/:id/status — staff update after following up with the guest
-router.put("/:id/status", requireRole(...MANAGE_ROLES), async (req: AuthedRequest, res) => {
+router.put("/:id/status", requirePermission("restaurant.manage_reservations"), async (req: AuthedRequest, res) => {
   const parsed = z.object({ status: z.enum(STATUSES) }).safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid status" });
 
@@ -88,7 +86,7 @@ router.put("/:id/status", requireRole(...MANAGE_ROLES), async (req: AuthedReques
 });
 
 // DELETE /api/admin/restaurant-reservations/:id — remove a spam/duplicate enquiry
-router.delete("/:id", requireRole(...MANAGE_ROLES), async (req: AuthedRequest, res) => {
+router.delete("/:id", requirePermission("restaurant.manage_reservations"), async (req: AuthedRequest, res) => {
   await prisma.restaurantReservation.delete({ where: { id: req.params.id } });
   await logAudit(
     { adminUserId: req.admin!.sub, actorLabel: req.admin!.email },

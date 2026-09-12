@@ -2,14 +2,12 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
 import { requireAdmin, AuthedRequest } from "../../middleware/requireAdmin";
-import { requireRole } from "../../middleware/requireRole";
+import { requirePermission } from "../../middleware/requirePermission";
 import { logAudit } from "../../lib/auditLog";
 
 const router = Router();
 router.use(requireAdmin);
 
-const VIEW_ROLES = ["SUPER_ADMIN", "LOCATION_MANAGER", "BOOKING_STAFF", "FINANCE"] as const;
-const EDIT_ROLES = ["SUPER_ADMIN", "LOCATION_MANAGER"] as const;
 
 const sectionsInclude = {
   sections: {
@@ -64,19 +62,19 @@ function sectionsCreateData(sections: z.infer<typeof menuSectionSchema>[]) {
 }
 
 // GET /api/admin/restaurant-menus — every menu regardless of active status
-router.get("/", requireRole(...VIEW_ROLES), async (_req, res) => {
+router.get("/", requirePermission("restaurant.view"), async (_req, res) => {
   const menus = await prisma.restaurantMenu.findMany({ orderBy: { sortOrder: "asc" }, include: sectionsInclude });
   res.json(menus);
 });
 
-router.get("/:id", requireRole(...VIEW_ROLES), async (req, res) => {
+router.get("/:id", requirePermission("restaurant.view"), async (req, res) => {
   const menu = await prisma.restaurantMenu.findUnique({ where: { id: req.params.id }, include: sectionsInclude });
   if (!menu) return res.status(404).json({ error: "Menu not found" });
   res.json(menu);
 });
 
 // POST /api/admin/restaurant-menus — create, with its sections/items nested
-router.post("/", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) => {
+router.post("/", requirePermission("restaurant.manage"), async (req: AuthedRequest, res) => {
   const parsed = menuSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid input", details: parsed.error.flatten() });
 
@@ -102,7 +100,7 @@ router.post("/", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) => 
 // the entire section/item list wholesale (same pattern as
 // Excursion.departureTimes) — cascading deletes clean up the old items, so
 // the save flow is just "delete all, recreate from what was submitted".
-router.put("/:id", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) => {
+router.put("/:id", requirePermission("restaurant.manage"), async (req: AuthedRequest, res) => {
   const parsed = menuSchema.partial().safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid input", details: parsed.error.flatten() });
 
@@ -134,7 +132,7 @@ router.put("/:id", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) =
 });
 
 // DELETE /api/admin/restaurant-menus/:id
-router.delete("/:id", requireRole(...EDIT_ROLES), async (req: AuthedRequest, res) => {
+router.delete("/:id", requirePermission("restaurant.manage"), async (req: AuthedRequest, res) => {
   await prisma.restaurantMenu.delete({ where: { id: req.params.id } });
   await logAudit(
     { adminUserId: req.admin!.sub, actorLabel: req.admin!.email },

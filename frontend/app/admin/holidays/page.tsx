@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { adminApi, AdminHoliday, getStoredAdmin, canEditExcursions } from "@/lib/adminApi";
+import { adminApi, AdminHoliday, getStoredAdmin, canManageHolidays } from "@/lib/adminApi";
 import { PageHeader, cardClass, inputClass, primaryButtonClass } from "@/components/admin/ui";
 
 const DEFAULT_LOCATION_ID = "carambola-main"; // MVP: single location, seeded in prisma/seed.ts
@@ -27,7 +27,7 @@ export default function AdminHolidaysPage() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const canEdit = canEditExcursions(getStoredAdmin()?.role);
+  const canEdit = canManageHolidays(getStoredAdmin()?.permissions);
 
   function load() {
     adminApi

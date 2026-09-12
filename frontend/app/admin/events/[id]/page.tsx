@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { adminApi, AdminEvent, getStoredAdmin, canEditExcursions } from "@/lib/adminApi";
+import { adminApi, AdminEvent, getStoredAdmin, canManageEvents } from "@/lib/adminApi";
 import EventForm from "@/components/EventForm";
 import { PageHeader, cardClass, inputClass, primaryButtonClass } from "@/components/admin/ui";
 
@@ -18,7 +18,7 @@ export default function EditEventPage() {
   const [tierCapacity, setTierCapacity] = useState(50);
   const [tierError, setTierError] = useState<string | null>(null);
 
-  const canEdit = canEditExcursions(getStoredAdmin()?.role);
+  const canEdit = canManageEvents(getStoredAdmin()?.permissions);
 
   function loadEvent() {
     adminApi
