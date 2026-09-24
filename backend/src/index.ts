@@ -1,5 +1,10 @@
 import "dotenv/config";
 import express from "express";
+// Express 4 doesn't forward errors thrown in async route handlers to the
+// error middleware — they become unhandled rejections, which crash the whole
+// Node process (the browser then just sees "Failed to fetch"). This patch
+// routes them to the handler at the bottom of this file instead.
+import "express-async-errors";
 import cors from "cors";
 import path from "path";
 
@@ -89,12 +94,19 @@ app.use("/api/admin/reviews", adminReviewsRouter);
 app.use("/api/blog-posts", blogPostsRouter);
 app.use("/api/admin/blog-posts", adminBlogPostsRouter);
 
-// Centralized error handler (catches anything thrown in async route handlers below Express 5,
-// or rejected promises not already try/caught).
-app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+// Centralized error handler — receives errors from sync handlers and, via
+// express-async-errors above, from async handlers too.
+app.use((err: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
   // eslint-disable-next-line no-console
   console.error(err);
-  res.status(err.status || 500).json({ error: err.message || "Internal server error" });
+  const status = err.status || 500;
+  // Unexpected (5xx) errors can carry file paths and query details — on
+  // production, show them only to signed-in staff (admin routes, where the
+  // message is what lets them report the actual problem); public guests
+  // just get a generic message and the details stay in the server log.
+  const isAdminRoute = req.originalUrl.startsWith("/api/admin");
+  const hideDetails = status >= 500 && process.env.NODE_ENV === "production" && !isAdminRoute;
+  res.status(status).json({ error: hideDetails ? "Internal server error" : err.message || "Internal server error" });
 });
 
 const port = process.env.PORT || 4000;

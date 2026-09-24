@@ -13,7 +13,14 @@ const UPLOAD_ROOT = path.join(__dirname, "..", "..", "uploads");
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
     const dir = path.join(UPLOAD_ROOT, "images");
-    fs.mkdirSync(dir, { recursive: true });
+    // A throw here happens inside multer's stream handling, outside Express's
+    // error path, and would crash the process — pass it to multer instead so
+    // the upload route can answer with the real reason (e.g. EACCES).
+    try {
+      fs.mkdirSync(dir, { recursive: true });
+    } catch (err) {
+      return cb(err as Error, dir);
+    }
     cb(null, dir);
   },
   filename: (_req, file, cb) => {
