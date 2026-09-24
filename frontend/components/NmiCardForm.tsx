@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { loadCollectJs } from "@/lib/nmiClient";
 
-const fieldBoxClass = "rounded-lg border border-stone-300 px-3 py-2.5";
+const fieldBoxClass = "rounded-lg border border-rule px-3 py-2.5";
 
 export default function NmiCardForm({
   tokenizationKey,
@@ -120,7 +120,7 @@ export default function NmiCardForm({
       <button
         type="submit"
         disabled={!ready || submitting}
-        className={buttonClassName ?? "w-full rounded-lg bg-stone-900 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"}
+        className={buttonClassName ?? "w-full rounded-lg bg-coral py-2.5 text-sm font-semibold text-abyss disabled:cursor-not-allowed disabled:opacity-40"}
       >
         {submitting ? "Processing…" : ready ? "Pay now" : "Loading payment form…"}
       </button>

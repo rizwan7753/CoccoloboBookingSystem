@@ -10,6 +10,7 @@ const STATUS_STYLES: Record<string, string> = {
   ACTIVE: "bg-emerald-100 text-emerald-800",
   CONFIRMED: "bg-emerald-100 text-emerald-800",
   PAID: "bg-emerald-100 text-emerald-800",
+  PUBLISHED: "bg-emerald-100 text-emerald-800",
   DRAFT: "bg-stone-100 text-stone-600",
   PENDING: "bg-amber-100 text-amber-800",
   INACTIVE: "bg-stone-100 text-stone-600",

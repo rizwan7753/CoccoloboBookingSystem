@@ -43,11 +43,13 @@ export interface AdminExcursionInput {
   priceAdult: number;
   priceChild?: number;
   capacityDefault: number;
+  minGuests?: number;
   cutoffTime: string;
   status: string;
   departureTimes: { time: string; daysOfWeek: number[] }[];
   cardImageUrl?: string;
   headerImageUrl?: string;
+  images?: string[];
 }
 
 export interface AdminRentalSpot {
@@ -79,6 +81,7 @@ export interface AdminRentalItem {
   status: string;
   cardImageUrl?: string | null;
   headerImageUrl?: string | null;
+  images?: string[] | null;
   spots?: AdminRentalSpot[];
   timeSlots?: AdminRentalTimeSlot[];
   _count?: { bookings: number };
@@ -95,6 +98,7 @@ export interface AdminRentalItemInput {
   status: string;
   cardImageUrl?: string;
   headerImageUrl?: string;
+  images?: string[];
 }
 
 export interface AdminRentalBooking {
@@ -144,6 +148,7 @@ export interface AdminEvent {
   status: string;
   cardImageUrl?: string | null;
   headerImageUrl?: string | null;
+  images?: string[] | null;
   ticketTiers?: AdminEventTier[];
   _count?: { bookings: number };
 }
@@ -161,6 +166,7 @@ export interface AdminEventInput {
   status: string;
   cardImageUrl?: string;
   headerImageUrl?: string;
+  images?: string[];
 }
 
 export interface AdminEventBooking {
@@ -179,6 +185,25 @@ export interface AdminEventBooking {
   paymentMethod?: string | null;
   tier: AdminEventTier;
   event: { id: string; title: string; eventDate: string };
+}
+
+export interface AdminOrder {
+  id: string;
+  bookingCode?: string | null;
+  guestName: string;
+  guestEmail: string;
+  guestPhone?: string | null;
+  roomNumber?: string | null;
+  amountTotal: string;
+  currency: string;
+  status: string;
+  paymentStatus: string;
+  paymentMethod?: string | null;
+  source: string;
+  createdAt: string;
+  bookings: (Booking & { excursion?: { id: string; title: string } })[];
+  rentalBookings: AdminRentalBooking[];
+  eventBookings: AdminEventBooking[];
 }
 
 export interface AdminHoliday {
@@ -200,11 +225,71 @@ export interface AdminHolidayInput {
   appliesToEvents?: boolean;
 }
 
+export type AdminReviewItemType = "EXCURSION" | "RENTAL" | "EVENT";
+export type AdminReviewStatus = "DRAFT" | "PENDING" | "PUBLISHED" | "REJECTED";
+
+export interface AdminReview {
+  id: string;
+  itemType?: AdminReviewItemType | null;
+  itemId?: string | null;
+  itemTitle?: string | null;
+  rating: number;
+  title?: string | null;
+  quote: string;
+  authorName: string;
+  authorInitials?: string | null;
+  authorMeta?: string | null;
+  guestEmail?: string | null;
+  status: AdminReviewStatus;
+  sortOrder: number;
+  createdAt: string;
+}
+
+export interface AdminReviewInput {
+  itemType?: AdminReviewItemType | null;
+  itemId?: string | null;
+  itemTitle?: string | null;
+  rating: number;
+  title?: string;
+  quote: string;
+  authorName: string;
+  authorInitials?: string;
+  authorMeta?: string;
+  status?: AdminReviewStatus;
+  sortOrder?: number;
+}
+
+export interface AdminBlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  body?: string | null;
+  imageUrl?: string | null;
+  readMinutes?: number | null;
+  status: "DRAFT" | "PUBLISHED";
+  publishedAt?: string | null;
+  sortOrder: number;
+  createdAt: string;
+}
+
+export interface AdminBlogPostInput {
+  title: string;
+  slug: string;
+  excerpt: string;
+  body?: string;
+  imageUrl?: string;
+  readMinutes?: number;
+  status?: "DRAFT" | "PUBLISHED";
+  sortOrder?: number;
+}
+
 export interface AdminRestaurantMenuItem {
   id: string;
   name: string;
   description?: string | null;
   price?: string | null;
+  images?: string[] | null;
   sortOrder: number;
 }
 
@@ -233,6 +318,7 @@ export interface AdminRestaurantMenuItemInput {
   name: string;
   description?: string;
   price?: number;
+  images?: string[];
 }
 
 export interface AdminRestaurantMenuSectionInput {
@@ -459,6 +545,14 @@ export function canManageRestaurantReservations(permissions: string[] | undefine
   return hasPermission(permissions, "restaurant.manage_reservations");
 }
 
+export function canManageContent(permissions: string[] | undefined): boolean {
+  return hasPermission(permissions, "content.manage");
+}
+
+export function canViewContent(permissions: string[] | undefined): boolean {
+  return hasPermission(permissions, "content.view") || hasPermission(permissions, "content.manage");
+}
+
 /** Covers excursion, beach-chair, and event bookings — one permission for all three, as before. */
 export function canCancelBookings(permissions: string[] | undefined): boolean {
   return hasPermission(permissions, "bookings.manage");
@@ -683,6 +777,23 @@ export const adminApi = {
   ) => authedRequest<AdminHoliday>(`/admin/holidays/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   deleteHoliday: (id: string) => authedRequest<void>(`/admin/holidays/${id}`, { method: "DELETE" }),
 
+  listReviews: (status?: AdminReviewStatus) =>
+    authedRequest<AdminReview[]>(status ? `/admin/reviews?status=${status}` : "/admin/reviews"),
+  createReview: (data: AdminReviewInput) =>
+    authedRequest<AdminReview>("/admin/reviews", { method: "POST", body: JSON.stringify(data) }),
+  updateReview: (id: string, data: Partial<AdminReviewInput>) =>
+    authedRequest<AdminReview>(`/admin/reviews/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  approveReview: (id: string) => authedRequest<AdminReview>(`/admin/reviews/${id}/approve`, { method: "POST" }),
+  rejectReview: (id: string) => authedRequest<AdminReview>(`/admin/reviews/${id}/reject`, { method: "POST" }),
+  deleteReview: (id: string) => authedRequest<void>(`/admin/reviews/${id}`, { method: "DELETE" }),
+
+  listBlogPosts: () => authedRequest<AdminBlogPost[]>("/admin/blog-posts"),
+  createBlogPost: (data: AdminBlogPostInput) =>
+    authedRequest<AdminBlogPost>("/admin/blog-posts", { method: "POST", body: JSON.stringify(data) }),
+  updateBlogPost: (id: string, data: Partial<AdminBlogPostInput>) =>
+    authedRequest<AdminBlogPost>(`/admin/blog-posts/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  deleteBlogPost: (id: string) => authedRequest<void>(`/admin/blog-posts/${id}`, { method: "DELETE" }),
+
   listRestaurantMenus: () => authedRequest<AdminRestaurantMenu[]>("/admin/restaurant-menus"),
   createRestaurantMenu: (data: AdminRestaurantMenuInput) =>
     authedRequest<AdminRestaurantMenu>("/admin/restaurant-menus", { method: "POST", body: JSON.stringify(data) }),
@@ -734,4 +845,11 @@ export const adminApi = {
 
   getDashboardSummary: (from: string, to: string) =>
     authedRequest<DashboardSummary>(`/admin/dashboard/summary?${new URLSearchParams({ from, to })}`),
+
+  listOrders: (params: Record<string, string> = {}) => authedRequest<AdminOrder[]>(`/admin/orders?${new URLSearchParams(params)}`),
+  getOrder: (id: string) => authedRequest<AdminOrder>(`/admin/orders/${id}`),
+  cancelOrder: (id: string, reason?: string) =>
+    authedRequest<void>(`/admin/orders/${id}/cancel`, { method: "POST", body: JSON.stringify({ reason }) }),
+  markOrderPaid: (id: string) => authedRequest<AdminOrder>(`/admin/orders/${id}/mark-paid`, { method: "POST" }),
+  exportOrders: (params: { status?: string; from?: string; to?: string } = {}) => authedDownload("/admin/orders/export", params),
 };

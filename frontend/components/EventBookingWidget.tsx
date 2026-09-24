@@ -8,6 +8,8 @@ import { settingsApi, PublicSettings } from "@/lib/settingsApi";
 import { getStripePromise } from "@/lib/stripeClient";
 import CheckoutForm from "@/components/CheckoutForm";
 import NmiCardForm from "@/components/NmiCardForm";
+import { useCart } from "@/components/site/CartContext";
+import { mediaUrl } from "@/lib/media";
 
 type Step = "select" | "details" | "payment";
 const STEPS: { key: Step; label: string }[] = [
@@ -17,7 +19,7 @@ const STEPS: { key: Step; label: string }[] = [
 ];
 
 const inputClass =
-  "w-full rounded-lg border border-stone-300 px-3 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:border-fuchsia-600 focus:outline-none focus:ring-1 focus:ring-fuchsia-600";
+  "w-full rounded-lg border border-rule px-3 py-2.5 text-sm text-abyss placeholder:text-abyss/45 focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral";
 
 function Stepper({ step }: { step: Step }) {
   const activeIndex = STEPS.findIndex((s) => s.key === step);
@@ -27,15 +29,15 @@ function Stepper({ step }: { step: Step }) {
         <div key={s.key} className="flex flex-1 items-center gap-2">
           <div
             className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
-              i <= activeIndex ? "bg-fuchsia-700 text-white" : "bg-stone-100 text-stone-400"
+              i <= activeIndex ? "bg-coral text-abyss" : "bg-foam text-abyss/45"
             }`}
           >
             {i < activeIndex ? "✓" : i + 1}
           </div>
-          <span className={`hidden text-xs font-medium sm:inline ${i <= activeIndex ? "text-stone-700" : "text-stone-400"}`}>
+          <span className={`hidden text-xs font-medium sm:inline ${i <= activeIndex ? "text-abyss" : "text-abyss/45"}`}>
             {s.label}
           </span>
-          {i < STEPS.length - 1 && <div className={`h-px flex-1 ${i < activeIndex ? "bg-fuchsia-700" : "bg-stone-200"}`} />}
+          {i < STEPS.length - 1 && <div className={`h-px flex-1 ${i < activeIndex ? "bg-coral" : "bg-rule"}`} />}
         </div>
       ))}
     </div>
@@ -44,6 +46,8 @@ function Stepper({ step }: { step: Step }) {
 
 export default function EventBookingWidget({ event }: { event: EventItem }) {
   const router = useRouter();
+  const cart = useCart();
+  const [addedToCart, setAddedToCart] = useState(false);
   const [step, setStep] = useState<Step>("select");
   const [tiers, setTiers] = useState<TierAvailability[]>([]);
   const [loadingTiers, setLoadingTiers] = useState(true);
@@ -145,17 +149,17 @@ export default function EventBookingWidget({ event }: { event: EventItem }) {
   }
 
   return (
-    <div className="sticky top-24 rounded-2xl border border-stone-200 bg-white p-5 shadow-xl shadow-stone-200/50">
+    <div className="sticky top-24 rounded-2xl border border-rule bg-white p-5 shadow-xl shadow-abyss/10">
       <Stepper step={step} />
 
       {step === "select" && (
         <div className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-stone-700">Ticket type</label>
+            <label className="mb-1 block text-sm font-medium text-abyss">Ticket type</label>
             {loadingTiers ? (
-              <p className="text-sm text-stone-400">Loading tickets…</p>
+              <p className="text-sm text-abyss/45">Loading tickets…</p>
             ) : tiers.length === 0 ? (
-              <p className="text-sm text-stone-400">No ticket tiers available.</p>
+              <p className="text-sm text-abyss/45">No ticket tiers available.</p>
             ) : (
               <div className="space-y-2">
                 {tiers.map((t) => (
@@ -166,16 +170,16 @@ export default function EventBookingWidget({ event }: { event: EventItem }) {
                     onClick={() => setSelectedTierId(t.id)}
                     className={`w-full rounded-lg border px-3 py-2.5 text-left text-sm transition ${
                       selectedTierId === t.id
-                        ? "border-fuchsia-600 bg-fuchsia-50"
-                        : "border-stone-300 hover:border-fuchsia-400"
-                    } ${t.remaining <= 0 ? "cursor-not-allowed border-stone-200 bg-stone-50 opacity-70" : ""}`}
+                        ? "border-coral bg-foam"
+                        : "border-rule hover:border-coral"
+                    } ${t.remaining <= 0 ? "cursor-not-allowed border-rule bg-shell opacity-70" : ""}`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-medium text-stone-900">{t.name}</span>
-                      <span className="font-semibold text-stone-900">${Number(t.price).toFixed(2)}</span>
+                      <span className="font-medium text-abyss">{t.name}</span>
+                      <span className="font-semibold text-abyss">${Number(t.price).toFixed(2)}</span>
                     </div>
-                    {t.description && <p className="mt-0.5 text-xs text-stone-500">{t.description}</p>}
-                    <p className="mt-0.5 text-xs text-stone-400">
+                    {t.description && <p className="mt-0.5 text-xs text-abyss/60">{t.description}</p>}
+                    <p className="mt-0.5 text-xs text-abyss/45">
                       {t.remaining <= 0 ? "Sold out" : `${t.remaining} of ${t.capacity} left`}
                     </p>
                   </button>
@@ -185,7 +189,7 @@ export default function EventBookingWidget({ event }: { event: EventItem }) {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-stone-700">Quantity</label>
+            <label className="mb-1 block text-sm font-medium text-abyss">Quantity</label>
             <input
               type="number"
               min={1}
@@ -202,7 +206,7 @@ export default function EventBookingWidget({ event }: { event: EventItem }) {
           )}
           {error && <p className="text-sm text-red-600">{error}</p>}
 
-          <div className="flex items-center justify-between border-t border-stone-100 pt-3 text-sm font-semibold text-stone-900">
+          <div className="flex items-center justify-between border-t border-rule pt-3 text-sm font-semibold text-abyss">
             <span>Total</span>
             <span>${total.toFixed(2)}</span>
           </div>
@@ -210,8 +214,28 @@ export default function EventBookingWidget({ event }: { event: EventItem }) {
           <button
             type="button"
             disabled={!selectedTierId || quantity < 1 || exceedsRemaining}
+            onClick={() => {
+              cart.addItem(
+                { type: "event", eventId: event.id, tierId: selectedTierId!, quantity },
+                {
+                  title: event.title,
+                  subtitle: `${selectedTier?.name ?? ""} x${quantity}`,
+                  price: total,
+                  photo: mediaUrl(event.cardImageUrl),
+                }
+              );
+              setAddedToCart(true);
+              setTimeout(() => setAddedToCart(false), 2500);
+            }}
+            className="w-full rounded-lg bg-aqua py-2.5 text-sm font-semibold text-abyss transition hover:bg-aqua-lift disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {addedToCart ? "Added to cart ✓" : "Add to cart (combine with other bookings)"}
+          </button>
+          <button
+            type="button"
+            disabled={!selectedTierId || quantity < 1 || exceedsRemaining}
             onClick={() => setStep("details")}
-            className="w-full rounded-lg bg-fuchsia-700 py-2.5 text-sm font-semibold text-white transition hover:bg-fuchsia-800 disabled:cursor-not-allowed disabled:opacity-40"
+            className="w-full rounded-lg bg-coral py-2.5 text-sm font-semibold text-abyss transition hover:bg-coral-lift disabled:cursor-not-allowed disabled:opacity-40"
           >
             Continue
           </button>
@@ -231,22 +255,22 @@ export default function EventBookingWidget({ event }: { event: EventItem }) {
           />
 
           {availablePaymentMethodCount > 1 && (
-            <div className="space-y-2 rounded-lg border border-stone-200 p-3">
-              <p className="text-sm font-medium text-stone-700">Payment method</p>
+            <div className="space-y-2 rounded-lg border border-rule p-3">
+              <p className="text-sm font-medium text-abyss">Payment method</p>
               {settings?.stripeEnabled && (
-                <label className="flex items-center gap-2 text-sm text-stone-600">
+                <label className="flex items-center gap-2 text-sm text-abyss/70">
                   <input type="radio" checked={paymentMethod === "stripe"} onChange={() => setPaymentMethod("stripe")} />
                   Pay by card
                 </label>
               )}
               {settings?.nmiEnabled && (
-                <label className="flex items-center gap-2 text-sm text-stone-600">
+                <label className="flex items-center gap-2 text-sm text-abyss/70">
                   <input type="radio" checked={paymentMethod === "nmi"} onChange={() => setPaymentMethod("nmi")} />
                   Pay by card (alternate)
                 </label>
               )}
               {settings?.offlinePaymentEnabled && (
-                <label className="flex items-center gap-2 text-sm text-stone-600">
+                <label className="flex items-center gap-2 text-sm text-abyss/70">
                   <input type="radio" checked={paymentMethod === "offline"} onChange={() => setPaymentMethod("offline")} />
                   Pay by bank transfer
                 </label>
@@ -255,7 +279,7 @@ export default function EventBookingWidget({ event }: { event: EventItem }) {
           )}
 
           {paymentMethod === "offline" && settings?.offlinePaymentInstructions && (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-900">
+            <div className="rounded-lg border border-rule bg-sand px-3 py-2.5 text-sm text-abyss">
               <p className="font-medium">Pay to the below details:</p>
               <p className="mt-1 whitespace-pre-line">{settings.offlinePaymentInstructions}</p>
               {settings.offlinePaymentReceiptEmail && (
@@ -273,11 +297,11 @@ export default function EventBookingWidget({ event }: { event: EventItem }) {
             type="button"
             disabled={!guestName || !guestEmail || submitting}
             onClick={handleCreateBooking}
-            className="w-full rounded-lg bg-fuchsia-700 py-2.5 text-sm font-semibold text-white transition hover:bg-fuchsia-800 disabled:cursor-not-allowed disabled:opacity-40"
+            className="w-full rounded-lg bg-coral py-2.5 text-sm font-semibold text-abyss transition hover:bg-coral-lift disabled:cursor-not-allowed disabled:opacity-40"
           >
             {submitting ? "Reserving your tickets…" : paymentMethod === "offline" ? "Submit booking" : "Continue to payment"}
           </button>
-          <button type="button" onClick={() => setStep("select")} className="w-full py-1 text-sm text-stone-500 hover:text-stone-700">
+          <button type="button" onClick={() => setStep("select")} className="w-full py-1 text-sm text-abyss/60 hover:text-abyss">
             Back
           </button>
         </div>
@@ -285,11 +309,11 @@ export default function EventBookingWidget({ event }: { event: EventItem }) {
 
       {step === "payment" && offlinePending && bookingId && (
         <div className="space-y-3">
-          <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-900">
+          <div className="rounded-lg border border-rule bg-sand px-3 py-2.5 text-sm text-abyss">
             <p className="font-semibold">Booking received — pending payment</p>
             <p className="mt-1">We&apos;ve held your tickets. Pay to the below details, then send your receipt to confirm.</p>
             {settings?.offlinePaymentInstructions && (
-              <p className="mt-2 whitespace-pre-line text-amber-800">{settings.offlinePaymentInstructions}</p>
+              <p className="mt-2 whitespace-pre-line text-abyss/80">{settings.offlinePaymentInstructions}</p>
             )}
             {settings?.offlinePaymentReceiptEmail && (
               <p className="mt-2">
@@ -306,7 +330,7 @@ export default function EventBookingWidget({ event }: { event: EventItem }) {
           <button
             type="button"
             onClick={() => router.push(`/events/confirmation/${bookingId}`)}
-            className="w-full rounded-lg bg-fuchsia-700 py-2.5 text-sm font-semibold text-white transition hover:bg-fuchsia-800"
+            className="w-full rounded-lg bg-coral py-2.5 text-sm font-semibold text-abyss transition hover:bg-coral-lift"
           >
             View booking
           </button>

@@ -3,11 +3,13 @@ import { getStripeClient, getWebhookSecret } from "../services/stripeService";
 import { markBookingPaid, releaseBooking } from "../services/bookingService";
 import { markRentalBookingPaid, cancelRentalBooking } from "../services/rentalService";
 import { markEventBookingPaid, cancelEventBooking } from "../services/eventService";
+import { markOrderPaid, releaseOrder } from "../services/orderService";
 import { prisma } from "../lib/prisma";
 import {
   sendBookingConfirmationEmail,
   sendRentalBookingConfirmationEmail,
   sendEventBookingConfirmationEmail,
+  sendOrderConfirmationEmail,
 } from "../services/emailService";
 
 const router = Router();
@@ -33,8 +35,13 @@ router.post("/stripe", async (req, res) => {
   if (event.type === "payment_intent.succeeded") {
     const pi = event.data.object as {
       id: string;
-      metadata: { bookingId?: string; rentalBookingId?: string; eventBookingId?: string };
+      metadata: { bookingId?: string; rentalBookingId?: string; eventBookingId?: string; orderId?: string };
     };
+
+    if (pi.metadata?.orderId) {
+      const order = await markOrderPaid(pi.metadata.orderId, pi.id);
+      if (order) await sendOrderConfirmationEmail(order);
+    }
 
     if (pi.metadata?.bookingId) {
       const booking = await markBookingPaid(pi.metadata.bookingId, pi.id);
@@ -64,8 +71,9 @@ router.post("/stripe", async (req, res) => {
 
   if (event.type === "payment_intent.payment_failed" || event.type === "payment_intent.canceled") {
     const pi = event.data.object as {
-      metadata: { bookingId?: string; rentalBookingId?: string; eventBookingId?: string };
+      metadata: { bookingId?: string; rentalBookingId?: string; eventBookingId?: string; orderId?: string };
     };
+    if (pi.metadata?.orderId) await releaseOrder(pi.metadata.orderId);
     if (pi.metadata?.bookingId) await releaseBooking(pi.metadata.bookingId);
     if (pi.metadata?.rentalBookingId) await cancelRentalBooking(pi.metadata.rentalBookingId);
     if (pi.metadata?.eventBookingId) await cancelEventBooking(pi.metadata.eventBookingId);

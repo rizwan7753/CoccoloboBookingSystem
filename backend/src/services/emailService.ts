@@ -12,6 +12,7 @@ import {
   RestaurantReservation,
 } from "@prisma/client";
 import { prisma } from "../lib/prisma";
+import { getOrderWithItems } from "./orderService";
 
 interface EmailMessage {
   to: string;
@@ -360,13 +361,63 @@ export async function sendEventBookingConfirmationEmail(booking: EventBooking, e
   });
 }
 
+/** Confirmation email for a multi-item order — one email itemizing every
+ *  line (excursion / beach chair / event ticket), reusing the same shell as
+ *  the per-type confirmation emails so it reads as one consistent brand. */
+export async function sendOrderConfirmationEmail(order: NonNullable<Awaited<ReturnType<typeof getOrderWithItems>>>) {
+  const locationName = await getLocationName();
+  const refCode = order.bookingCode ?? order.id;
+
+  const itemRows: Row[] = [
+    ...order.bookings.map((b) => ({
+      label: b.excursion?.title ?? "Excursion",
+      value: `${b.slot?.date.toISOString().slice(0, 10) ?? ""} ${b.slot?.time ?? ""} · ${b.totalGuests} guest${b.totalGuests === 1 ? "" : "s"} · $${b.amountTotal}`,
+    })),
+    ...order.rentalBookings.map((b) => ({
+      label: `${b.rentalItem?.name ?? "Beach chair"} (${b.spot?.code ?? ""})`,
+      value: `${b.date.toISOString().slice(0, 10)} · ${b.timeSlot?.label ?? ""} · ${b.quantity} chair${b.quantity === 1 ? "" : "s"} · $${b.amountTotal}`,
+    })),
+    ...order.eventBookings.map((b) => ({
+      label: b.event?.title ?? "Event",
+      value: `${b.tier?.name ?? ""} x${b.quantity} · $${b.amountTotal}`,
+    })),
+  ];
+
+  const rows: Row[] = [
+    ...itemRows,
+    { label: "Payment method", value: formatPaymentMethod(order.paymentMethod) },
+    { label: "Total paid", value: `$${order.amountTotal}` },
+  ];
+
+  await sendEmail({
+    to: order.guestEmail,
+    subject: `Booking confirmed — ${itemRows.length} item${itemRows.length === 1 ? "" : "s"}`,
+    text: [
+      `Hi ${order.guestName},`,
+      ``,
+      `Your order is confirmed:`,
+      ...rows.map((r) => `${r.label}: ${r.value}`),
+      `Booking reference: ${refCode}`,
+    ].join("\n"),
+    html: renderEmailShell({
+      accent: "#7b2e4e",
+      locationName,
+      eyebrow: "Booking confirmed",
+      heading: `${itemRows.length} item${itemRows.length === 1 ? "" : "s"} booked`,
+      intro: `Hi ${escapeHtml(order.guestName)}, your order is confirmed — see the details below.`,
+      rows,
+      bookingId: refCode,
+    }),
+  });
+}
+
 /** Staff-facing "new booking" alert — sent to Location.adminNotificationEmail
  *  (a no-op if that isn't set) whenever a guest creates any booking, so staff
  *  don't have to keep checking the admin panel to notice new activity.
  *  `details` follows the same "Label: value" convention as the offline
  *  pending email so both can share the same string-building at the call site. */
 export async function sendAdminNewBookingNotification(params: {
-  type: "excursion" | "rental" | "event";
+  type: "excursion" | "rental" | "event" | "order";
   title: string;
   guestName: string;
   guestEmail: string;

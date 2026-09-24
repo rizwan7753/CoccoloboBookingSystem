@@ -4,13 +4,16 @@ import { useEffect, useState } from "react";
 import { adminApi, AdminRestaurantMenu, getStoredAdmin, canManageRestaurantMenus } from "@/lib/adminApi";
 import { PageHeader, cardClass, inputClass, primaryButtonClass, Badge } from "@/components/admin/ui";
 import ImageUploadField from "@/components/ImageUploadField";
+import MultiImageUploadField from "@/components/MultiImageUploadField";
+import { slugify } from "@/lib/slugify";
 
-const DEFAULT_LOCATION_ID = "carambola-main"; // MVP: single location, seeded in prisma/seed.ts
+const DEFAULT_LOCATION_ID = "coccolobo-main"; // MVP: single location, seeded in prisma/seed.ts
 
 interface ItemDraft {
   name: string;
   description: string;
   price: string;
+  images: string[];
 }
 
 interface SectionDraft {
@@ -19,7 +22,7 @@ interface SectionDraft {
   items: ItemDraft[];
 }
 
-const emptyItem = (): ItemDraft => ({ name: "", description: "", price: "" });
+const emptyItem = (): ItemDraft => ({ name: "", description: "", price: "", images: [] });
 const emptySection = (): SectionDraft => ({ heading: "", subheading: "", items: [emptyItem()] });
 const emptyForm = {
   title: "",
@@ -38,8 +41,13 @@ export default function AdminRestaurantMenusPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const [slugTouched, setSlugTouched] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  function handleTitleChange(value: string) {
+    setForm((f) => ({ ...f, title: value, slug: slugTouched ? f.slug : slugify(value) }));
+  }
 
   const canEdit = canManageRestaurantMenus(getStoredAdmin()?.permissions);
 
@@ -55,12 +63,14 @@ export default function AdminRestaurantMenusPage() {
   function startCreate() {
     setEditingId(null);
     setForm(emptyForm);
+    setSlugTouched(false);
     setError(null);
     setShowForm(true);
   }
 
   function startEdit(menu: AdminRestaurantMenu) {
     setEditingId(menu.id);
+    setSlugTouched(true);
     setForm({
       title: menu.title,
       slug: menu.slug,
@@ -80,6 +90,7 @@ export default function AdminRestaurantMenusPage() {
                       name: it.name,
                       description: it.description ?? "",
                       price: it.price ?? "",
+                      images: it.images ?? [],
                     }))
                   : [emptyItem()],
             }))
@@ -140,6 +151,7 @@ export default function AdminRestaurantMenusPage() {
               name: it.name.trim(),
               description: it.description.trim() || undefined,
               price: it.price.trim() ? Number(it.price) : undefined,
+              images: it.images,
             })),
         }));
       const payload = {
@@ -198,7 +210,7 @@ export default function AdminRestaurantMenusPage() {
               <label className="mb-1 block text-sm font-medium text-stone-700">Title</label>
               <input
                 value={form.title}
-                onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                onChange={(e) => handleTitleChange(e.target.value)}
                 placeholder="Dinner Menu"
                 required
                 className={inputClass}
@@ -208,11 +220,15 @@ export default function AdminRestaurantMenusPage() {
               <label className="mb-1 block text-sm font-medium text-stone-700">Slug (URL)</label>
               <input
                 value={form.slug}
-                onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
+                onChange={(e) => {
+                  setForm((f) => ({ ...f, slug: e.target.value }));
+                  setSlugTouched(true);
+                }}
                 placeholder="dinner-menu"
                 required
                 className={inputClass}
               />
+              <p className="mt-1 text-xs text-stone-400">Auto-generated from the title — edit if you want a different URL.</p>
             </div>
           </div>
 
@@ -354,6 +370,13 @@ export default function AdminRestaurantMenusPage() {
                             ✕
                           </button>
                         )}
+                      </div>
+                      <div className="col-span-12">
+                        <MultiImageUploadField
+                          label="Dish photos (optional)"
+                          value={item.images}
+                          onChange={(images) => updateItem(sectionIndex, itemIndex, { images })}
+                        />
                       </div>
                     </div>
                   ))}

@@ -58,14 +58,25 @@ export interface CreateBookingInput {
   actor?: { adminUserId: string | null; actorLabel: string };
 }
 
+export interface PreparedBooking {
+  excursion: NonNullable<Awaited<ReturnType<typeof prisma.excursion.findUnique>>>;
+  input: CreateBookingInput;
+  departureDate: Date;
+  adultCount: number;
+  childCount: number;
+  totalGuests: number;
+  amountTotal: number;
+}
+
 /**
- * Creates a booking with concurrency-safe capacity locking:
- * the DepartureSlot row is locked with SELECT ... FOR UPDATE inside a
- * transaction so two simultaneous bookings can never oversell the same
- * departure. Capacity check, increment, and booking insert all happen
- * atomically within that lock.
+ * All the pre-transaction validation for a single excursion booking
+ * (existence/status, schedule, cut-off, holiday) plus the price computation
+ * — everything that only needs a read, not a lock. Split out from
+ * `createBooking` so a multi-item order (orderService) can validate every
+ * line item *before* opening the shared transaction that actually reserves
+ * capacity for all of them.
  */
-export async function createBooking(input: CreateBookingInput) {
+export async function validateAndPrepareBooking(input: CreateBookingInput): Promise<PreparedBooking> {
   const [excursion, location] = await Promise.all([
     prisma.excursion.findUnique({ where: { id: input.excursionId } }),
     prisma.location.findFirst(),
@@ -78,6 +89,12 @@ export async function createBooking(input: CreateBookingInput) {
   const childCount = input.childCount ?? 0;
   const totalGuests = adultCount + childCount;
   if (totalGuests < 1) throw new BookingError("At least one guest is required");
+  if (totalGuests < excursion.minGuests) {
+    throw new BookingError(
+      `This excursion requires a minimum of ${excursion.minGuests} guest${excursion.minGuests === 1 ? "" : "s"} — add ${excursion.minGuests - totalGuests} more to book.`,
+      422
+    );
+  }
 
   const departureDate = parseDateOnly(input.date);
   if (Number.isNaN(departureDate.getTime())) throw new BookingError("Invalid date");
@@ -110,67 +127,88 @@ export async function createBooking(input: CreateBookingInput) {
       ? Number(excursion.priceAdult)
       : Number(excursion.priceAdult) * adultCount + Number(excursion.priceChild ?? 0) * childCount;
 
-  const booking = await prisma.$transaction(async (tx) => {
-    const locked = await tx.$queryRaw<{ id: string; capacity: number; bookedCount: number }[]>(
-      Prisma.sql`SELECT id, capacity, bookedCount FROM departure_slots
-                 WHERE excursionId = ${excursion.id} AND date = ${input.date} AND time = ${input.time}
-                 FOR UPDATE`
+  return { excursion, input, departureDate, adultCount, childCount, totalGuests, amountTotal };
+}
+
+/**
+ * The concurrency-safe part of booking creation: the DepartureSlot row is
+ * locked with SELECT ... FOR UPDATE inside the given transaction so two
+ * simultaneous bookings can never oversell the same departure. Capacity
+ * check, increment, and booking insert all happen atomically within that
+ * lock. Takes an already-open transaction so it can run either standalone
+ * (`createBooking`, below) or as one leg of a multi-item order's shared
+ * transaction (`orderService.createOrder`).
+ */
+export async function reserveAndCreateBooking(tx: Prisma.TransactionClient, prepared: PreparedBooking, orderId?: string) {
+  const { excursion, input, departureDate, adultCount, childCount, totalGuests, amountTotal } = prepared;
+
+  const locked = await tx.$queryRaw<{ id: string; capacity: number; bookedCount: number }[]>(
+    Prisma.sql`SELECT id, capacity, bookedCount FROM departure_slots
+               WHERE excursionId = ${excursion.id} AND date = ${input.date} AND time = ${input.time}
+               FOR UPDATE`
+  );
+  const slot = locked[0];
+  if (!slot) throw new BookingError("Departure slot not found", 404);
+
+  const remaining = slot.capacity - slot.bookedCount;
+  if (remaining < totalGuests) {
+    throw new BookingError(
+      remaining <= 0 ? "This departure is fully booked" : `Only ${remaining} spot(s) left on this departure`,
+      409
     );
-    const slot = locked[0];
-    if (!slot) throw new BookingError("Departure slot not found", 404);
+  }
 
-    const remaining = slot.capacity - slot.bookedCount;
-    if (remaining < totalGuests) {
-      throw new BookingError(
-        remaining <= 0 ? "This departure is fully booked" : `Only ${remaining} spot(s) left on this departure`,
-        409
-      );
-    }
-
-    await tx.departureSlot.update({
-      where: { id: slot.id },
-      data: {
-        bookedCount: { increment: totalGuests },
-        status: slot.bookedCount + totalGuests >= slot.capacity ? "SOLD_OUT" : "OPEN",
-      },
-    });
-
-    const bookingCode = await nextBookingCode(tx, "EXC", departureDate);
-
-    const created = await tx.booking.create({
-      data: {
-        excursionId: excursion.id,
-        slotId: slot.id,
-        bookingCode,
-        guestName: input.guestName,
-        guestEmail: input.guestEmail,
-        guestPhone: input.guestPhone,
-        roomNumber: input.roomNumber,
-        specialRequests: input.specialRequests,
-        adultCount,
-        childCount,
-        totalGuests,
-        amountTotal,
-        currency: "USD",
-        status: "PENDING",
-        paymentStatus: "PENDING",
-        source: input.source ?? "DIRECT_WEBSITE",
-      },
-    });
-
-    await logAudit(
-      input.actor ?? { adminUserId: null, actorLabel: input.guestName },
-      "booking.created",
-      "Booking",
-      created.id,
-      { date: input.date, time: input.time, totalGuests, source: created.source },
-      tx
-    );
-
-    return created;
+  await tx.departureSlot.update({
+    where: { id: slot.id },
+    data: {
+      bookedCount: { increment: totalGuests },
+      status: slot.bookedCount + totalGuests >= slot.capacity ? "SOLD_OUT" : "OPEN",
+    },
   });
 
-  return booking;
+  const bookingCode = await nextBookingCode(tx, "EXC", departureDate);
+
+  const created = await tx.booking.create({
+    data: {
+      excursionId: excursion.id,
+      slotId: slot.id,
+      bookingCode,
+      orderId,
+      guestName: input.guestName,
+      guestEmail: input.guestEmail,
+      guestPhone: input.guestPhone,
+      roomNumber: input.roomNumber,
+      specialRequests: input.specialRequests,
+      adultCount,
+      childCount,
+      totalGuests,
+      amountTotal,
+      currency: "USD",
+      status: "PENDING",
+      paymentStatus: "PENDING",
+      source: input.source ?? "DIRECT_WEBSITE",
+    },
+  });
+
+  await logAudit(
+    input.actor ?? { adminUserId: null, actorLabel: input.guestName },
+    "booking.created",
+    "Booking",
+    created.id,
+    { date: input.date, time: input.time, totalGuests, source: created.source, orderId },
+    tx
+  );
+
+  return created;
+}
+
+/**
+ * Creates a standalone (non-order) booking — validates, then reserves
+ * capacity and inserts inside its own single-item transaction.
+ */
+export async function createBooking(input: CreateBookingInput) {
+  const prepared = await validateAndPrepareBooking(input);
+  return prisma.$transaction((tx) => reserveAndCreateBooking(tx, prepared));
 }
 
 /** Called after successful Stripe payment confirmation (webhook, or the local dev bypass). */

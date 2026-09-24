@@ -90,6 +90,19 @@ export async function createEventPaymentIntent(amountUsd: number, eventBookingId
   });
 }
 
+// Multi-item order — one PaymentIntent for the order's combined total.
+// Metadata carries only the orderId (not each line item — Stripe metadata is
+// size-limited), so the webhook looks up the order's items from the DB.
+export async function createOrderPaymentIntent(amountUsd: number, orderId: string) {
+  const client = await requireClient();
+  return client.paymentIntents.create({
+    amount: Math.round(amountUsd * 100),
+    currency: "usd",
+    metadata: { orderId },
+    automatic_payment_methods: { enabled: true },
+  });
+}
+
 // Startup-only informational warning (was previously synchronous/env-only;
 // now async since the key can come from the DB) — never blocks server boot.
 isStripeConfigured().then((configured) => {

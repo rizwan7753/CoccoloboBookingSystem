@@ -1,11 +1,11 @@
 services:
   mysql:
     image: mysql:8.0
-    container_name: carambola-booking-mysql
+    container_name: coccolobo-booking-mysql
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: carambola_booking
+      MYSQL_DATABASE: coccolobo_booking
     ports:
       - "3306:3306"
     volumes:

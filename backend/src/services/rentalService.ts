@@ -28,20 +28,24 @@ export interface CreateRentalBookingInput {
   actor?: { adminUserId: string | null; actorLabel: string };
 }
 
+export interface PreparedRentalBooking {
+  item: NonNullable<Awaited<ReturnType<typeof prisma.rentalItem.findUnique>>>;
+  timeSlot: NonNullable<Awaited<ReturnType<typeof prisma.rentalTimeSlot.findUnique>>>;
+  input: CreateRentalBookingInput;
+  date: Date;
+  adultCount: number;
+  childCount: number;
+  quantity: number;
+  amountTotal: number;
+}
+
 /**
- * Creates a rental booking (beach chair / cabana / umbrella), reserving
- * `adultCount + childCount` chairs from the chosen spot's pool for one time
- * slot (e.g. "Morning") — the same physical chair can be booked separately
- * in a different time slot on the same day.
- *
- * Concurrency-safe the same way excursion capacity is (see
- * bookingService.createBooking): the spot row is locked with
- * SELECT ... FOR UPDATE inside a transaction, remaining capacity for
- * (spotId, date, timeSlotId) is computed from the sum of that slot's
- * non-cancelled bookings, and only then is the new booking inserted.
- * Same-day booking is allowed (no cutoff check).
+ * Pre-transaction validation + price computation for one rental booking —
+ * split out from `createRentalBooking` so a multi-item order (orderService)
+ * can validate every line item before opening the shared transaction that
+ * reserves capacity for all of them.
  */
-export async function createRentalBooking(input: CreateRentalBookingInput) {
+export async function validateAndPrepareRentalBooking(input: CreateRentalBookingInput): Promise<PreparedRentalBooking> {
   const item = await prisma.rentalItem.findUnique({ where: { id: input.rentalItemId } });
   if (!item) throw new RentalError("Rental item not found", 404);
   if (item.status !== "ACTIVE") throw new RentalError("This rental is not currently bookable", 409);
@@ -65,68 +69,89 @@ export async function createRentalBooking(input: CreateRentalBookingInput) {
 
   const amountTotal = Number(item.priceAdult) * adultCount + Number(item.priceChild ?? 0) * childCount;
 
-  const booking = await prisma.$transaction(async (tx) => {
-    const locked = await tx.$queryRaw<{ id: string; quantity: number; isActive: boolean; rentalItemId: string }[]>(
-      Prisma.sql`SELECT id, quantity, isActive, rentalItemId FROM rental_spots WHERE id = ${input.spotId} FOR UPDATE`
+  return { item, timeSlot, input, date, adultCount, childCount, quantity, amountTotal };
+}
+
+/**
+ * The concurrency-safe part of rental booking creation: the spot row is
+ * locked with SELECT ... FOR UPDATE inside the given transaction, remaining
+ * capacity for (spotId, date, timeSlotId) is computed from the sum of that
+ * slot's non-cancelled bookings, and only then is the new booking inserted.
+ * Takes an already-open transaction so it can run either standalone
+ * (`createRentalBooking`, below) or as one leg of a multi-item order.
+ */
+export async function reserveAndCreateRentalBooking(tx: Prisma.TransactionClient, prepared: PreparedRentalBooking, orderId?: string) {
+  const { item, timeSlot, input, date, adultCount, childCount, quantity, amountTotal } = prepared;
+
+  const locked = await tx.$queryRaw<{ id: string; quantity: number; isActive: boolean; rentalItemId: string }[]>(
+    Prisma.sql`SELECT id, quantity, isActive, rentalItemId FROM rental_spots WHERE id = ${input.spotId} FOR UPDATE`
+  );
+  const spot = locked[0];
+  if (!spot || spot.rentalItemId !== item.id || !spot.isActive) {
+    throw new RentalError("Spot not found", 404);
+  }
+
+  const bookedAgg = await tx.rentalBooking.aggregate({
+    where: { spotId: spot.id, date, timeSlotId: timeSlot.id, status: { not: "CANCELLED" } },
+    _sum: { quantity: true },
+  });
+  const alreadyBooked = bookedAgg._sum.quantity ?? 0;
+  const remaining = spot.quantity - alreadyBooked;
+
+  if (remaining < quantity) {
+    throw new RentalError(
+      remaining <= 0
+        ? `No chairs left at this spot for ${timeSlot.label}`
+        : `Only ${remaining} chair(s) left at this spot for ${timeSlot.label}`,
+      409
     );
-    const spot = locked[0];
-    if (!spot || spot.rentalItemId !== item.id || !spot.isActive) {
-      throw new RentalError("Spot not found", 404);
-    }
+  }
 
-    const bookedAgg = await tx.rentalBooking.aggregate({
-      where: { spotId: spot.id, date, timeSlotId: timeSlot.id, status: { not: "CANCELLED" } },
-      _sum: { quantity: true },
-    });
-    const alreadyBooked = bookedAgg._sum.quantity ?? 0;
-    const remaining = spot.quantity - alreadyBooked;
+  const bookingCode = await nextBookingCode(tx, "BCH", date);
 
-    if (remaining < quantity) {
-      throw new RentalError(
-        remaining <= 0
-          ? `No chairs left at this spot for ${timeSlot.label}`
-          : `Only ${remaining} chair(s) left at this spot for ${timeSlot.label}`,
-        409
-      );
-    }
-
-    const bookingCode = await nextBookingCode(tx, "BCH", date);
-
-    const created = await tx.rentalBooking.create({
-      data: {
-        rentalItemId: item.id,
-        spotId: spot.id,
-        timeSlotId: timeSlot.id,
-        date,
-        bookingCode,
-        guestName: input.guestName,
-        guestEmail: input.guestEmail,
-        guestPhone: input.guestPhone,
-        roomNumber: input.roomNumber,
-        adultCount,
-        childCount,
-        quantity,
-        amountTotal,
-        currency: "USD",
-        status: "PENDING",
-        paymentStatus: "PENDING",
-        source: input.source ?? "DIRECT_WEBSITE",
-      },
-    });
-
-    await logAudit(
-      input.actor ?? { adminUserId: null, actorLabel: input.guestName },
-      "rental_booking.created",
-      "RentalBooking",
-      created.id,
-      { date: input.date, spotId: spot.id, timeSlotId: timeSlot.id, quantity },
-      tx
-    );
-
-    return created;
+  const created = await tx.rentalBooking.create({
+    data: {
+      rentalItemId: item.id,
+      spotId: spot.id,
+      timeSlotId: timeSlot.id,
+      date,
+      bookingCode,
+      orderId,
+      guestName: input.guestName,
+      guestEmail: input.guestEmail,
+      guestPhone: input.guestPhone,
+      roomNumber: input.roomNumber,
+      adultCount,
+      childCount,
+      quantity,
+      amountTotal,
+      currency: "USD",
+      status: "PENDING",
+      paymentStatus: "PENDING",
+      source: input.source ?? "DIRECT_WEBSITE",
+    },
   });
 
-  return booking;
+  await logAudit(
+    input.actor ?? { adminUserId: null, actorLabel: input.guestName },
+    "rental_booking.created",
+    "RentalBooking",
+    created.id,
+    { date: input.date, spotId: spot.id, timeSlotId: timeSlot.id, quantity, orderId },
+    tx
+  );
+
+  return created;
+}
+
+/**
+ * Creates a standalone (non-order) rental booking — validates, then
+ * reserves capacity and inserts inside its own single-item transaction.
+ * Same-day booking is allowed (no cutoff check).
+ */
+export async function createRentalBooking(input: CreateRentalBookingInput) {
+  const prepared = await validateAndPrepareRentalBooking(input);
+  return prisma.$transaction((tx) => reserveAndCreateRentalBooking(tx, prepared));
 }
 
 export async function markRentalBookingPaid(

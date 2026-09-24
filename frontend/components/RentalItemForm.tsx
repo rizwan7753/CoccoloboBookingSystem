@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import { adminApi, AdminRentalItem } from "@/lib/adminApi";
 import { inputClass, primaryButtonClass, cardClass } from "@/components/admin/ui";
 import ImageUploadField from "@/components/ImageUploadField";
+import MultiImageUploadField from "@/components/MultiImageUploadField";
+import { slugify } from "@/lib/slugify";
 
-const DEFAULT_LOCATION_ID = "carambola-main"; // MVP: single location, seeded in prisma/seed.ts
+const DEFAULT_LOCATION_ID = "coccolobo-main"; // MVP: single location, seeded in prisma/seed.ts
 
 export default function RentalItemForm({ initial }: { initial?: AdminRentalItem }) {
   const router = useRouter();
@@ -14,6 +16,12 @@ export default function RentalItemForm({ initial }: { initial?: AdminRentalItem 
 
   const [name, setName] = useState(initial?.name || "");
   const [slug, setSlug] = useState(initial?.slug || "");
+  const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
+
+  function handleNameChange(value: string) {
+    setName(value);
+    if (!slugTouched) setSlug(slugify(value));
+  }
   const [description, setDescription] = useState(initial?.description || "");
   const [durationMinutes, setDurationMinutes] = useState(initial?.durationMinutes || 240);
   const [priceAdult, setPriceAdult] = useState(Number(initial?.priceAdult) || 0);
@@ -21,6 +29,7 @@ export default function RentalItemForm({ initial }: { initial?: AdminRentalItem 
   const [status, setStatus] = useState(initial?.status || "DRAFT");
   const [cardImageUrl, setCardImageUrl] = useState(initial?.cardImageUrl || "");
   const [headerImageUrl, setHeaderImageUrl] = useState(initial?.headerImageUrl || "");
+  const [images, setImages] = useState<string[]>(initial?.images ?? []);
 
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -40,6 +49,7 @@ export default function RentalItemForm({ initial }: { initial?: AdminRentalItem 
       status,
       cardImageUrl: cardImageUrl || undefined,
       headerImageUrl: headerImageUrl || undefined,
+      images,
     };
     try {
       if (isEdit && initial) {
@@ -60,11 +70,20 @@ export default function RentalItemForm({ initial }: { initial?: AdminRentalItem 
     <form onSubmit={handleSubmit} className={`${cardClass} max-w-2xl space-y-4 p-6`}>
       <div>
         <label className="mb-1 block text-sm font-medium text-stone-700">Name</label>
-        <input value={name} onChange={(e) => setName(e.target.value)} className={inputClass} required />
+        <input value={name} onChange={(e) => handleNameChange(e.target.value)} className={inputClass} required />
       </div>
       <div>
         <label className="mb-1 block text-sm font-medium text-stone-700">Slug (URL)</label>
-        <input value={slug} onChange={(e) => setSlug(e.target.value)} className={inputClass} required />
+        <input
+          value={slug}
+          onChange={(e) => {
+            setSlug(e.target.value);
+            setSlugTouched(true);
+          }}
+          className={inputClass}
+          required
+        />
+        <p className="mt-1 text-xs text-stone-400">Auto-generated from the name — edit if you want a different URL.</p>
       </div>
       <div>
         <label className="mb-1 block text-sm font-medium text-stone-700">Description</label>
@@ -82,6 +101,12 @@ export default function RentalItemForm({ initial }: { initial?: AdminRentalItem 
         value={headerImageUrl}
         onChange={setHeaderImageUrl}
         hint="Recommended: 1920×600px wide landscape (~3:1), under 500KB. Spans the full page width — a tall or square photo will get heavily cropped."
+      />
+      <MultiImageUploadField
+        label="Gallery"
+        value={images}
+        onChange={setImages}
+        hint="Extra photos shown as a gallery on the detail page, in addition to the header image above."
       />
 
       <div className="grid grid-cols-2 gap-4">

@@ -385,7 +385,7 @@ export default function AdminSettingsPage() {
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium text-stone-700">From name</label>
-                <input placeholder="e.g. Cocolobo Bookings" value={smtpFromName} onChange={(e) => setSmtpFromName(e.target.value)} className={inputClass} />
+                <input placeholder="e.g. Coccolobo Bookings" value={smtpFromName} onChange={(e) => setSmtpFromName(e.target.value)} className={inputClass} />
               </div>
             </div>
 

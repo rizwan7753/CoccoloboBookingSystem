@@ -4,6 +4,8 @@ import { rentalApi } from "@/lib/rentalApi";
 import { settingsApi } from "@/lib/settingsApi";
 import { mediaUrl } from "@/lib/media";
 import RentalBookingWidget from "@/components/RentalBookingWidget";
+import Gallery from "@/components/site/Gallery";
+import ItemReviews from "@/components/site/ItemReviews";
 
 export const revalidate = 60;
 
@@ -23,44 +25,48 @@ export default async function RentalDetailPage({ params }: { params: Promise<{ s
   if (!item) notFound();
 
   return (
-    <main>
+    <main className="site-body">
       <div
-        className="relative h-48 overflow-hidden bg-gradient-to-br from-amber-600 via-orange-500 to-amber-500 bg-cover bg-center sm:h-64"
+        className="relative h-48 overflow-hidden bg-gradient-to-br from-abyss via-deep to-aqua bg-cover bg-center sm:h-64"
         style={item.headerImageUrl ? { backgroundImage: `url(${mediaUrl(item.headerImageUrl)})` } : undefined}
       >
         {item.headerImageUrl && <div className="pointer-events-none absolute inset-0 bg-black/35" />}
-        <div
-          className="pointer-events-none absolute inset-0 opacity-20"
-          style={{ backgroundImage: "radial-gradient(circle at 75% 30%, white 0, transparent 45%)" }}
-        />
-        <div className="relative mx-auto flex h-full max-w-6xl flex-col justify-end px-4 pb-8 sm:px-6">
-          <Link href="/beach-chairs" className="mb-3 flex w-fit items-center gap-1 text-sm text-amber-50 hover:text-white">
+        <div className="wrap relative flex h-full flex-col justify-end pb-8">
+          <Link href="/beach-chairs" className="mb-3 flex w-fit items-center gap-1 text-sm text-shallow hover:text-foam">
             <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
               <path d="M19 12H5M11 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             All rentals
           </Link>
-          <h1 className="animate-fade-in-up font-display max-w-2xl text-3xl font-bold text-white sm:text-4xl">{item.name}</h1>
-          <p className="animate-fade-in-up mt-2 text-sm text-amber-100" style={{ animationDelay: "80ms" }}>
+          <h1 className="animate-fade-in-up font-display max-w-4xl text-3xl text-foam sm:text-4xl">{item.name}</h1>
+          <p className="animate-fade-in-up mt-2 text-sm text-foam/80" style={{ animationDelay: "80ms" }}>
             {Math.round(item.durationMinutes / 60)}-hour sessions
           </p>
         </div>
       </div>
 
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+      <div className="wrap py-12">
         <div className="grid gap-10 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <p className="whitespace-pre-line text-stone-600 leading-relaxed">{item.description}</p>
+            <p className="whitespace-pre-line leading-relaxed opacity-85">{item.description}</p>
 
-            <div className="mt-8 flex gap-3 rounded-xl border border-teal-200 bg-teal-50 p-4">
-              <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-teal-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+            {item.images && item.images.length > 0 && (
+              <div className="mt-6">
+                <Gallery images={item.images} alt={item.name} />
+              </div>
+            )}
+
+            <div className="mt-8 flex gap-3 rounded-xl border border-rule bg-foam p-4">
+              <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-aqua-ink" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                 <path d="M12 8v4l3 3M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              <div className="text-sm text-teal-900">
+              <div className="text-sm text-abyss">
                 <p className="font-semibold">Same-day booking available.</p>
                 <p className="mt-0.5">Pick any available spot for today, or reserve ahead for a future date.</p>
               </div>
             </div>
+
+            <ItemReviews itemType="RENTAL" itemId={item.id} itemTitle={item.name} />
           </div>
 
           <div className="lg:col-span-1">

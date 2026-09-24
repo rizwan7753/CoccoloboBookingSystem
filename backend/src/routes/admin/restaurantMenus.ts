@@ -20,6 +20,7 @@ const menuItemSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
   price: z.number().nonnegative().optional(),
+  images: z.array(z.string()).optional(),
 });
 
 const menuSectionSchema = z.object({
@@ -54,6 +55,7 @@ function sectionsCreateData(sections: z.infer<typeof menuSectionSchema>[]) {
             name: item.name,
             description: item.description,
             price: item.price,
+            images: item.images,
             sortOrder: itemIndex,
           })),
         }

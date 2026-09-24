@@ -1,11 +1,12 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
 
-export type BookingLookupType = "excursion" | "rental" | "event";
+export type BookingLookupType = "excursion" | "rental" | "event" | "order";
 
 export const CONFIRMATION_PATH: Record<BookingLookupType, string> = {
   excursion: "/booking/confirmation",
   rental: "/beach-chairs/confirmation",
   event: "/events/confirmation",
+  order: "/order/confirmation",
 };
 
 export const bookingLookupApi = {

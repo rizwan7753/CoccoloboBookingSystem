@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<!--
+  Coccolobo Beach Club — homepage
+  --------------------------------
+  STRUCTURE modelled on breezes.com:
+    announcement bar → utility nav → main nav with centred wordmark →
+    hero with overlapping tabbed booking widget → long-form intro →
+    "Why Coccolobo" tile grid → excursion carousel → beach chairs →
+    restaurant → events → closing CTA → mega footer → legal bar
+
+  UNCHANGED from the previous build: palette (water-depth bands + sea grape),
+  Fraunces/Outfit pairing, SVG medallions, and the motion system.
+
+  IMAGERY — PLACEHOLDER PHOTOGRAPHY
+  All photographs are hotlinked from Unsplash under the Unsplash License
+  (free for commercial use, no attribution required, though a credit line is
+  good manners). They are placeholders standing in for real photography of the
+  club — replace every src before launch. None of them show Coccolobo.
+  Photographers used: Christian Lendl, Hugh Whyte, Upgraded Points,
+  Sxanghai Joe, Yuval Zukerman, Oskar Kadaksoo, Marko Kelecevic,
+  Derick McKinney, blackieshoot, Aaron Burden, Luigi Comba, wang xi, SJ,
+  大胡子, Antonio Mendes, Sunira Moses, XAVIER PHOTOGRAPHY, Sean Oulashin,
+  Omar Eagle, Ezequiel Garrido, Sherwin Ker.
+
+  Tiles and booking tabs keep the original SVG medallions — no stock licensing.
+  To use a real photo anywhere, swap <svg class="medal-art"> for
+  <img class="medal-art" src="..." alt="">. Mask, water arc and hover persist.
+
+  CONTENT from https://coccolobo.rigency.com/
+  TODO before launch: phone, email, address, opening hours, transfer details,
+  reviews, and wiring the booking widget to the real availability system.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coccolobo Beach Club | St. Kitts</title>
+<meta name="description" content="Excursions, private cabanas, beach chairs and a beachfront restaurant on St. Kitts. Advance booking required for excursions; beach chairs available same day.">
+<meta name="theme-color" content="#06303A">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..900,0..100,0..1&family=Outfit:wght@300..600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --abyss:#06303A; --deep:#0E4C59; --lagoon:#2E8E90;
+  --shallow:#7CC6B8; --foam:#E7F2EC;
+  --sand:#F1E4C7; --shell:#FBF7EE;
+  --grape:#7B2E4E; --grape-lift:#9B3D63;
+  --ink:var(--abyss);
+  --rule:rgba(6,48,58,.14);
+  --display:"Fraunces",Georgia,serif;
+  --body:"Outfit",system-ui,-apple-system,sans-serif;
+  --gutter:clamp(1rem,4vw,3.5rem);
+  --ease:cubic-bezier(.22,.68,.28,1);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;margin:0;padding:0}
+body{
+  margin:0;background:var(--shell);color:var(--ink);
+  font-family:var(--body);font-weight:300;
+  font-size:clamp(1rem,.95rem + .25vw,1.09rem);line-height:1.65;
+}
+img,svg{display:block;max-width:100%}
+a{color:inherit}
+button{font:inherit;color:inherit;cursor:pointer}
+h1,h2,h3,h4{
+  font-family:var(--display);
+  font-variation-settings:"SOFT" 60,"WONK" 1;
+  font-weight:800;line-height:1;letter-spacing:-.015em;margin:0;
+}
+:focus-visible{outline:3px solid var(--grape);outline-offset:3px;border-radius:3px}
+.wrap{max-width:80rem;margin-inline:auto;padding-inline:var(--gutter)}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+
+/* ================= MEDALLIONS ================= */
+.medal{
+  position:relative;flex:none;
+  width:var(--medal,4.5rem);aspect-ratio:1;
+  border-radius:50%;overflow:hidden;
+  background:linear-gradient(165deg,var(--shallow) 0%,var(--lagoon) 55%,var(--deep) 100%);
+  box-shadow:inset 0 0 0 1px rgba(6,48,58,.16);
+}
+.medal-art{position:absolute;inset:0;width:100%;height:100%;color:var(--foam);z-index:2;object-fit:cover}
+.medal::after{
+  content:"";position:absolute;z-index:1;
+  left:-30%;right:-30%;bottom:-42%;height:76%;border-radius:50%;
+  background:rgba(6,48,58,.28);transition:transform .5s var(--ease);
+}
+.card:hover .medal::after,.tile:hover .medal::after,
+a:hover .medal::after,a:focus-visible .medal::after{transform:translateY(-11%)}
+
+/* ================= ANNOUNCEMENT BAR ================= */
+.announce{
+  background:var(--grape);color:var(--shell);
+  font-size:.88rem;text-align:center;padding:.6rem var(--gutter);
+}
+.announce a{text-decoration:underline;text-underline-offset:3px;font-weight:500}
+
+/* ================= HEADER ================= */
+.site-header{background:var(--abyss);color:var(--foam);position:relative;z-index:20}
+
+.utility{border-bottom:1px solid rgba(231,242,236,.14);font-size:.83rem}
+.utility-in{display:flex;flex-wrap:wrap;gap:.4rem 1.5rem;justify-content:space-between;padding:.55rem 0}
+.utility nav{display:flex;flex-wrap:wrap;gap:1.3rem}
+.utility a{text-decoration:none;opacity:.72;transition:opacity .2s var(--ease)}
+.utility a:hover{opacity:1;text-decoration:underline;text-underline-offset:3px}
+@media (max-width:46rem){.utility-in>nav:first-child{display:none}}
+
+.mainnav-in{
+  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
+  gap:1.5rem;padding:1.1rem 0;
+}
+.mainnav nav{display:flex;gap:1.6rem;font-size:.96rem;align-items:center}
+.mainnav nav.right{justify-content:flex-end}
+.mainnav nav a{text-decoration:none;opacity:.88;transition:opacity .2s var(--ease)}
+.mainnav nav a:hover{opacity:1;text-decoration:underline;text-underline-offset:5px}
+.wordmark{
+  font-family:var(--display);font-variation-settings:"SOFT" 80,"WONK" 1;
+  font-weight:900;font-size:clamp(1.35rem,1.1rem + .9vw,1.85rem);
+  letter-spacing:-.025em;text-decoration:none;white-space:nowrap;text-align:center;
+}
+.wordmark small{
+  display:block;font-family:var(--body);font-weight:300;
+  font-size:.6rem;letter-spacing:.22em;opacity:.6;margin-top:.35rem;
+}
+.pill{
+  background:var(--grape);color:var(--shell);
+  padding:.5rem 1.15rem;border-radius:999px;font-weight:500;opacity:1;
+  transition:background .2s var(--ease);
+}
+.pill:hover{background:var(--grape-lift);text-decoration:none!important}
+@media (max-width:64rem){
+  .mainnav-in{grid-template-columns:1fr auto}
+  .mainnav nav.left{display:none}
+  .mainnav nav.right{grid-column:2}
+}
+@media (max-width:34rem){
+  .mainnav nav.right a:not(.pill){display:none}
+}
+
+/* ================= HERO ================= */
+.hero{
+  position:relative;
+  min-height:min(74svh,40rem);
+  display:flex;align-items:center;
+  padding:clamp(4rem,10vh,7rem) 0 clamp(9rem,16vh,11rem);
+  background:var(--deep);
+  color:var(--foam);overflow:hidden;
+}
+.hero-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+/* The water-depth gradient stays — it now sits over the photograph rather than
+   replacing it, so the palette still drives the page. */
+.hero::before{
+  content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(180deg,
+    rgba(6,48,58,.93) 0%, rgba(14,76,89,.82) 30%,
+    rgba(46,142,144,.68) 60%, rgba(124,198,184,.62) 84%,
+    rgba(241,228,199,.94) 100%);
+}
+.caustics{
+  position:absolute;inset:-25% -50% 25%;z-index:2;pointer-events:none;
+  opacity:.16;mix-blend-mode:overlay;
+  background:repeating-linear-gradient(102deg,transparent 0 34px,rgba(255,255,255,.85) 34px 40px,transparent 40px 88px,rgba(255,255,255,.5) 88px 92px);
+  filter:blur(7px);animation:ripple 19s linear infinite;
+}
+@keyframes ripple{from{transform:translate3d(0,0,0)}to{transform:translate3d(-176px,0,0)}}
+
+.hero-inner{position:relative;z-index:4;max-width:44rem}
+.hero-eyebrow{font-size:.9rem;letter-spacing:.16em;opacity:0;margin:0 0 1.1rem;animation:riseIn .9s var(--ease) .1s forwards}
+.hero h1{
+  font-size:clamp(2.5rem,1.4rem + 5.2vw,5.4rem);
+  font-variation-settings:"SOFT" 85,"WONK" 1;font-weight:900;
+  letter-spacing:-.03em;line-height:.98;margin-bottom:.5em;
+}
+.hero h1 span{display:inline-block;transform:translateY(.4em);opacity:0;animation:surface .95s var(--ease) forwards}
+@keyframes surface{to{transform:translateY(0);opacity:1}}
+@keyframes riseIn{to{transform:translateY(0);opacity:.8}}
+@keyframes riseInFull{to{transform:translateY(0);opacity:1}}
+.hero-sub{
+  font-size:clamp(1.08rem,1rem + .5vw,1.4rem);max-width:36ch;margin:0;
+  opacity:0;transform:translateY(1rem);animation:riseInFull .9s var(--ease) .95s forwards;
+}
+
+.sprig{
+  position:absolute;z-index:3;right:clamp(-7rem,-5vw,-2rem);top:6%;
+  width:clamp(16rem,34vw,30rem);pointer-events:none;transform-origin:50% 100%;opacity:0;
+  animation:sprigIn 1.5s var(--ease) .25s forwards, sway 11s ease-in-out 1.8s infinite;
+}
+@keyframes sprigIn{from{opacity:0;transform:rotate(-14deg) scale(.96)}to{opacity:.2;transform:rotate(-8deg) scale(1)}}
+@keyframes sway{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(-4.5deg)}}
+.tide{position:absolute;left:0;right:0;bottom:-1px;z-index:5;line-height:0}
+.tide svg{width:200%;height:clamp(40px,6vw,80px);animation:drift 26s linear infinite}
+@keyframes drift{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ================= BOOKING WIDGET ================= */
+.booking{position:relative;z-index:15;margin-top:clamp(-7rem,-11vh,-5.5rem)}
+.booking-box{
+  background:var(--shell);border-radius:1.25rem;
+  box-shadow:0 1.5rem 3.5rem rgba(6,48,58,.24);
+  overflow:hidden;
+}
+.tabs{display:flex;overflow-x:auto;border-bottom:1px solid var(--rule);scrollbar-width:thin}
+.tab{
+  display:flex;align-items:center;gap:.55rem;
+  background:none;border:0;white-space:nowrap;
+  padding:1rem 1.35rem;font-size:.94rem;opacity:.62;
+  border-bottom:3px solid transparent;transition:opacity .2s var(--ease),border-color .2s var(--ease);
+}
+.tab svg{width:1.35rem;height:1.35rem;color:var(--lagoon)}
+.tab:hover{opacity:.9}
+.tab[aria-selected="true"]{opacity:1;border-bottom-color:var(--grape);font-weight:500}
+
+.fields{display:grid;gap:1rem;grid-template-columns:repeat(3,1fr) auto;align-items:end;padding:1.5rem}
+.field{display:flex;flex-direction:column;gap:.35rem}
+.field label{font-size:.8rem;letter-spacing:.04em;opacity:.7}
+.field input,.field select{
+  font:inherit;font-size:1rem;padding:.7rem .85rem;
+  border:1px solid var(--rule);border-radius:.6rem;background:#fff;color:var(--ink);
+  transition:border-color .2s var(--ease);
+}
+.field input:focus,.field select:focus{border-color:var(--lagoon)}
+.fields .btn{height:3rem;padding-inline:2.2rem}
+.booking-note{padding:0 1.5rem 1.35rem;font-size:.86rem;opacity:.65;margin:0}
+@media (max-width:60rem){
+  .fields{grid-template-columns:1fr 1fr}
+  .fields .btn{grid-column:1/-1;width:100%}
+}
+@media (max-width:34rem){.fields{grid-template-columns:1fr}}
+
+/* ================= BUTTONS ================= */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  background:var(--grape);color:var(--shell);
+  font-family:var(--body);font-weight:500;font-size:1rem;
+  padding:.8rem 1.7rem;border-radius:999px;text-decoration:none;border:0;
+  transition:transform .22s var(--ease),background .22s var(--ease),box-shadow .22s var(--ease);
+}
+.btn:hover{background:var(--grape-lift);transform:translateY(-2px);box-shadow:0 .6rem 1.4rem rgba(6,48,58,.18)}
+.btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--rule)}
+.btn-ghost:hover{background:var(--foam);color:var(--abyss)}
+.btn-light{background:var(--shell);color:var(--abyss)}
+.btn-light:hover{background:#fff}
+
+/* ================= SECTION RHYTHM ================= */
+.section{padding-block:clamp(3.75rem,8vw,6.5rem)}
+.sec-head{margin-bottom:2.75rem;max-width:52rem}
+.sec-head .kicker{
+  font-size:.85rem;letter-spacing:.16em;color:var(--grape);margin:0 0 .8rem;font-weight:500;
+}
+.sec-head h2{font-size:clamp(1.9rem,1.3rem + 2.6vw,3.4rem);max-width:20ch}
+.sec-head p{margin:1rem 0 0;font-size:1.08rem;max-width:60ch}
+.sec-head-row{display:flex;flex-wrap:wrap;gap:1.5rem;justify-content:space-between;align-items:flex-end}
+
+[data-reveal]{opacity:0;transform:translateY(1.4rem);transition:opacity .8s var(--ease),transform .8s var(--ease);transition-delay:var(--d,0ms)}
+[data-reveal].in{opacity:1;transform:none}
+
+/* ================= INTRO ================= */
+.intro{background:var(--shell)}
+.intro-grid{display:grid;gap:clamp(2rem,5vw,4.5rem);grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:start}
+@media (max-width:60rem){.intro-grid{grid-template-columns:1fr}}
+.intro h2{font-size:clamp(2rem,1.3rem + 3vw,3.6rem);margin-bottom:1.25rem}
+.intro .lead{font-size:1.2rem;line-height:1.55;margin:0 0 1.4rem}
+.intro p{max-width:62ch}
+.proof{
+  background:var(--foam);border-radius:1.25rem;padding:2rem 1.85rem;
+  border:1px solid var(--rule);
+}
+.proof h3{font-size:1.25rem;margin-bottom:1.25rem}
+.proof dl{margin:0;display:grid;gap:1.1rem}
+.proof dt{font-size:.82rem;letter-spacing:.1em;opacity:.65}
+.proof dd{
+  margin:.15rem 0 0;font-family:var(--display);
+  font-variation-settings:"SOFT" 50,"WONK" 1;font-weight:700;font-size:1.5rem;line-height:1.1;
+}
+
+/* ================= WHY TILES ================= */
+.why{background:var(--foam)}
+.tiles{display:grid;gap:1.15rem;grid-template-columns:repeat(auto-fit,minmax(16.5rem,1fr))}
+.tile{
+  background:var(--shell);border:1px solid var(--rule);border-radius:1.1rem;
+  padding:1.75rem 1.6rem;display:flex;flex-direction:column;gap:.85rem;
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease);
+}
+.tile:hover{transform:translateY(-4px);box-shadow:0 1rem 2.2rem rgba(6,48,58,.1)}
+.tile .medal{--medal:3rem}
+.tile .kicker{font-size:.78rem;letter-spacing:.14em;color:var(--grape);margin:0;font-weight:500}
+.tile h3{font-size:1.28rem;line-height:1.15}
+.tile p{margin:0;font-size:.97rem;opacity:.85}
+
+/* ================= CAROUSEL ================= */
+.excursions{background:var(--shell)}
+.car{position:relative;margin-top:.5rem}
+.car-track{
+  display:flex;gap:1.15rem;list-style:none;margin:0;padding:.5rem .25rem 1.5rem;
+  overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;
+  scrollbar-width:none;
+}
+.car-track::-webkit-scrollbar{display:none}
+.car-track>li{scroll-snap-align:start;flex:0 0 clamp(17rem,26vw,21rem)}
+.card{
+  background:var(--shell);border:1px solid var(--rule);border-radius:1.1rem;
+  overflow:hidden;height:100%;display:flex;flex-direction:column;
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease);
+}
+.card:hover{transform:translateY(-4px);box-shadow:0 1rem 2.2rem rgba(6,48,58,.12)}
+/* Photo slot — swap this block's contents for an <img> when photography lands */
+.card-visual{
+  aspect-ratio:4/3;display:grid;place-items:center;
+  background:linear-gradient(160deg,var(--deep),var(--lagoon) 60%,var(--shallow));
+  position:relative;
+}
+.card-visual .medal{--medal:6.5rem;box-shadow:none;background:rgba(6,48,58,.18)}
+.card-visual .medal::after{background:rgba(6,48,58,.3)}
+.card-dur{
+  position:absolute;top:.85rem;left:.85rem;
+  background:rgba(6,48,58,.72);color:var(--foam);
+  font-size:.78rem;padding:.3rem .7rem;border-radius:999px;
+}
+.card-body{padding:1.4rem 1.4rem 1.5rem;display:flex;flex-direction:column;flex:1}
+.card-body h3{font-size:1.32rem;line-height:1.15;margin-bottom:.55rem}
+.card-body p{margin:0 0 1.15rem;font-size:.95rem;opacity:.84}
+.card-price{
+  font-family:var(--display);font-variation-settings:"SOFT" 40,"WONK" 0;
+  font-weight:600;font-size:1.75rem;color:var(--grape);line-height:1;margin:auto 0 .25rem;
+}
+.card-price small{display:block;font-family:var(--body);font-size:.82rem;font-weight:300;opacity:.65;color:var(--ink);margin-top:.35rem}
+.card-actions{display:flex;gap:.6rem;margin-top:1.1rem;flex-wrap:wrap}
+.card-actions .btn{font-size:.92rem;padding:.6rem 1.15rem}
+
+.car-controls{display:flex;align-items:center;gap:.85rem}
+.car-btn{
+  width:2.9rem;height:2.9rem;border-radius:50%;
+  border:1px solid var(--rule);background:var(--shell);
+  display:grid;place-items:center;transition:background .2s var(--ease),opacity .2s var(--ease);
+}
+.car-btn:hover{background:var(--foam)}
+.car-btn[disabled]{opacity:.3;cursor:default}
+.car-btn svg{width:1.2rem;height:1.2rem}
+.car-count{font-size:.9rem;opacity:.65;min-width:3.5rem;text-align:center;font-variant-numeric:tabular-nums}
+
+/* ================= CHAIRS ================= */
+.chairs{background:var(--sand)}
+.chair-grid{display:grid;gap:1.15rem;grid-template-columns:repeat(auto-fit,minmax(18rem,1fr))}
+.chair{
+  background:var(--shell);border-radius:1.1rem;padding:1.9rem 1.75rem;
+  display:flex;flex-direction:column;gap:.5rem;
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease);
+}
+.chair:hover{transform:translateY(-4px);box-shadow:0 1rem 2.2rem rgba(6,48,58,.12)}
+.chair .medal{--medal:4.25rem;margin-bottom:.9rem}
+.chair h3{font-size:1.4rem}
+.chair .price{font-family:var(--display);font-variation-settings:"SOFT" 40,"WONK" 0;font-weight:600;font-size:2.1rem;line-height:1;margin:.5rem 0 .1rem;color:var(--grape)}
+.chair .sub{font-size:.88rem;opacity:.65;margin:0 0 1rem}
+.chair p.body{margin:0 0 1.4rem;font-size:.97rem;max-width:32ch}
+.chair .btn{align-self:flex-start;margin-top:auto}
+
+/* ================= RESTAURANT ================= */
+.kitchen{background:var(--abyss);color:var(--foam)}
+.kitchen .sec-head .kicker{color:var(--shallow)}
+.kitchen .sec-head p{opacity:.82}
+.menu-links{display:flex;flex-wrap:wrap;gap:.7rem;margin-bottom:2.5rem}
+.menu-links a{
+  border:1px solid rgba(231,242,236,.3);border-radius:999px;
+  padding:.5rem 1.1rem;text-decoration:none;font-size:.93rem;
+  transition:background .22s var(--ease),color .22s var(--ease),border-color .22s var(--ease);
+}
+.menu-links a:hover{background:var(--foam);color:var(--abyss);border-color:var(--foam)}
+.dishes{list-style:none;margin:0;padding:0;display:grid;gap:1.5rem 2.75rem;grid-template-columns:repeat(auto-fit,minmax(18.5rem,1fr))}
+.dish{display:flex;gap:1rem;align-items:flex-start}
+.dish .medal{--medal:3.2rem;margin-top:.15rem;box-shadow:inset 0 0 0 1px rgba(231,242,236,.2)}
+.dish:hover .medal::after{transform:translateY(-11%)}
+.dish h3{font-size:1.1rem;font-weight:700;line-height:1.2;display:flex;justify-content:space-between;gap:1rem;align-items:baseline}
+.dish h3 span{font-family:var(--body);font-weight:400;font-size:.95rem;opacity:.7;white-space:nowrap}
+.dish p{margin:.28rem 0 0;font-size:.93rem;opacity:.75;max-width:34ch}
+.kitchen .btn-light{margin-top:2.5rem}
+
+/* ================= EVENTS ================= */
+.events{background:var(--foam)}
+.event{
+  display:grid;gap:1.5rem 2.25rem;grid-template-columns:auto auto 1fr;align-items:start;
+  background:var(--shell);border:1px solid var(--rule);border-radius:1.1rem;padding:1.85rem;
+}
+.event .medal{--medal:5.5rem}
+.event:hover .medal::after{transform:translateY(-11%)}
+.event-date{font-family:var(--display);font-variation-settings:"SOFT" 60,"WONK" 1;font-weight:800;line-height:.9;text-align:center;margin:0}
+.event-date .d{display:block;font-size:clamp(2.6rem,7vw,3.8rem)}
+.event-date .m{display:block;font-size:1rem;margin-top:.3rem}
+.event h3{font-size:clamp(1.6rem,1.2rem + 1.6vw,2.4rem);margin-bottom:.35rem}
+.event .when{margin:0 0 .8rem;font-size:.95rem;opacity:.7}
+.event p.body{margin:0 0 1.4rem;max-width:52ch}
+@media (max-width:52rem){.event{grid-template-columns:auto 1fr}.event .medal{grid-row:1;--medal:4rem}.event-date{text-align:left}}
+@media (max-width:34rem){.event{grid-template-columns:1fr}}
+
+/* ================= CLOSING CTA ================= */
+.cta{background:var(--lagoon);color:var(--abyss);text-align:center}
+.cta h2{font-size:clamp(2rem,1.3rem + 3.4vw,4.2rem);max-width:18ch;margin-inline:auto}
+.cta p{max-width:46ch;margin:1.15rem auto 1.6rem;font-size:1.1rem}
+.cta ul{list-style:none;margin:0 auto 2rem;padding:0;display:flex;flex-wrap:wrap;gap:.55rem 1.85rem;justify-content:center;font-size:.96rem}
+.cta li{display:flex;align-items:center;gap:.5rem}
+.tick{width:1.05rem;flex:none}
+.cta-actions{display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center}
+
+/* ================= FOOTER ================= */
+.foot{background:var(--abyss);color:var(--foam);padding-block:3.5rem 0}
+.foot-note{
+  border:1px solid rgba(231,242,236,.2);border-radius:1rem;
+  padding:1.4rem 1.6rem;margin-bottom:3rem;font-size:.96rem;opacity:.86;max-width:60rem;
+}
+.foot-note strong{font-weight:600}
+.foot-cols{display:grid;gap:2.5rem;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));padding-bottom:3rem}
+.foot h4{font-size:1rem;font-weight:700;margin-bottom:.9rem}
+.foot ul{list-style:none;margin:0;padding:0;font-size:.94rem}
+.foot li{padding:.22rem 0}
+.foot a{text-decoration:none;opacity:.78;transition:opacity .2s var(--ease)}
+.foot a:hover{opacity:1;text-decoration:underline;text-underline-offset:4px}
+.foot-brand p{font-size:.94rem;opacity:.78;margin:.6rem 0 0;max-width:26ch}
+.socials{display:flex;gap:.6rem;margin-top:1.1rem}
+.socials a{
+  width:2.3rem;height:2.3rem;border-radius:50%;opacity:1;
+  border:1px solid rgba(231,242,236,.28);display:grid;place-items:center;
+  transition:background .2s var(--ease),color .2s var(--ease);
+}
+.socials a:hover{background:var(--foam);color:var(--abyss)}
+.socials svg{width:1.05rem;height:1.05rem}
+.legal{
+  border-top:1px solid rgba(231,242,236,.18);padding:1.4rem 0 2rem;
+  display:flex;flex-wrap:wrap;gap:.6rem 2rem;justify-content:space-between;
+  font-size:.85rem;opacity:.62;
+}
+
+/* ================= PHOTOS ================= */
+/* Every photo is hotlinked from the Unsplash CDN, which is what the Unsplash
+   API terms ask for. Sizes are requested per slot via ?w= so we never ship a
+   3000px file into a 300px card. Swap the src for client photography later —
+   nothing else needs to change. */
+.card-visual img,.post-visual img,.intro-photo img{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;
+  transition:transform .6s var(--ease);
+}
+/* Teal scrim: pulls mixed stock photography back toward the site palette so
+   fifteen photos from fifteen photographers still read as one set. */
+.card-visual::after,.post-visual::after{
+  content:"";position:absolute;inset:0;z-index:1;
+  background:linear-gradient(180deg,rgba(6,48,58,.04) 0%,rgba(6,48,58,.14) 55%,rgba(6,48,58,.46) 100%);
+}
+.card:hover .card-visual img,.post:hover .post-visual img{transform:scale(1.06)}
+.card-dur{z-index:2}
+
+.medal--photo{background:var(--deep)}
+.medal--photo::after{display:none}
+.medal--photo img{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2;
+  transition:transform .5s var(--ease);
+}
+.dish:hover .medal--photo img,.chair:hover .medal--photo img,
+.event:hover .medal--photo img{transform:scale(1.09)}
+
+.intro-photo{
+  position:relative;aspect-ratio:16/10;border-radius:1.1rem;overflow:hidden;
+  margin-bottom:1.5rem;background:var(--deep);
+}
+
+/* ================= REVIEWS ================= */
+.reviews{background:var(--sand)}
+.rev-summary{
+  display:flex;flex-wrap:wrap;align-items:center;gap:1rem 2.5rem;
+  padding:1.5rem 1.75rem;margin-bottom:2rem;
+  background:var(--shell);border-radius:1.1rem;border:1px solid var(--rule);
+}
+.rev-score{
+  font-family:var(--display);font-variation-settings:"SOFT" 40,"WONK" 0;
+  font-weight:700;font-size:3.2rem;line-height:1;color:var(--grape);
+}
+.rev-score small{display:block;font-family:var(--body);font-size:.82rem;font-weight:300;color:var(--ink);opacity:.65;margin-top:.4rem}
+.rev-summary-text{max-width:34ch}
+.rev-summary-text p{margin:.35rem 0 0;font-size:.93rem;opacity:.75}
+.rev-summary .btn{margin-left:auto}
+@media (max-width:52rem){.rev-summary .btn{margin-left:0;width:100%}}
+
+.stars{display:flex;gap:.15rem;color:var(--grape)}
+.stars svg{width:1.05rem;height:1.05rem}
+.stars .off{opacity:.24}
+
+.rev-grid{display:grid;gap:1.15rem;grid-template-columns:repeat(auto-fit,minmax(17.5rem,1fr))}
+.review{
+  background:var(--shell);border:1px solid var(--rule);border-radius:1.1rem;
+  padding:1.65rem 1.55rem;display:flex;flex-direction:column;gap:.85rem;
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease);
+}
+.review:hover{transform:translateY(-4px);box-shadow:0 1rem 2.2rem rgba(6,48,58,.1)}
+.review h3{font-size:1.1rem;line-height:1.25}
+.review blockquote{margin:0;font-size:.97rem;opacity:.87;line-height:1.6}
+.review footer{
+  margin-top:auto;padding-top:.9rem;border-top:1px solid var(--rule);
+  display:flex;align-items:center;gap:.75rem;font-size:.88rem;
+}
+.rev-avatar{
+  width:2.3rem;height:2.3rem;border-radius:50%;flex:none;display:grid;place-items:center;
+  background:linear-gradient(160deg,var(--shallow),var(--lagoon));
+  color:var(--abyss);font-weight:600;font-size:.82rem;
+}
+.rev-who strong{display:block;font-weight:500}
+.rev-who span{opacity:.6;font-size:.82rem}
+
+/* ================= BLOG ================= */
+.journal{background:var(--shell)}
+.post-grid{display:grid;gap:1.15rem;grid-template-columns:repeat(auto-fit,minmax(18rem,1fr))}
+.post{
+  background:var(--shell);border:1px solid var(--rule);border-radius:1.1rem;
+  overflow:hidden;display:flex;flex-direction:column;text-decoration:none;
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease);
+}
+.post:hover{transform:translateY(-4px);box-shadow:0 1rem 2.2rem rgba(6,48,58,.12)}
+.post:hover h3{text-decoration:underline;text-underline-offset:4px}
+/* Photo slot — swap for <img> when photography lands */
+.post-visual{
+  aspect-ratio:16/9;display:grid;place-items:center;
+  background:linear-gradient(160deg,var(--deep),var(--lagoon) 60%,var(--shallow));
+}
+.post-visual .medal{--medal:4.75rem;box-shadow:none;background:rgba(6,48,58,.18)}
+.post-visual .medal::after{background:rgba(6,48,58,.3)}
+.post-body{padding:1.35rem 1.4rem 1.5rem;display:flex;flex-direction:column;flex:1;gap:.6rem}
+.post-meta{font-size:.82rem;opacity:.62;margin:0}
+.post h3{font-size:1.22rem;line-height:1.2}
+.post p.excerpt{margin:0;font-size:.95rem;opacity:.84}
+.post-more{margin-top:auto;padding-top:.6rem;font-size:.9rem;font-weight:500;color:var(--grape)}
+
+/* ================= REDUCED MOTION ================= */
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .car-track{scroll-behavior:auto}
+  .caustics,.tide svg,.sprig{animation:none}
+  .sprig{opacity:.2;transform:rotate(-8deg)}
+  .hero h1 span,.hero-sub,.hero-eyebrow{animation:none;opacity:1;transform:none}
+  .hero-eyebrow{opacity:.8}
+  [data-reveal]{opacity:1;transform:none;transition:none}
+  .btn,.card,.tile,.chair,.review,.post,.medal::after,
+  .card-visual img,.post-visual img,.medal--photo img{transition:none}
+  .card:hover .card-visual img,.post:hover .post-visual img,
+  .dish:hover .medal--photo img,.chair:hover .medal--photo img{transform:none}
+  .btn:hover,.card:hover,.tile:hover,.chair:hover,.review:hover,.post:hover{transform:none}
+}
+</style>
+</head>
+<body>
+
+
+<!-- ================= ANNOUNCEMENT ================= -->
+<div class="announce">
+  Advance booking is required for all excursions — walk-ins are not accepted.
+  <a href="https://coccolobo.rigency.com/beach-chairs">Beach chairs are available same day ›</a>
+</div>
+
+<!-- ================= HEADER ================= -->
+<header class="site-header">
+  <div class="utility">
+    <div class="wrap utility-in">
+      <nav aria-label="Secondary">
+        <a href="https://coccolobo.rigency.com/restaurant">Menus</a>
+        <a href="#reviews">Reviews</a>
+        <a href="#journal">Journal</a>
+        <a href="#why">Why Coccolobo</a>
+        <a href="#restaurant">Private dining</a>
+      </nav>
+      <nav aria-label="Account">
+        <!-- TODO: real phone number -->
+        <a href="tel:+10000000000">Call us</a>
+        <a href="https://coccolobo.rigency.com/find-booking">Find my booking</a>
+      </nav>
+    </div>
+  </div>
+
+  <div class="mainnav">
+    <div class="wrap mainnav-in">
+      <nav class="left" aria-label="Main">
+        <a href="#excursions">Excursions</a>
+        <a href="#chairs">Beach chairs</a>
+        <a href="#restaurant">Restaurant</a>
+      </nav>
+
+      <a class="wordmark" href="#top">Coccolobo<small>ST. KITTS</small></a>
+
+      <nav class="right" aria-label="Booking">
+        <a href="#events">Events</a>
+        <a href="#book">Groups</a>
+        <a class="pill" href="#book">Book now</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ================= HERO ================= -->
+  <section class="hero">
+    <img class="hero-photo"
+         src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&amp;fit=crop&amp;w=2000&amp;q=72"
+         alt="A Caribbean shoreline at golden hour"
+         style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0"
+         fetchpriority="high" decoding="async">
+    <div class="caustics" aria-hidden="true"></div>
+
+    <svg class="sprig" viewBox="0 0 400 460" fill="none" aria-hidden="true">
+      <path d="M198 452V126" stroke="#E7F2EC" stroke-width="7" stroke-linecap="round"/>
+      <g stroke="#E7F2EC" stroke-width="5">
+        <path d="M198 150c-52-34-96-22-118 14-21 35-6 78 40 92 47 14 88-16 100-58 4-16 2-33-22-48Z" fill="#E7F2EC" fill-opacity=".18"/>
+        <path d="M198 236c54-32 99-18 119 19 19 36 1 78-46 89-48 11-87-21-97-64-4-16-1-32 24-44Z" fill="#E7F2EC" fill-opacity=".18"/>
+        <path d="M198 330c-48-30-89-19-108 13-19 33-5 72 38 84 43 13 81-14 92-53 4-15 1-30-22-44Z" fill="#E7F2EC" fill-opacity=".18"/>
+        <path d="M120 196c30 12 58 30 78 54M276 288c-31 9-58 25-78 48M124 372c29 12 54 29 74 51" stroke-width="3" opacity=".55"/>
+      </g>
+      <g fill="#E7F2EC" opacity=".5"><circle cx="214" cy="106" r="15"/><circle cx="184" cy="76" r="13"/><circle cx="216" cy="52" r="11"/><circle cx="188" cy="26" r="9"/></g>
+    </svg>
+
+    <div class="wrap hero-inner">
+      <p class="hero-eyebrow">CABANAS · EXCURSIONS · BEACHFRONT DINING</p>
+      <h1 aria-label="A day on the water, arranged before you arrive">
+        <span style="animation-delay:.25s" aria-hidden="true">A&nbsp;day&nbsp;on&nbsp;the&nbsp;water,</span>
+        <span style="animation-delay:.42s" aria-hidden="true">arranged&nbsp;before</span>
+        <span style="animation-delay:.58s" aria-hidden="true">you&nbsp;arrive.</span>
+      </h1>
+      <p class="hero-sub">Seven excursions, two cabanas and a kitchen that cooks Kittitian — all on one stretch of St. Kitts sand.</p>
+    </div>
+
+    <div class="tide" aria-hidden="true">
+      <svg viewBox="0 0 2880 96" preserveAspectRatio="none">
+        <path fill="#F1E4C7" d="M0 56c120-26 240-26 360 0s240 26 360 0 240-26 360 0 240 26 360 0 240-26 360 0 240 26 360 0 240-26 360 0 240 26 360 0v40H0Z"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ================= BOOKING WIDGET ================= -->
+  <section class="booking" aria-label="Check availability">
+    <div class="wrap">
+      <div class="booking-box">
+        <div class="tabs" role="tablist" aria-label="What would you like to book?">
+          <button class="tab" role="tab" aria-selected="true"  data-target="excursions" data-note="Every excursion closes the evening before. Minimum group sizes apply.">
+            <svg aria-hidden="true"><use href="#ic-cabana"/></svg>Excursions</button>
+          <button class="tab" role="tab" aria-selected="false" data-target="chairs" data-note="Same-day booking available — reserve for today or plan ahead.">
+            <svg aria-hidden="true"><use href="#ic-chair"/></svg>Beach chairs</button>
+          <button class="tab" role="tab" aria-selected="false" data-target="restaurant" data-note="A request, not a confirmed booking. We reply by phone or email.">
+            <svg aria-hidden="true"><use href="#ic-fish"/></svg>Restaurant</button>
+          <button class="tab" role="tab" aria-selected="false" data-target="events" data-note="Tickets stay on sale right up to each event.">
+            <svg aria-hidden="true"><use href="#ic-moon"/></svg>Events</button>
+        </div>
+
+        <div class="fields">
+          <div class="field">
+            <label for="bk-date">Date</label>
+            <input id="bk-date" type="date">
+          </div>
+          <div class="field">
+            <label for="bk-time" id="bk-time-label">Preferred start</label>
+            <select id="bk-time">
+              <option>Morning</option><option>Midday</option><option>Afternoon</option><option>Evening</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="bk-guests">Guests</label>
+            <select id="bk-guests">
+              <option>1 guest</option><option selected>2 guests</option><option>4 guests</option>
+              <option>6 guests</option><option>10 guests</option><option>20+ guests</option>
+            </select>
+          </div>
+          <!-- TODO: point at the real availability endpoint -->
+          <a class="btn" id="bk-go" href="#excursions">Check availability</a>
+        </div>
+
+        <p class="booking-note" id="bk-note">Every excursion closes the evening before. Minimum group sizes apply.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= INTRO ================= -->
+  <section class="section intro">
+    <div class="wrap intro-grid">
+      <div data-reveal>
+        <h2>On one of the quieter stretches of St. Kitts</h2>
+        <p class="lead">Coccolobo takes its name from the sea grape — the low, round-leafed tree that holds the sand together along this shore and gives the beach its shade.</p>
+        <p>The club is built around a simple idea: decide what kind of day you want before you get here, and let us have it ready. That might be a chair and an umbrella for four hours. It might be a private cabana with your own server and an open bar. It might be an afternoon learning to roll sushi, or tasting your way through Kittitian cooking with a recipe card to take home.</p>
+        <p>Because every experience is prepared for a set number of guests, excursions close for booking the evening before and walk-ins aren't accepted. Beach chairs are the exception — reserve one on the morning itself if the weather turns good.</p>
+      </div>
+
+      <aside data-reveal>
+        <div class="intro-photo">
+          <img src="https://images.unsplash.com/photo-1618064541372-289bdb6f5b7b?auto=format&amp;fit=crop&amp;w=1000&amp;q=70"
+               alt="Aerial view of a curving white sand beach" loading="lazy" decoding="async">
+        </div>
+        <div class="proof">
+        <h3>Good to know</h3>
+        <dl>
+          <div><dt>EXCURSIONS</dt><dd>Seven, from $45</dd></div>
+          <div><dt>LARGEST GROUP</dt><dd>Up to 80 guests</dd></div>
+          <div><dt>TO HOLD A BOOKING</dt><dd>No card required</dd></div>
+          <div><dt>USUALLY CONFIRMED</dt><dd>Within a few hours</dd></div>
+        </dl>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ================= WHY ================= -->
+  <section class="section why" id="why">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <p class="kicker">WHY COCCOLOBO</p>
+        <h2>What you get, and what you never have to ask for</h2>
+      </div>
+
+      <div class="tiles">
+        <article class="tile" data-reveal>
+          <span class="medal"><svg class="medal-art" viewBox="0 0 100 100" aria-hidden="true"><use href="#ic-bar"/></svg></span>
+          <p class="kicker">OPEN BAR</p>
+          <h3>Named spirits, not house pours</h3>
+          <p>Johnnie Walker Black, Absolut, Beefeater, Mount Gay, local beers, house wines and rum punch on VIP and cabana bookings.</p>
+        </article>
+
+        <article class="tile" data-reveal>
+          <span class="medal"><svg class="medal-art" viewBox="0 0 100 100" aria-hidden="true"><use href="#ic-vip"/></svg></span>
+          <p class="kicker">SERVICE</p>
+          <h3>A server who stays with you</h3>
+          <p>VIP and cabana guests get one person looking after the group all day, rather than whoever is nearest.</p>
+        </article>
+
+        <article class="tile" data-reveal>
+          <span class="medal"><svg class="medal-art" viewBox="0 0 100 100" aria-hidden="true"><use href="#ic-card"/></svg></span>
+          <p class="kicker">NO DEPOSIT</p>
+          <h3>Hold a booking without paying</h3>
+          <p>Send a request with no card details. We confirm by phone or email, usually within a few hours.</p>
+        </article>
+
+        <article class="tile" data-reveal>
+          <span class="medal"><svg class="medal-art" viewBox="0 0 100 100" aria-hidden="true"><use href="#ic-group"/></svg></span>
+          <p class="kicker">GROUPS</p>
+          <h3>Six to eighty guests</h3>
+          <p>The VIP experience scales to eighty. Tastings and classes run from four up to forty.</p>
+        </article>
+
+        <article class="tile" data-reveal>
+          <span class="medal"><svg class="medal-art" viewBox="0 0 100 100" aria-hidden="true"><use href="#ic-wave"/></svg></span>
+          <p class="kicker">SAME DAY</p>
+          <h3>Chairs you can book this morning</h3>
+          <p>Excursions need notice. A chair and an umbrella don't — reserve your spot on the day.</p>
+        </article>
+
+        <article class="tile" data-reveal>
+          <span class="medal"><svg class="medal-art" viewBox="0 0 100 100" aria-hidden="true"><use href="#ic-kids"/></svg></span>
+          <p class="kicker">FAMILIES</p>
+          <h3>A menu built for children</h3>
+          <p>Mini pizzas, mac and cheese, chicken tenders and fish fingers — a separate menu, not an afterthought.</p>
+        </article>
+
+        <article class="tile" data-reveal>
+          <span class="medal"><svg class="medal-art" viewBox="0 0 100 100" aria-hidden="true"><use href="#ic-catch"/></svg></span>
+          <p class="kicker">THE KITCHEN</p>
+          <h3>Kittitian cooking, done properly</h3>
+          <p>Spiny lobster, catch of the day, saltfish pizza and the chef's local dish, changing with what comes in.</p>
+        </article>
+
+        <article class="tile" data-reveal>
+          <span class="medal"><svg class="medal-art" viewBox="0 0 100 100" aria-hidden="true"><use href="#ic-clock"/></svg></span>
+          <p class="kicker">FULL DAYS</p>
+          <h3>Six hours, not a rushed slot</h3>
+          <p>Day passes and cabanas run 360 minutes. Long enough to swim, eat, sleep it off and swim again.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= EXCURSIONS CAROUSEL ================= -->
+  <section class="section excursions" id="excursions">
+    <div class="wrap">
+      <div class="sec-head sec-head-row" data-reveal>
+        <div>
+          <p class="kicker">EXCURSIONS &amp; ACTIVITIES</p>
+          <h2>Seven ways to spend the day</h2>
+          <p>Each has its own duration, group minimum and booking cut-off. All of them close the evening before.</p>
+        </div>
+        <div class="car-controls">
+          <button class="car-btn" id="car-prev" aria-label="Previous excursions"><svg aria-hidden="true"><use href="#ic-arrow-l"/></svg></button>
+          <span class="car-count" id="car-count">1 / 7</span>
+          <button class="car-btn" id="car-next" aria-label="Next excursions"><svg aria-hidden="true"><use href="#ic-arrow-r"/></svg></button>
+        </div>
+      </div>
+
+      <div class="car">
+        <ul class="car-track" id="car-track">
+
+          <li><article class="card">
+            <!-- Photo slot: replace .card-visual contents with <img> when available -->
+            <div class="card-visual"><img src="https://images.unsplash.com/photo-1602002418816-5c0aeef426aa?auto=format&amp;fit=crop&amp;w=760&amp;q=70" alt="Two wooden loungers on white sand under palm trees" loading="lazy" decoding="async"><span class="card-dur">360 min</span></div>
+            <div class="card-body">
+              <h3>Day Pass</h3>
+              <p>A full day of beach access — chair, umbrella and all facility amenities included.</p>
+              <p class="card-price">$45<small>per adult</small></p>
+              <div class="card-actions">
+                <a class="btn" href="https://coccolobo.rigency.com/excursions/day-pass">Book</a>
+                <a class="btn btn-ghost" href="https://coccolobo.rigency.com/excursions/day-pass">Details</a>
+              </div>
+            </div>
+          </article></li>
+
+          <li><article class="card">
+            <div class="card-visual"><img src="https://images.unsplash.com/photo-1710508876894-59022309c1d9?auto=format&amp;fit=crop&amp;w=760&amp;q=70" alt="A plated selection of small dishes" loading="lazy" decoding="async"><span class="card-dur">210 min</span></div>
+            <div class="card-body">
+              <h3>Sushi Class 101 Beach Break</h3>
+              <p>Roll your own eight pieces with a sushi chef, then two hours on the beach. Four to forty guests.</p>
+              <p class="card-price">$75<small>per adult</small></p>
+              <div class="card-actions">
+                <a class="btn" href="https://coccolobo.rigency.com/excursions/sushi-class-101-beach-break">Book</a>
+                <a class="btn btn-ghost" href="https://coccolobo.rigency.com/excursions/sushi-class-101-beach-break">Details</a>
+              </div>
+            </div>
+          </article></li>
+
+          <li><article class="card">
+            <div class="card-visual"><img src="https://images.unsplash.com/photo-1651323018466-b36b7df1d2b1?auto=format&amp;fit=crop&amp;w=760&amp;q=70" alt="A table laid with a spread of seafood dishes" loading="lazy" decoding="async"><span class="card-dur">240 min</span></div>
+            <div class="card-body">
+              <h3>Foodie &amp; Beach</h3>
+              <p>Goat Water, Cook Up, Saltfish &amp; Dumpling and Steamed Fish &amp; Turn Corn, with a recipe card to take home.</p>
+              <p class="card-price">$75<small>per adult</small></p>
+              <div class="card-actions">
+                <a class="btn" href="https://coccolobo.rigency.com/excursions/foodie-and-beach">Book</a>
+                <a class="btn btn-ghost" href="https://coccolobo.rigency.com/excursions/foodie-and-beach">Details</a>
+              </div>
+            </div>
+          </article></li>
+
+          <li><article class="card">
+            <div class="card-visual"><img src="https://images.unsplash.com/photo-1679694140422-aecfd3d5dd0b?auto=format&amp;fit=crop&amp;w=760&amp;q=70" alt="A platter of oysters on ice with lemon wedges" loading="lazy" decoding="async"><span class="card-dur">210 min</span></div>
+            <div class="card-body">
+              <h3>Wine Tasting and Beach</h3>
+              <p>A guided run through the Opus Fine Wine &amp; Spirits portfolio with the sea in front of you.</p>
+              <p class="card-price">$80<small>per adult</small></p>
+              <div class="card-actions">
+                <a class="btn" href="https://coccolobo.rigency.com/excursions/wine-tasting-and-beach">Book</a>
+                <a class="btn btn-ghost" href="https://coccolobo.rigency.com/excursions/wine-tasting-and-beach">Details</a>
+              </div>
+            </div>
+          </article></li>
+
+          <li><article class="card">
+            <div class="card-visual"><img src="https://images.unsplash.com/photo-1620127682229-33388276e540?auto=format&amp;fit=crop&amp;w=760&amp;q=70" alt="A single lounger set under a white beach umbrella" loading="lazy" decoding="async"><span class="card-dur">210 min</span></div>
+            <div class="card-body">
+              <h3>Coccolobo VIP Experience</h3>
+              <p>A dedicated server and full open bar, with a flexible start time. Six to eighty guests.</p>
+              <p class="card-price">$100<small>per adult</small></p>
+              <div class="card-actions">
+                <a class="btn" href="https://coccolobo.rigency.com/excursions/coccolobo-vip-experience">Book</a>
+                <a class="btn btn-ghost" href="https://coccolobo.rigency.com/excursions/coccolobo-vip-experience">Details</a>
+              </div>
+            </div>
+          </article></li>
+
+          <li><article class="card">
+            <div class="card-visual"><img src="https://images.unsplash.com/photo-1557434440-d4d48e6578b5?auto=format&amp;fit=crop&amp;w=760&amp;q=70" alt="Shaded loungers under umbrellas at the shoreline" loading="lazy" decoding="async"><span class="card-dur">360 min</span></div>
+            <div class="card-body">
+              <h3>Coccolobo Cabana</h3>
+              <p>A private shaded cabana for up to four guests, with a dedicated server and open bar.</p>
+              <p class="card-price">$400<small>flat rate, up to 4 guests</small></p>
+              <div class="card-actions">
+                <a class="btn" href="https://coccolobo.rigency.com/excursions/coccolobo-cabana">Book</a>
+                <a class="btn btn-ghost" href="https://coccolobo.rigency.com/excursions/coccolobo-cabana">Details</a>
+              </div>
+            </div>
+          </article></li>
+
+          <li><article class="card">
+            <div class="card-visual"><img src="https://images.unsplash.com/photo-1758448786233-2051ecd150c8?auto=format&amp;fit=crop&amp;w=760&amp;q=70" alt="Grilled seafood served with herbs beside the sea" loading="lazy" decoding="async"><span class="card-dur">360 min</span></div>
+            <div class="card-body">
+              <h3>All Inclusive Cabana</h3>
+              <p>The full cabana with an enhanced lunch menu on top of the open bar and dedicated server.</p>
+              <p class="card-price">$560<small>flat rate, up to 4 guests</small></p>
+              <div class="card-actions">
+                <a class="btn" href="https://coccolobo.rigency.com/excursions/coccolobo-all-inclusive-cabana">Book</a>
+                <a class="btn btn-ghost" href="https://coccolobo.rigency.com/excursions/coccolobo-all-inclusive-cabana">Details</a>
+              </div>
+            </div>
+          </article></li>
+
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CHAIRS ================= -->
+  <section class="section chairs" id="chairs">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <p class="kicker">SAME-DAY BOOKING</p>
+        <h2>Beach chairs and loungers</h2>
+        <p>Pick your exact spot by the water. The one thing here you can book on the morning itself.</p>
+      </div>
+
+      <div class="chair-grid">
+        <article class="chair" data-reveal>
+          <span class="medal medal--photo"><img src="https://images.unsplash.com/photo-1473186578172-c141e6798cf4?auto=format&amp;fit=crop&amp;w=320&amp;q=70" alt="Two blue beach chairs at the water's edge" loading="lazy" decoding="async"></span>
+          <h3>Beach Chair</h3>
+          <p class="price">$15</p>
+          <p class="sub">Four-hour session · per adult</p>
+          <p class="body">A chair by the water, yours for the morning or the afternoon.</p>
+          <a class="btn" href="https://coccolobo.rigency.com/beach-chairs/beach-chair">Reserve a spot</a>
+        </article>
+
+        <article class="chair" data-reveal>
+          <span class="medal medal--photo"><img src="https://images.unsplash.com/photo-1619583331940-53c773ed2e55?auto=format&amp;fit=crop&amp;w=320&amp;q=70" alt="A striped beach umbrella open over the sand" loading="lazy" decoding="async"></span>
+          <h3>Umbrella &amp; Chairs</h3>
+          <p class="price">$50</p>
+          <p class="sub">Two-hour session · per adult</p>
+          <p class="body">Chairs with an umbrella over them, for when shade matters more than hours.</p>
+          <a class="btn" href="https://coccolobo.rigency.com/beach-chairs/beach-umbrellas-chairs">Reserve a spot</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= RESTAURANT ================= -->
+  <section class="section kitchen" id="restaurant">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <p class="kicker">THE RESTAURANT</p>
+        <h2>Caribbean cooking, with St. Kitts at the centre</h2>
+        <p>Reserve a table and we'll confirm by phone or email. No payment or card required.</p>
+      </div>
+
+      <nav class="menu-links" aria-label="Menus" data-reveal>
+        <a href="https://coccolobo.rigency.com/restaurant/lunch-menu">Lunch menu</a>
+        <a href="https://coccolobo.rigency.com/restaurant/dinner-menu">Dinner menu</a>
+        <a href="https://coccolobo.rigency.com/restaurant/childrens-menu">Children's menu</a>
+        <a href="https://coccolobo.rigency.com/restaurant/seasonal-specials">Seasonal specials</a>
+      </nav>
+
+      <ul class="dishes">
+        <li class="dish" data-reveal><span class="medal medal--photo"><img src="https://images.unsplash.com/photo-1519351635902-7c60d09cb2ed?auto=format&amp;fit=crop&amp;w=220&amp;q=70" alt="Cooked lobster served on a wooden board" loading="lazy" decoding="async"></span><div><h3>Grilled Spiny Lobster Tail <span>Market</span></h3><p>Half or whole tail with garlic butter.</p></div></li>
+        <li class="dish" data-reveal><span class="medal medal--photo"><img src="https://images.unsplash.com/photo-1572776082973-1cb8d1790872?auto=format&amp;fit=crop&amp;w=220&amp;q=70" alt="A wooden plate of freshly cooked seafood" loading="lazy" decoding="async"></span><div><h3>Catch of the Day <span>$35.25</span></h3><p>The chef's pick — fried, steamed, grilled or roasted.</p></div></li>
+        <li class="dish" data-reveal><span class="medal medal--photo"><img src="https://images.unsplash.com/photo-1698462297918-79ae9314e062?auto=format&amp;fit=crop&amp;w=220&amp;q=70" alt="A pan of mixed cooked dishes" loading="lazy" decoding="async"></span><div><h3>Kittitian Flavour <span>$19.67</span></h3><p>The chef's local St. Kitts dish, changing with what's good.</p></div></li>
+        <li class="dish" data-reveal><span class="medal medal--photo"><img src="https://images.unsplash.com/photo-1565733618599-cb82f14f34ac?auto=format&amp;fit=crop&amp;w=220&amp;q=70" alt="A plate of assorted fried food" loading="lazy" decoding="async"></span><div><h3>Jerked Chicken <span>$23.77</span></h3><p>Leg quarter in a house spice blend, grilled.</p></div></li>
+        <li class="dish" data-reveal><span class="medal medal--photo"><img src="https://images.unsplash.com/photo-1779333863055-9aaeb540cc4a?auto=format&amp;fit=crop&amp;w=220&amp;q=70" alt="A plate of lobster, shrimp and greens" loading="lazy" decoding="async"></span><div><h3>Jerked Lobster Pizza <span>$35.25</span></h3><p>The one people come back for.</p></div></li>
+        <li class="dish" data-reveal><span class="medal medal--photo"><img src="https://images.unsplash.com/photo-1654095221806-4340755b9922?auto=format&amp;fit=crop&amp;w=220&amp;q=70" alt="A composed plate on a table" loading="lazy" decoding="async"></span><div><h3>Watermelon and Feta <span>$18.03</span></h3><p>With a balsamic reduction.</p></div></li>
+      </ul>
+
+      <a class="btn btn-light" href="https://coccolobo.rigency.com/restaurant" data-reveal>See all menus</a>
+    </div>
+  </section>
+
+  <!-- ================= EVENTS ================= -->
+  <section class="section events" id="events">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <p class="kicker">ON THE BEACH THIS SEASON</p>
+        <h2>Parties, live music and one-off nights</h2>
+        <p>Tickets stay on sale right up to the event.</p>
+      </div>
+
+      <article class="event" data-reveal>
+        <span class="medal medal--photo"><img src="https://images.unsplash.com/photo-1582300857444-5ddd87c86797?auto=format&amp;fit=crop&amp;w=420&amp;q=70" alt="Sailboats anchored in a bay at golden hour" loading="lazy" decoding="async"></span>
+        <p class="event-date"><span class="d">26</span><span class="m">Sep</span></p>
+        <div>
+          <h3>Full Moon Beach Party</h3>
+          <p class="when">Saturday 26 September 2026, from 7:00pm</p>
+          <p class="body">Live music, fire dancers and cocktails under the full moon. Tickets are limited, so buying ahead is worth it — but sales stay open right up to the night.</p>
+          <a class="btn" href="https://coccolobo.rigency.com/events/full-moon-beach-party">Get tickets</a>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================= REVIEWS =================
+       ⚠ EVERY REVIEW BELOW IS INVENTED PLACEHOLDER CONTENT.
+       Names, locations, dates, ratings and the 4.8/312 aggregate are fake.
+       DO NOT PUBLISH. Publishing fabricated testimonials is deceptive
+       advertising under the US FTC endorsement rules and the UK CMA /
+       DMCC Act, and exposes the client directly. Replace with verified
+       reviews, or pull them from a real source (TripAdvisor / Google)
+       via API, before this page goes live. -->
+  <section class="section reviews" id="reviews">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <p class="kicker">WHAT GUESTS SAY</p>
+        <h2>From people who booked ahead and came anyway</h2>
+      </div>
+
+      <div class="rev-summary" data-reveal>
+        <p class="rev-score">4.8<small>out of 5</small></p>
+        <div class="stars" role="img" aria-label="Rated 4.8 out of 5">
+          <svg aria-hidden="true"><use href="#ic-star"/></svg><svg aria-hidden="true"><use href="#ic-star"/></svg>
+          <svg aria-hidden="true"><use href="#ic-star"/></svg><svg aria-hidden="true"><use href="#ic-star"/></svg>
+          <svg aria-hidden="true"><use href="#ic-star"/></svg>
+        </div>
+        <div class="rev-summary-text">
+          <strong>Based on 312 guest reviews</strong>
+          <p>Collected across the last twelve months from guests who completed a booking.</p>
+        </div>
+        <!-- TODO: point at the client's real review source -->
+        <a class="btn btn-ghost" href="#">Read all reviews</a>
+      </div>
+
+      <div class="rev-grid">
+
+        <article class="review" data-reveal>
+          <div class="stars" role="img" aria-label="5 out of 5">
+            <svg aria-hidden="true"><use href="#ic-star"/></svg><svg aria-hidden="true"><use href="#ic-star"/></svg>
+            <svg aria-hidden="true"><use href="#ic-star"/></svg><svg aria-hidden="true"><use href="#ic-star"/></svg>
+            <svg aria-hidden="true"><use href="#ic-star"/></svg>
+          </div>
+          <h3>Worth every dollar of the cabana</h3>
+          <blockquote>Booked the all-inclusive cabana for my wife's fiftieth. Our server found us within a minute of arriving and we didn't have to think about anything for six hours. The lobster came off the grill twice because the first one was gone in ten minutes.</blockquote>
+          <footer>
+            <span class="rev-avatar" aria-hidden="true">MD</span>
+            <span class="rev-who"><strong>Marcus D.</strong><span>Tampa, FL · August 2026</span></span>
+          </footer>
+        </article>
+
+        <article class="review" data-reveal>
+          <div class="stars" role="img" aria-label="5 out of 5">
+            <svg aria-hidden="true"><use href="#ic-star"/></svg><svg aria-hidden="true"><use href="#ic-star"/></svg>
+            <svg aria-hidden="true"><use href="#ic-star"/></svg><svg aria-hidden="true"><use href="#ic-star"/></svg>
+            <svg aria-hidden="true"><use href="#ic-star"/></svg>
+          </div>
+          <h3>The sushi class was the surprise of the trip</h3>
+          <blockquote>I expected a gimmick and got an actual lesson. The chef was patient with the four of us who had never held a rolling mat, and then we had two hours on the beach afterwards with everything we'd made. Book it.</blockquote>
+          <footer>
+            <span class="rev-avatar" aria-hidden="true">PR</span>
+            <span class="rev-who"><strong>Priya R.</strong><span>Toronto, ON · July 2026</span></span>
+          </footer>
+        </article>
+
+        <article class="review" data-reveal>
+          <div class="stars" role="img" aria-label="4 out of 5">
+            <svg aria-hidden="true"><use href="#ic-star"/></svg><svg aria-hidden="true"><use href="#ic-star"/></svg>
+            <svg aria-hidden="true"><use href="#ic-star"/></svg><svg aria-hidden="true"><use href="#ic-star"/></svg>
+            <svg class="off" aria-hidden="true"><use href="#ic-star"/></svg>
+          </div>
+          <h3>Lovely day, just read the booking rules first</h3>
+          <blockquote>We turned up off the ship assuming we could walk in and were turned away, which was on us — it does say so clearly. Came back the next day with a booking and it was a beautiful spot, genuinely quiet compared to the other clubs.</blockquote>
+          <footer>
+            <span class="rev-avatar" aria-hidden="true">EV</span>
+            <span class="rev-who"><strong>Elena V.</strong><span>Madrid, ES · June 2026</span></span>
+          </footer>
+        </article>
+
+        <article class="review" data-reveal>
+          <div class="stars" role="img" aria-label="5 out of 5">
+            <svg aria-hidden="true"><use href="#ic-star"/></svg><svg aria-hidden="true"><use href="#ic-star"/></svg>
+            <svg aria-hidden="true"><use href="#ic-star"/></svg><svg aria-hidden="true"><use href="#ic-star"/></svg>
+            <svg aria-hidden="true"><use href="#ic-star"/></svg>
+          </div>
+          <h3>Finally, local food that tastes local</h3>
+          <blockquote>Did the Foodie &amp; Beach with my brother. Goat Water and Cook Up done properly, not toned down for visitors, and they gave us the recipe card so I've made the saltfish twice since getting home.</blockquote>
+          <footer>
+            <span class="rev-avatar" aria-hidden="true">JO</span>
+            <span class="rev-who"><strong>James O.</strong><span>Southampton, UK · August 2026</span></span>
+          </footer>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= JOURNAL =================
+       Placeholder posts — real copy, invented as sample content.
+       Dates, authors and links are not live. -->
+  <section class="section journal" id="journal">
+    <div class="wrap">
+      <div class="sec-head sec-head-row" data-reveal>
+        <div>
+          <p class="kicker">FROM THE JOURNAL</p>
+          <h2>What's happening on the beach</h2>
+          <p>Notes on the season, the kitchen and the island.</p>
+        </div>
+        <a class="btn btn-ghost" href="#">View all posts</a>
+      </div>
+
+      <div class="post-grid">
+
+        <a class="post" href="#" data-reveal>
+          <div class="post-visual"><img src="https://images.unsplash.com/photo-1617280325974-f9c5721a4862?auto=format&amp;fit=crop&amp;w=760&amp;q=70" alt="Green trees growing right down to the water's edge" loading="lazy" decoding="async"></div>
+          <div class="post-body">
+            <p class="post-meta">2 September 2026 · 4 min read</p>
+            <h3>Sea grape season, and what the trees behind the bar are actually for</h3>
+            <p class="excerpt">The club takes its name from a tree most visitors walk straight past. Here's why it matters, what it does for the beach, and what we do with the fruit when it ripens.</p>
+            <span class="post-more">Read this story</span>
+          </div>
+        </a>
+
+        <a class="post" href="#" data-reveal>
+          <div class="post-visual"><img src="https://images.unsplash.com/photo-1613425653628-23fd58c3c2b1?auto=format&amp;fit=crop&amp;w=760&amp;q=70" alt="Two people relaxing in folding chairs by the ocean" loading="lazy" decoding="async"></div>
+          <div class="post-body">
+            <p class="post-meta">21 August 2026 · 6 min read</p>
+            <h3>Planning a group day: what to book, and how far ahead</h3>
+            <p class="excerpt">Twelve people want different things. A walk through which excursion suits which group size, where the minimums bite, and why the VIP experience scales further than the cabanas.</p>
+            <span class="post-more">Read this story</span>
+          </div>
+        </a>
+
+        <a class="post" href="#" data-reveal>
+          <div class="post-visual"><img src="https://images.unsplash.com/photo-1636797600090-146b191714cb?auto=format&amp;fit=crop&amp;w=760&amp;q=70" alt="A person plating food in a kitchen" loading="lazy" decoding="async"></div>
+          <div class="post-body">
+            <p class="post-meta">30 July 2026 · 5 min read</p>
+            <h3>Goat Water, Cook Up and Turn Corn: a short guide to Kittitian cooking</h3>
+            <p class="excerpt">Four dishes that show up on every table on the island, what's in them, and why our chef refuses to make them milder for visitors.</p>
+            <span class="post-more">Read this story</span>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CTA ================= -->
+  <section class="section cta" id="book">
+    <div class="wrap">
+      <h2 data-reveal>Book before you come</h2>
+      <p data-reveal>Send a request and we'll come back to you, usually within a few hours.</p>
+      <ul data-reveal>
+        <li><svg class="tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 12.5 9 17.5 20 6.5"/></svg>No payment or card required</li>
+        <li><svg class="tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 12.5 9 17.5 20 6.5"/></svg>Confirmed by phone or email</li>
+        <li><svg class="tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 12.5 9 17.5 20 6.5"/></svg>Usually within a few hours</li>
+      </ul>
+      <div class="cta-actions" data-reveal>
+        <a class="btn" href="#excursions">Browse excursions</a>
+        <a class="btn btn-light" href="https://coccolobo.rigency.com/find-booking">Find my booking</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-note">
+      <strong>Advance booking is required.</strong> Every excursion has a cut-off the evening before and walk-ins are not accepted.
+      Beach chairs are the exception and can be reserved the same day.
+    </div>
+
+    <div class="foot-cols">
+      <div class="foot-brand">
+        <h4>Coccolobo Beach Club</h4>
+        <p>St. Kitts. Named for the sea grapes that hold the sand along this shore.</p>
+        <div class="socials">
+          <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
+          <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h-2a4 4 0 0 0-4 4v3H7v4h2v7h4v-7h3l1-4h-4V7a1 1 0 0 1 1-1h2Z"/></svg></a>
+          <a href="#" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21l1.7-5A8.5 8.5 0 1 1 8 19.4Z"/><path d="M8.6 9.2c.6 2.4 2.8 4.6 5.2 5.2l1.2-1.4 2 .8-.4 2c-3.8.5-8-3.6-8.6-8l2-.4.8 2Z"/></svg></a>
+        </div>
+      </div>
+
+      <div>
+        <h4>Book</h4>
+        <ul>
+          <li><a href="#excursions">Excursions</a></li>
+          <li><a href="#chairs">Beach chairs</a></li>
+          <li><a href="#events">Events</a></li>
+          <li><a href="https://coccolobo.rigency.com/find-booking">Find my booking</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Eat</h4>
+        <ul>
+          <li><a href="https://coccolobo.rigency.com/restaurant/lunch-menu">Lunch menu</a></li>
+          <li><a href="https://coccolobo.rigency.com/restaurant/dinner-menu">Dinner menu</a></li>
+          <li><a href="https://coccolobo.rigency.com/restaurant/childrens-menu">Children's menu</a></li>
+          <li><a href="https://coccolobo.rigency.com/restaurant/seasonal-specials">Seasonal specials</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Experiences</h4>
+        <ul>
+          <li><a href="https://coccolobo.rigency.com/excursions/coccolobo-cabana">Private cabanas</a></li>
+          <li><a href="https://coccolobo.rigency.com/excursions/coccolobo-vip-experience">VIP experience</a></li>
+          <li><a href="https://coccolobo.rigency.com/excursions/sushi-class-101-beach-break">Sushi class</a></li>
+          <li><a href="https://coccolobo.rigency.com/excursions/wine-tasting-and-beach">Wine tasting</a></li>
+          <li><a href="#book">Groups &amp; private hire</a></li>
+          <li><a href="#reviews">Guest reviews</a></li>
+          <li><a href="#journal">Journal</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Talk to us</h4>
+        <!-- TODO: real phone, email, address, opening hours -->
+        <ul>
+          <li><a href="tel:+10000000000">+1 000 000 0000</a></li>
+          <li><a href="mailto:hello@coccolobo.com">hello@coccolobo.com</a></li>
+          <li><a href="https://coccolobo.rigency.com/find-booking">Manage a booking</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="legal">
+      <span>© 2026 Coccolobo Beach Club. All rights reserved.</span>
+      <span>St. Kitts · Advance booking required — walk-ins are not accepted.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- Booking widget tabs ---- */
+  var tabs = document.querySelectorAll('.tab');
+  var note = document.getElementById('bk-note');
+  var go   = document.getElementById('bk-go');
+  var timeLabel = document.getElementById('bk-time-label');
+  var labels = {
+    excursions:'Preferred start', chairs:'Session',
+    restaurant:'Table time',      events:'Doors'
+  };
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      tabs.forEach(function (t) { t.setAttribute('aria-selected', 'false'); });
+      tab.setAttribute('aria-selected', 'true');
+      var target = tab.dataset.target;
+      note.textContent = tab.dataset.note;
+      go.setAttribute('href', '#' + target);
+      timeLabel.textContent = labels[target] || 'Time';
+    });
+  });
+
+  /* ---- Excursion carousel ---- */
+  var track = document.getElementById('car-track');
+  if (track) {
+    var prev  = document.getElementById('car-prev');
+    var next  = document.getElementById('car-next');
+    var count = document.getElementById('car-count');
+    var items = track.children;
+    var total = items.length;
+
+    function step() {
+      return items[0].getBoundingClientRect().width + 18; // card + gap
+    }
+    function sync() {
+      var i = Math.round(track.scrollLeft / step()) + 1;
+      count.textContent = Math.min(Math.max(i, 1), total) + ' / ' + total;
+      prev.disabled = track.scrollLeft < 8;
+      next.disabled = track.scrollLeft > track.scrollWidth - track.clientWidth - 8;
+    }
+    function nudge(dir) {
+      track.scrollBy({ left: dir * step(), behavior: reduced ? 'auto' : 'smooth' });
+    }
+    prev.addEventListener('click', function () { nudge(-1); });
+    next.addEventListener('click', function () { nudge(1); });
+
+    var raf;
+    track.addEventListener('scroll', function () {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(sync);
+    });
+    window.addEventListener('resize', sync);
+    sync();
+  }
+
+  /* ---- Scroll reveal, staggered like a wave along the shore ---- */
+  var items = Array.prototype.slice.call(document.querySelectorAll('[data-reveal]'));
+  if (reduced || !('IntersectionObserver' in window)) {
+    items.forEach(function (el) { el.classList.add('in'); });
+    return;
+  }
+  var io = new IntersectionObserver(function (entries) {
+    entries.filter(function (e) { return e.isIntersecting; })
+      .forEach(function (entry, i) {
+        entry.target.style.setProperty('--d', Math.min(i * 80, 400) + 'ms');
+        entry.target.classList.add('in');
+        io.unobserve(entry.target);
+      });
+  }, { rootMargin: '0px 0px -12% 0px', threshold: 0.12 });
+  items.forEach(function (el) { io.observe(el); });
+})();
+</script>
+
+<!-- ================= ICON SPRITE ================= -->
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="ic-daypass" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M26 66h48"/><path d="M34 66l6-20h20l6 20"/><path d="M40 46 34 30h32l-6 16"/></symbol>
+  <symbol id="ic-sushi" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="38" cy="50" r="13"/><circle cx="38" cy="50" r="4.5"/><circle cx="64" cy="42" r="10"/><circle cx="64" cy="42" r="3.5"/><path d="M24 68h52"/></symbol>
+  <symbol id="ic-foodie" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M28 48h44a22 22 0 0 1-22 22 22 22 0 0 1-22-22Z"/><path d="M22 48h56"/><path d="M42 34c0-5 5-5 5-10M56 34c0-5 5-5 5-10"/></symbol>
+  <symbol id="ic-wine" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M36 26h28l-3 18a11 11 0 0 1-22 0Z"/><path d="M50 55v17"/><path d="M39 74h22"/><path d="M37.4 38h25.2"/></symbol>
+  <symbol id="ic-vip" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M24 54h52a26 26 0 0 1-52 0Z"/><path d="M50 54V38"/><circle cx="50" cy="32" r="5"/><path d="M20 70h60"/></symbol>
+  <symbol id="ic-cabana" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 46 50 26l28 20"/><path d="M30 46v26M70 46v26"/><path d="M22 72h56"/><path d="M30 54h40"/></symbol>
+  <symbol id="ic-cabana-plus" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 42 46 24l26 18"/><path d="M27 42v22M65 42v10"/><path d="M20 64h45"/><circle cx="70" cy="66" r="11"/><path d="M70 60v12M64 66h12"/></symbol>
+  <symbol id="ic-chair" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M26 70h48"/><path d="M32 70 40 40h26l-4 30"/><path d="M40 40 34 28"/><path d="M38 56h24"/></symbol>
+  <symbol id="ic-umbrella" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 46a30 30 0 0 1 60 0Z"/><path d="M50 46v26"/><path d="M50 72c0 5 6 5 6 0"/><path d="M35 46c0-16 7-30 15-30s15 14 15 30"/></symbol>
+  <symbol id="ic-moon" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="40" r="17"/><path d="M20 68h60M26 78h48" opacity=".8"/><circle cx="44" cy="35" r="3" opacity=".7"/><circle cx="56" cy="45" r="2.5" opacity=".7"/></symbol>
+  <symbol id="ic-lobster" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M42 30c-10 8-14 22-10 34 3 10 12 16 22 14"/><path d="M42 44h18M40 56h20M42 68h16"/><path d="M42 30c-6-6-14-6-18-2M42 30c-2-8 2-14 8-16"/></symbol>
+  <symbol id="ic-fish" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 50c10-14 26-20 40-20s20 12 20 20-6 20-20 20-30-6-40-20Z"/><circle cx="68" cy="44" r="3" fill="currentColor" stroke="none"/><path d="M22 50c-4-8-4-16 0-22M22 50c-4 8-4 16 0 22"/></symbol>
+  <symbol id="ic-jerk" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M40 68c-8-4-12-14-8-24 4-12 18-18 28-14 8 3 10 12 6 20"/><path d="M40 68l-10 10M66 50l10-8"/><path d="M46 34c0-6 4-10 10-10"/></symbol>
+  <symbol id="ic-pizza" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M50 22 22 74h56Z"/><path d="M28 64h44"/><circle cx="44" cy="56" r="3.5"/><circle cx="58" cy="54" r="3.5"/><circle cx="50" cy="40" r="3.5"/></symbol>
+  <symbol id="ic-salad" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M24 50h52a26 26 0 0 1-52 0Z"/><circle cx="40" cy="38" r="7"/><circle cx="58" cy="36" r="8"/><circle cx="50" cy="44" r="5"/><path d="M20 68h60"/></symbol>
+  <symbol id="ic-catch" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="50" r="24"/><path d="M30 62c8-10 32-10 40 0"/><path d="M38 42c4-4 8-4 12 0s8 4 12 0"/></symbol>
+  <symbol id="ic-bar" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M26 28h48L52 54v18"/><path d="M38 72h28"/><path d="M33 38h38"/></symbol>
+  <symbol id="ic-group" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="38" cy="38" r="10"/><circle cx="64" cy="42" r="8"/><path d="M20 70c0-11 8-18 18-18s18 7 18 18"/><path d="M60 70c0-9 5-14 12-14s10 5 10 14"/></symbol>
+  <symbol id="ic-clock" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="50" r="26"/><path d="M50 32v19l13 8"/></symbol>
+  <symbol id="ic-card" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><rect x="20" y="32" width="60" height="38" rx="7"/><path d="M20 46h60"/><path d="M32 60h12"/></symbol>
+  <symbol id="ic-kids" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="34" r="11"/><path d="M28 74c0-13 10-22 22-22s22 9 22 22"/><path d="M42 32c3 3 13 3 16 0"/></symbol>
+  <symbol id="ic-wave" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16 44c8-6 14-6 22 0s14 6 22 0 14-6 22 0"/><path d="M16 58c8-6 14-6 22 0s14 6 22 0 14-6 22 0"/><path d="M16 72c8-6 14-6 22 0s14 6 22 0 14-6 22 0"/></symbol>
+  <symbol id="ic-star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.6l2.9 5.9 6.5.95-4.7 4.6 1.1 6.5L12 17.5l-5.8 3.05 1.1-6.5-4.7-4.6 6.5-.95Z"/></symbol>
+  <symbol id="ic-leaf" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M50 78V38"/><path d="M50 44c-14-12-28-8-32 2-4 11 6 22 18 22 9 0 15-6 14-16Z"/><path d="M50 56c14-12 28-8 32 2 4 11-6 22-18 22-9 0-15-6-14-16Z"/><circle cx="52" cy="28" r="5"/><circle cx="44" cy="18" r="4"/></symbol>
+  <symbol id="ic-arrow-l" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="ic-arrow-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></symbol>
+</svg>
+
+</body>
+</html>

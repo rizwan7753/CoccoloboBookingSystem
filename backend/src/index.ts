@@ -31,6 +31,13 @@ import restaurantMenusRouter from "./routes/restaurantMenus";
 import restaurantReservationsRouter from "./routes/restaurantReservations";
 import adminRestaurantMenusRouter from "./routes/admin/restaurantMenus";
 import adminRestaurantReservationsRouter from "./routes/admin/restaurantReservations";
+import ordersRouter from "./routes/orders";
+import adminOrdersRouter from "./routes/admin/orders";
+import reviewsRouter from "./routes/reviews";
+import adminReviewsRouter from "./routes/admin/reviews";
+import blogPostsRouter from "./routes/blogPosts";
+import adminBlogPostsRouter from "./routes/admin/blogPosts";
+import { sweepExpiredOrders } from "./services/orderService";
 
 const app = express();
 
@@ -75,6 +82,12 @@ app.use("/api/restaurant-menus", restaurantMenusRouter);
 app.use("/api/restaurant-reservations", restaurantReservationsRouter);
 app.use("/api/admin/restaurant-menus", adminRestaurantMenusRouter);
 app.use("/api/admin/restaurant-reservations", adminRestaurantReservationsRouter);
+app.use("/api/orders", ordersRouter);
+app.use("/api/admin/orders", adminOrdersRouter);
+app.use("/api/reviews", reviewsRouter);
+app.use("/api/admin/reviews", adminReviewsRouter);
+app.use("/api/blog-posts", blogPostsRouter);
+app.use("/api/admin/blog-posts", adminBlogPostsRouter);
 
 // Centralized error handler (catches anything thrown in async route handlers below Express 5,
 // or rejected promises not already try/caught).
@@ -87,5 +100,16 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 const port = process.env.PORT || 4000;
 app.listen(port, () => {
   // eslint-disable-next-line no-console
-  console.log(`Cocolobo booking API listening on http://localhost:${port}`);
+  console.log(`Coccolobo booking API listening on http://localhost:${port}`);
 });
+
+// Releases capacity for multi-item orders abandoned mid-checkout (see
+// orderService.sweepExpiredOrders) — the only expiry mechanism in this
+// codebase; single-item bookings still rely solely on the Stripe webhook's
+// failure event or a manual admin cancel, unchanged.
+setInterval(() => {
+  sweepExpiredOrders().catch((err) => {
+    // eslint-disable-next-line no-console
+    console.error("[orders] Expiry sweep failed:", err);
+  });
+}, 5 * 60 * 1000);

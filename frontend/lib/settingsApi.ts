@@ -15,7 +15,7 @@ export interface PublicSettings {
 }
 
 const FALLBACK: PublicSettings = {
-  name: "Cocolobo Beach Club",
+  name: "Coccolobo Beach Club",
   timezone: "America/St_Thomas",
   currency: "USD",
   stripeEnabled: true,

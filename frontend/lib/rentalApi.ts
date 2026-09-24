@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
+import { request } from "./http";
 
 export interface RentalTimeSlot {
   id: string;
@@ -63,19 +63,6 @@ export interface RentalBooking {
   rentalItem?: RentalItem;
   spot?: { id: string; code: string };
   timeSlot?: { id: string; label: string; startTime: string; endTime: string };
-}
-
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
-    ...init,
-    headers: { "Content-Type": "application/json", ...(init?.headers || {}) },
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || `Request failed: ${res.status}`);
-  }
-  if (res.status === 204) return undefined as T;
-  return res.json();
 }
 
 export const rentalApi = {

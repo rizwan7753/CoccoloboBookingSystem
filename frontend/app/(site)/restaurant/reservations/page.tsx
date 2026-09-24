@@ -32,7 +32,7 @@ function RestaurantReservationsPageInner() {
   }, []);
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
+    <main className="site-body mx-auto max-w-3xl px-4 py-16 sm:px-6">
       <ReservationForm menuTitle={menuTitle} menus={menus.map((m) => ({ slug: m.slug, title: m.title }))} />
     </main>
   );

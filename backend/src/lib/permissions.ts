@@ -17,6 +17,8 @@ export const PERMISSIONS = [
   "restaurant.manage_reservations",
   "bookings.view",
   "bookings.manage",
+  "content.view",
+  "content.manage",
   "settings.manage",
   "staff.manage",
   "audit.view",
@@ -75,6 +77,13 @@ export const PERMISSION_GROUPS: { label: string; permissions: { key: Permission;
     ],
   },
   {
+    label: "Reviews & Journal",
+    permissions: [
+      { key: "content.view", label: "View reviews & journal posts" },
+      { key: "content.manage", label: "Create, edit, delete reviews & journal posts" },
+    ],
+  },
+  {
     label: "Administration",
     permissions: [
       { key: "settings.manage", label: "Edit system settings (SMTP, payments, branding)" },
@@ -108,6 +117,8 @@ export const BUILT_IN_ROLES: { id: string; name: string; permissions: Permission
       "restaurant.manage_reservations",
       "bookings.view",
       "bookings.manage",
+      "content.view",
+      "content.manage",
     ],
   },
   {

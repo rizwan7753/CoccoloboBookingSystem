@@ -35,6 +35,7 @@ const excursionSchema = z.object({
   priceAdult: z.number().nonnegative(),
   priceChild: z.number().nonnegative().optional(),
   capacityDefault: z.number().int().positive(),
+  minGuests: z.number().int().min(1).optional(),
   cutoffTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
   status: z.enum(["ACTIVE", "INACTIVE", "DRAFT", "SOLD_OUT"]).optional(),
   departureTimes: z.array(departureTimeSchema).optional(),

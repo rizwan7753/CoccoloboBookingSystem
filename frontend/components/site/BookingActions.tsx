@@ -2,8 +2,7 @@
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
 
-const buttonClass =
-  "flex-1 rounded-lg border border-stone-300 py-2.5 text-center text-sm font-semibold text-stone-700 transition hover:bg-stone-50";
+const buttonClass = "btn btn-ghost flex-1 text-center";
 
 /** Print/download actions for a booking confirmation — `pdfPath` is the
  *  backend's own confirmation-PDF endpoint, e.g. "/bookings/<id>/pdf". */

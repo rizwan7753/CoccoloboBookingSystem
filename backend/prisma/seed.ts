@@ -6,11 +6,11 @@ const prisma = new PrismaClient();
 
 async function main() {
   const location = await prisma.location.upsert({
-    where: { id: "carambola-main" },
-    update: { name: "Cocolobo Beach Club" },
+    where: { id: "coccolobo-main" },
+    update: { name: "Coccolobo Beach Club" },
     create: {
-      id: "carambola-main",
-      name: "Cocolobo Beach Club",
+      id: "coccolobo-main",
+      name: "Coccolobo Beach Club",
       timezone: "America/St_Thomas",
       currency: "USD",
     },
@@ -21,10 +21,10 @@ async function main() {
   // anything beyond local dev.
   const demoPassword = await hashPassword("ChangeMe123!");
   const demoUsers = [
-    { email: "admin@carambola.example", name: "Cocolobo Admin", role: "SUPER_ADMIN" as const },
-    { email: "manager@carambola.example", name: "Location Manager", role: "LOCATION_MANAGER" as const },
-    { email: "staff@carambola.example", name: "Booking Staff", role: "BOOKING_STAFF" as const },
-    { email: "finance@carambola.example", name: "Finance User", role: "FINANCE" as const },
+    { email: "admin@coccolobo.example", name: "Coccolobo Admin", role: "SUPER_ADMIN" as const },
+    { email: "manager@coccolobo.example", name: "Location Manager", role: "LOCATION_MANAGER" as const },
+    { email: "staff@coccolobo.example", name: "Booking Staff", role: "BOOKING_STAFF" as const },
+    { email: "finance@coccolobo.example", name: "Finance User", role: "FINANCE" as const },
   ];
 
   for (const u of demoUsers) {
@@ -56,8 +56,8 @@ async function main() {
   }[] = [
     {
       slug: "day-pass",
-      title: "Day Pass to Cocolobo Beach Club",
-      description: "A full day of beach access at Cocolobo Beach Club — chair, umbrella, and all facility amenities included.",
+      title: "Day Pass to Coccolobo Beach Club",
+      description: "A full day of beach access at Coccolobo Beach Club — chair, umbrella, and all facility amenities included.",
       included: "Beach chair, umbrella, facility amenities, WiFi access, towel, welcome rum punch",
       excluded: "Food and drinks sold separately",
       durationMinutes: 360,
@@ -102,8 +102,8 @@ async function main() {
       time: "11:30",
     },
     {
-      slug: "carambola-vip-experience",
-      title: "Cocolobo VIP Experience",
+      slug: "coccolobo-vip-experience",
+      title: "Coccolobo VIP Experience",
       description:
         "A luxury beach experience with a dedicated server attending to all your needs. Open bar: Johnnie Walker Black, Absolut Vodka, Beefeater Gin, Mount Gay Rum, local beers, red/white house wines, rum punch, sodas, juices, bottled water. Start time flexible. Minimum 6, maximum 80 guests.",
       included: "Open bar with premium liquor brands, chair, umbrella, facility amenities, WiFi access, dedicated server",
@@ -114,8 +114,8 @@ async function main() {
       time: "10:00",
     },
     {
-      slug: "carambola-cabana",
-      title: "Cocolobo Cabana",
+      slug: "coccolobo-cabana",
+      title: "Coccolobo Cabana",
       description:
         "A private shaded cabana with premium comfort for up to 4 guests, with a dedicated server and open bar. Flat rate for up to 4 persons.",
       included:
@@ -128,8 +128,8 @@ async function main() {
       pricingType: "FLAT_RATE",
     },
     {
-      slug: "carambola-all-inclusive-cabana",
-      title: "Cocolobo All Inclusive Cabana",
+      slug: "coccolobo-all-inclusive-cabana",
+      title: "Coccolobo All Inclusive Cabana",
       description:
         "The full cabana experience for up to 4 guests, adding a lunch menu with enhanced offerings on top of the open bar and dedicated server. Flat rate for up to 4 persons.",
       included:
@@ -149,7 +149,7 @@ async function main() {
       update: {
         title: t.title,
         description: t.description,
-        meetingPoint: "Cocolobo Beach Club",
+        meetingPoint: "Coccolobo Beach Club",
         pricingType: t.pricingType ?? "PER_GUEST",
       },
       create: {
@@ -160,7 +160,7 @@ async function main() {
         included: t.included,
         excluded: t.excluded,
         durationMinutes: t.durationMinutes,
-        meetingPoint: "Cocolobo Beach Club",
+        meetingPoint: "Coccolobo Beach Club",
         images: [],
         pricingType: t.pricingType ?? "PER_GUEST",
         priceAdult: t.priceAdult,
@@ -234,7 +234,7 @@ async function main() {
   // Demo one-off event with two ticket tiers.
   const event = await prisma.event.upsert({
     where: { slug: "full-moon-beach-party" },
-    update: { venue: "Cocolobo Beach Club main lawn" },
+    update: { venue: "Coccolobo Beach Club main lawn" },
     create: {
       locationId: location.id,
       title: "Full Moon Beach Party",
@@ -244,7 +244,7 @@ async function main() {
       eventDate: new Date("2026-09-26T00:00:00.000Z"),
       startTime: "19:00",
       endTime: "23:00",
-      venue: "Cocolobo Beach Club main lawn",
+      venue: "Coccolobo Beach Club main lawn",
       status: "ACTIVE",
     },
   });

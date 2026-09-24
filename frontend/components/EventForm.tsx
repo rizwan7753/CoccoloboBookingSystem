@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import { adminApi, AdminEvent } from "@/lib/adminApi";
 import { inputClass, primaryButtonClass, cardClass } from "@/components/admin/ui";
 import ImageUploadField from "@/components/ImageUploadField";
+import MultiImageUploadField from "@/components/MultiImageUploadField";
+import { slugify } from "@/lib/slugify";
 
-const DEFAULT_LOCATION_ID = "carambola-main"; // MVP: single location, seeded in prisma/seed.ts
+const DEFAULT_LOCATION_ID = "coccolobo-main"; // MVP: single location, seeded in prisma/seed.ts
 
 export default function EventForm({ initial }: { initial?: AdminEvent }) {
   const router = useRouter();
@@ -14,6 +16,12 @@ export default function EventForm({ initial }: { initial?: AdminEvent }) {
 
   const [title, setTitle] = useState(initial?.title || "");
   const [slug, setSlug] = useState(initial?.slug || "");
+  const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
+
+  function handleTitleChange(value: string) {
+    setTitle(value);
+    if (!slugTouched) setSlug(slugify(value));
+  }
   const [description, setDescription] = useState(initial?.description || "");
   const [eventDate, setEventDate] = useState(initial?.eventDate?.slice(0, 10) || "");
   const [startTime, setStartTime] = useState(initial?.startTime || "19:00");
@@ -23,6 +31,7 @@ export default function EventForm({ initial }: { initial?: AdminEvent }) {
   const [status, setStatus] = useState(initial?.status || "DRAFT");
   const [cardImageUrl, setCardImageUrl] = useState(initial?.cardImageUrl || "");
   const [headerImageUrl, setHeaderImageUrl] = useState(initial?.headerImageUrl || "");
+  const [images, setImages] = useState<string[]>(initial?.images ?? []);
 
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -44,6 +53,7 @@ export default function EventForm({ initial }: { initial?: AdminEvent }) {
       status,
       cardImageUrl: cardImageUrl || undefined,
       headerImageUrl: headerImageUrl || undefined,
+      images,
     };
     try {
       if (isEdit && initial) {
@@ -64,11 +74,20 @@ export default function EventForm({ initial }: { initial?: AdminEvent }) {
     <form onSubmit={handleSubmit} className={`${cardClass} max-w-2xl space-y-4 p-6`}>
       <div>
         <label className="mb-1 block text-sm font-medium text-stone-700">Title</label>
-        <input value={title} onChange={(e) => setTitle(e.target.value)} className={inputClass} required />
+        <input value={title} onChange={(e) => handleTitleChange(e.target.value)} className={inputClass} required />
       </div>
       <div>
         <label className="mb-1 block text-sm font-medium text-stone-700">Slug (URL)</label>
-        <input value={slug} onChange={(e) => setSlug(e.target.value)} className={inputClass} required />
+        <input
+          value={slug}
+          onChange={(e) => {
+            setSlug(e.target.value);
+            setSlugTouched(true);
+          }}
+          className={inputClass}
+          required
+        />
+        <p className="mt-1 text-xs text-stone-400">Auto-generated from the title — edit if you want a different URL.</p>
       </div>
       <div>
         <label className="mb-1 block text-sm font-medium text-stone-700">Description</label>
@@ -86,6 +105,12 @@ export default function EventForm({ initial }: { initial?: AdminEvent }) {
         value={headerImageUrl}
         onChange={setHeaderImageUrl}
         hint="Recommended: 1920×600px wide landscape (~3:1), under 500KB. Spans the full page width — a tall or square photo will get heavily cropped."
+      />
+      <MultiImageUploadField
+        label="Gallery"
+        value={images}
+        onChange={setImages}
+        hint="Extra photos shown as a gallery on the detail page, in addition to the header image above."
       />
 
       <div className="grid grid-cols-3 gap-4">
@@ -105,7 +130,7 @@ export default function EventForm({ initial }: { initial?: AdminEvent }) {
 
       <div>
         <label className="mb-1 block text-sm font-medium text-stone-700">Venue</label>
-        <input value={venue} onChange={(e) => setVenue(e.target.value)} className={inputClass} placeholder="e.g. Cocolobo Beach Club main lawn" />
+        <input value={venue} onChange={(e) => setVenue(e.target.value)} className={inputClass} placeholder="e.g. Coccolobo Beach Club main lawn" />
       </div>
       <div>
         <label className="mb-1 block text-sm font-medium text-stone-700">Map URL (optional)</label>

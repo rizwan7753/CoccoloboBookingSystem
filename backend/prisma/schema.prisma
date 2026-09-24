@@ -147,8 +147,86 @@ model Location {
   holidays    Holiday[]
   restaurantMenus        RestaurantMenu[]
   restaurantReservations RestaurantReservation[]
+  orders                 Order[]
+  reviews                Review[]
+  blogPosts              BlogPost[]
 
   @@map("locations")
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+}
+
+// PENDING: guest-submitted, awaiting moderation — never shown publicly.
+// PUBLISHED: approved, shown on the homepage and/or its item's page.
+// REJECTED: moderated out — kept (not deleted) so the same guest/spam
+// submission doesn't need re-triaging if it comes in again.
+// DRAFT: admin-authored homepage review not yet published (unchanged
+// from before this review-per-item feature existed).
+enum ReviewStatus {
+  DRAFT
+  PENDING
+  PUBLISHED
+  REJECTED
+}
+
+// A review is either a general homepage testimonial (itemType/itemId null,
+// always admin-authored) or scoped to one bookable item (itemType+itemId
+// set) — those can come from a guest via the public submission form on
+// that item's page, landing as PENDING until an admin approves/rejects it
+// in the admin Reviews screen. itemTitle is a denormalized snapshot of the
+// item's name at submission time, so the admin moderation list and the
+// item page's review widget don't need to join across three different
+// item tables (Excursion/RentalItem/Event) to show what it's a review of.
+enum ReviewItemType {
+  EXCURSION
+  RENTAL
+  EVENT
+}
+
+model Review {
+  id             String          @id @default(cuid())
+  locationId     String
+  location       Location        @relation(fields: [locationId], references: [id])
+  itemType       ReviewItemType?
+  itemId         String?
+  itemTitle      String?
+  rating         Int // 1-5
+  title          String?
+  quote          String          @db.Text
+  authorName     String
+  authorInitials String? // e.g. "MD" — shown in the round avatar badge; derived from authorName if left blank
+  authorMeta     String? // e.g. "Tampa, FL · August 2026"
+  guestEmail     String? // moderation contact only — never shown publicly
+  status         ReviewStatus    @default(PUBLISHED)
+  sortOrder      Int             @default(0)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([itemType, itemId, status])
+  @@map("reviews")
+}
+
+// "From the journal" homepage posts + their own detail page at /journal/:slug.
+model BlogPost {
+  id          String        @id @default(cuid())
+  locationId  String
+  location    Location      @relation(fields: [locationId], references: [id])
+  title       String
+  slug        String        @unique
+  excerpt     String        @db.Text
+  body        String?       @db.Text
+  imageUrl    String?
+  readMinutes Int?
+  status      ContentStatus @default(DRAFT)
+  publishedAt DateTime?
+  sortOrder   Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("blog_posts")
 }
 
 // A closed/blackout date (holiday, weather closure, private charter, etc.)
@@ -192,6 +270,7 @@ model Excursion {
   priceAdult        Decimal          @db.Decimal(10, 2) // flat total when pricingType = FLAT_RATE
   priceChild        Decimal?         @db.Decimal(10, 2) // ignored when pricingType = FLAT_RATE
   capacityDefault   Int
+  minGuests         Int              @default(1) // smallest booking accepted, e.g. "Minimum 6 guests" — enforced at booking time, not just descriptive copy
   cutoffHoursBefore Int              @default(0) // hours before departure that booking closes; combined with cutoffTime
   cutoffTime        String           @default("21:00") // "book by 9:00 PM the evening before"
   status            ExcursionStatus  @default(DRAFT)
@@ -266,11 +345,18 @@ model Booking {
   source           BookingSource @default(DIRECT_WEBSITE)
   internalNotes    String?       @db.Text
 
+  // Set when this booking was created as one line of a multi-item cart
+  // checkout (see Order) rather than the standalone single-item flow — null
+  // for every booking made the original way.
+  orderId          String?
+  order            Order?        @relation(fields: [orderId], references: [id])
+
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 
   @@index([excursionId])
   @@index([slotId])
+  @@index([orderId])
   @@map("bookings")
 }
 
@@ -369,6 +455,12 @@ model RentalBooking {
 
   source         BookingSource @default(DIRECT_WEBSITE)
 
+  // Set when this booking was created as one line of a multi-item cart
+  // checkout (see Order) rather than the standalone single-item flow — null
+  // for every booking made the original way.
+  orderId        String?
+  order          Order?        @relation(fields: [orderId], references: [id])
+
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
@@ -381,6 +473,7 @@ model RentalBooking {
   // log keeps a full snapshot for history.
   @@index([spotId, date, timeSlotId])
   @@index([rentalItemId, date])
+  @@index([orderId])
   @@map("rental_bookings")
 }
 
@@ -458,6 +551,12 @@ model EventBooking {
 
   source         BookingSource @default(DIRECT_WEBSITE)
 
+  // Set when this booking was created as one line of a multi-item cart
+  // checkout (see Order) rather than the standalone single-item flow — null
+  // for every booking made the original way.
+  orderId        String?
+  order          Order?        @relation(fields: [orderId], references: [id])
+
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
@@ -468,7 +567,48 @@ model EventBooking {
   // a full snapshot for history.
   @@index([tierId])
   @@index([eventId])
+  @@index([orderId])
   @@map("event_bookings")
+}
+
+// A multi-item cart checkout — one payment covering any mix of excursion,
+// beach-chair, and event-ticket bookings. Each line item is still a normal
+// row in its own type's table (Booking/RentalBooking/EventBooking, via
+// their optional orderId) rather than a generic polymorphic join table —
+// this keeps every existing per-type admin view, export, email, and
+// capacity-locking path working unchanged; Order just adds one payment/
+// reference wrapper around a set of them. Guest info here is shared across
+// every item in the order (one checkout = one set of contact details).
+model Order {
+  id             String        @id @default(cuid())
+  locationId     String
+  location       Location      @relation(fields: [locationId], references: [id])
+
+  guestName      String
+  guestEmail     String
+  guestPhone     String?
+  roomNumber     String?
+
+  amountTotal    Decimal       @db.Decimal(10, 2)
+  currency       String        @default("USD")
+
+  status         BookingStatus @default(PENDING)
+  paymentStatus  PaymentStatus @default(PENDING)
+  stripePaymentIntentId String? @unique
+  paymentMethod  String?       // "stripe" | "offline" | "nmi" — informational only, not indexed
+  bookingCode    String?       @unique // human-readable reference, e.g. COCO_ORD_20260903_0007 — see lib/bookingCode.ts
+
+  source         BookingSource @default(DIRECT_WEBSITE)
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  bookings       Booking[]
+  rentalBookings RentalBooking[]
+  eventBookings  EventBooking[]
+
+  @@index([locationId])
+  @@map("orders")
 }
 
 model AdminUser {
@@ -572,6 +712,7 @@ model RestaurantMenuItem {
   name        String
   description String?               @db.Text
   price       Decimal?              @db.Decimal(10, 2)
+  images      Json?                 // array of image URLs — gallery shown on the menu page
   sortOrder   Int                   @default(0)
 
   @@index([sectionId])

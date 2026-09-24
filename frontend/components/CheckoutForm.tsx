@@ -46,7 +46,7 @@ export default function CheckoutForm({
       <button
         type="submit"
         disabled={!stripe || submitting}
-        className="w-full rounded-lg bg-teal-700 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-50"
+        className="w-full rounded-lg bg-coral py-2.5 text-sm font-semibold text-abyss transition hover:bg-coral-lift disabled:cursor-not-allowed disabled:opacity-50"
       >
         {submitting ? "Processing…" : "Pay & confirm booking"}
       </button>

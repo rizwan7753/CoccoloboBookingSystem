@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { AdminSession, canManageUsers, canManageSettings } from "@/lib/adminApi";
+import { AdminSession, canManageUsers, canManageSettings, canViewContent } from "@/lib/adminApi";
 
 const ICONS: Record<string, React.ReactNode> = {
   dashboard: <path d="M3 13h8V3H3v10ZM13 21h8V11h-8v10ZM13 3v6h8V3h-8ZM3 21h8v-6H3v6Z" strokeLinecap="round" strokeLinejoin="round" />,
@@ -15,6 +15,9 @@ const ICONS: Record<string, React.ReactNode> = {
   staff: <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" strokeLinecap="round" strokeLinejoin="round" />,
   activity: <path d="M22 12h-4l-3 9L9 3l-3 9H2" strokeLinecap="round" strokeLinejoin="round" />,
   restaurant: <path d="M8 2v6a2 2 0 0 0 2 2v12M8 2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2M16 2v20M16 2a4 4 0 0 1 4 4v4a2 2 0 0 1-2 2h-2" strokeLinecap="round" strokeLinejoin="round" />,
+  orders: <path d="M3 3h2l2.4 12.2a2 2 0 0 0 2 1.8h8.2a2 2 0 0 0 2-1.6L21 8H6" strokeLinecap="round" strokeLinejoin="round" />,
+  reviews: <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2Z" strokeLinecap="round" strokeLinejoin="round" />,
+  journal: <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15Z" strokeLinecap="round" strokeLinejoin="round" />,
 };
 
 function Icon({ name }: { name: keyof typeof ICONS }) {
@@ -49,9 +52,12 @@ export default function Sidebar({
     { href: "/admin/events", label: "Events", icon: "events", show: true },
     { href: "/admin/holidays", label: "Holidays & Closures", icon: "holiday", show: true },
     { href: "/admin/restaurant-menus", label: "Restaurant Menus", icon: "restaurant", show: true },
+    { href: "/admin/reviews", label: "Reviews", icon: "reviews", show: canViewContent(admin?.permissions) },
+    { href: "/admin/journal", label: "Journal Posts", icon: "journal", show: canViewContent(admin?.permissions) },
   ];
 
   const bookingItems: NavItem[] = [
+    { href: "/admin/orders", label: "Orders (multi-item)", icon: "orders", show: true },
     { href: "/admin/bookings", label: "Excursion Manifest", icon: "manifest", show: true },
     { href: "/admin/rental-bookings", label: "Beach Chair Bookings", icon: "beachChair", show: true },
     { href: "/admin/event-bookings", label: "Event Bookings", icon: "events", show: true },

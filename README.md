@@ -1,4 +1,4 @@
-# Cocolobo Excursion Booking System — MVP
+# Coccolobo Excursion Booking System — MVP
 
 Phase 1 of the phased build: single location, core booking flow, admin panel.
 Multi-property, agent portal, waivers, promo codes, and reporting are deferred
@@ -59,7 +59,7 @@ npm run seed               # creates a demo location, admin user, and excursion
 npm run dev                 # http://localhost:4000
 ```
 
-Seeded admin login: `admin@carambola.example` / `ChangeMe123!` — change this immediately outside of local dev.
+Seeded admin login: `admin@coccolobo.example` / `ChangeMe123!` — change this immediately outside of local dev.
 
 ### 3. Frontend
 

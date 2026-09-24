@@ -6,9 +6,11 @@ import { adminApi } from "@/lib/adminApi";
 import { Excursion } from "@/lib/api";
 import { inputClass, primaryButtonClass, cardClass } from "@/components/admin/ui";
 import ImageUploadField from "@/components/ImageUploadField";
+import MultiImageUploadField from "@/components/MultiImageUploadField";
+import { slugify } from "@/lib/slugify";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const DEFAULT_LOCATION_ID = "carambola-main"; // MVP: single location, seeded in prisma/seed.ts
+const DEFAULT_LOCATION_ID = "coccolobo-main"; // MVP: single location, seeded in prisma/seed.ts
 
 export default function ExcursionForm({ initial }: { initial?: Excursion }) {
   const router = useRouter();
@@ -16,6 +18,15 @@ export default function ExcursionForm({ initial }: { initial?: Excursion }) {
 
   const [title, setTitle] = useState(initial?.title || "");
   const [slug, setSlug] = useState(initial?.slug || "");
+  // Auto-derives the slug from the title until the admin edits it directly —
+  // editing an existing item counts as "already touched" so we never
+  // silently rewrite a slug that's already live (and possibly linked to).
+  const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
+
+  function handleTitleChange(value: string) {
+    setTitle(value);
+    if (!slugTouched) setSlug(slugify(value));
+  }
   const [description, setDescription] = useState(initial?.description || "");
   const [included, setIncluded] = useState(initial?.included || "");
   const [excluded, setExcluded] = useState(initial?.excluded || "");
@@ -25,6 +36,7 @@ export default function ExcursionForm({ initial }: { initial?: Excursion }) {
   const [priceAdult, setPriceAdult] = useState(Number(initial?.priceAdult) || 0);
   const [priceChild, setPriceChild] = useState(Number(initial?.priceChild) || 0);
   const [capacityDefault, setCapacityDefault] = useState(initial?.capacityDefault || 20);
+  const [minGuests, setMinGuests] = useState(initial?.minGuests || 1);
   const [cutoffTime, setCutoffTime] = useState(initial?.cutoffTime || "21:00");
   const [meetingPoint, setMeetingPoint] = useState(initial?.meetingPoint || "");
   const [status, setStatus] = useState(initial?.status || "DRAFT");
@@ -32,6 +44,7 @@ export default function ExcursionForm({ initial }: { initial?: Excursion }) {
   const [days, setDays] = useState<number[]>(initial?.departureTimes?.[0]?.daysOfWeek || [0, 1, 2, 3, 4, 5, 6]);
   const [cardImageUrl, setCardImageUrl] = useState(initial?.cardImageUrl || "");
   const [headerImageUrl, setHeaderImageUrl] = useState(initial?.headerImageUrl || "");
+  const [images, setImages] = useState<string[]>(initial?.images ?? []);
 
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -57,11 +70,13 @@ export default function ExcursionForm({ initial }: { initial?: Excursion }) {
       priceAdult: Number(priceAdult),
       priceChild: Number(priceChild),
       capacityDefault: Number(capacityDefault),
+      minGuests: Number(minGuests),
       cutoffTime,
       meetingPoint,
       status,
       departureTimes: [{ time, daysOfWeek: days }],
       cardImageUrl: cardImageUrl || undefined,
+      images,
       headerImageUrl: headerImageUrl || undefined,
     };
     try {
@@ -82,11 +97,20 @@ export default function ExcursionForm({ initial }: { initial?: Excursion }) {
     <form onSubmit={handleSubmit} className={`${cardClass} max-w-2xl space-y-4 p-6`}>
       <div>
         <label className="mb-1 block text-sm font-medium text-stone-700">Title</label>
-        <input value={title} onChange={(e) => setTitle(e.target.value)} className={inputClass} required />
+        <input value={title} onChange={(e) => handleTitleChange(e.target.value)} className={inputClass} required />
       </div>
       <div>
         <label className="mb-1 block text-sm font-medium text-stone-700">Slug (URL)</label>
-        <input value={slug} onChange={(e) => setSlug(e.target.value)} className={inputClass} required />
+        <input
+          value={slug}
+          onChange={(e) => {
+            setSlug(e.target.value);
+            setSlugTouched(true);
+          }}
+          className={inputClass}
+          required
+        />
+        <p className="mt-1 text-xs text-stone-400">Auto-generated from the title — edit if you want a different URL.</p>
       </div>
       <div>
         <label className="mb-1 block text-sm font-medium text-stone-700">Description</label>
@@ -139,6 +163,12 @@ export default function ExcursionForm({ initial }: { initial?: Excursion }) {
         onChange={setHeaderImageUrl}
         hint="Recommended: 1920×600px wide landscape (~3:1), under 500KB. Spans the full page width — a tall or square photo will get heavily cropped."
       />
+      <MultiImageUploadField
+        label="Gallery"
+        value={images}
+        onChange={setImages}
+        hint="Extra photos shown as a gallery on the detail page, in addition to the header image above."
+      />
 
       <div className="grid grid-cols-2 gap-4">
         <div>
@@ -148,6 +178,11 @@ export default function ExcursionForm({ initial }: { initial?: Excursion }) {
         <div>
           <label className="mb-1 block text-sm font-medium text-stone-700">Default capacity</label>
           <input type="number" value={capacityDefault} onChange={(e) => setCapacityDefault(Number(e.target.value))} className={inputClass} />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-stone-700">Minimum guests</label>
+          <input type="number" min={1} value={minGuests} onChange={(e) => setMinGuests(Math.max(1, Number(e.target.value)))} className={inputClass} />
+          <p className="mt-1 text-xs text-stone-400">Enforced at booking time — not just descriptive copy.</p>
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium text-stone-700">Pricing</label>

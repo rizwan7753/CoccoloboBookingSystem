@@ -32,6 +32,9 @@ router.post("/", async (req, res) => {
   } else if (code.startsWith("COCO_EVT_")) {
     const booking = await prisma.eventBooking.findFirst({ where: { bookingCode: code, guestEmail: email } });
     if (booking) return res.json({ type: "event", bookingId: booking.id });
+  } else if (code.startsWith("COCO_ORD_")) {
+    const order = await prisma.order.findFirst({ where: { bookingCode: code, guestEmail: email } });
+    if (order) return res.json({ type: "order", bookingId: order.id });
   }
 
   res.status(404).json({ error: NOT_FOUND_MESSAGE });

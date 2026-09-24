@@ -3,10 +3,11 @@ import type { Response } from "express";
 
 export type PdfRow = { label: string; value: string };
 
-const ACCENT_BY_TYPE: Record<"excursion" | "rental" | "event", [number, number, number]> = {
+const ACCENT_BY_TYPE: Record<"excursion" | "rental" | "event" | "order", [number, number, number]> = {
   excursion: [15, 118, 110], // teal-700
   rental: [180, 83, 9], // amber-700
   event: [162, 28, 175], // fuchsia-700
+  order: [123, 46, 78], // grape
 };
 
 /**
@@ -18,7 +19,7 @@ const ACCENT_BY_TYPE: Record<"excursion" | "rental" | "event", [number, number, 
 export function streamBookingConfirmationPdf(
   res: Response,
   params: {
-    type: "excursion" | "rental" | "event";
+    type: "excursion" | "rental" | "event" | "order";
     locationName: string;
     heading: string;
     guestName: string;
