@@ -1,12 +1,20 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { useCart } from "@/components/site/CartContext";
+import { useCart, CartLine } from "@/components/site/CartContext";
 import CheckoutDetailsAndPayment from "@/components/site/CheckoutDetailsAndPayment";
 import Medal from "@/components/site/Medal";
 
 export default function CheckoutPage() {
-  const { lines, total, removeItem } = useCart();
+  const cart = useCart();
+  // Once an order is placed the cart is emptied (its items are now reserved
+  // in the order), but the payment step — bank-transfer instructions, or the
+  // card form still waiting for payment — must stay on screen. Show a
+  // snapshot of what was ordered from then on, instead of the live cart.
+  const [placedLines, setPlacedLines] = useState<CartLine[] | null>(null);
+  const lines = placedLines ?? cart.lines;
+  const total = placedLines ? placedLines.reduce((sum, l) => sum + l.display.price, 0) : cart.total;
 
   return (
     <main className="site-body wrap py-12">
@@ -33,9 +41,10 @@ export default function CheckoutPage() {
                     <span className="block text-xs opacity-60">{line.display.subtitle}</span>
                   </span>
                   <span className="text-sm font-semibold text-coral-ink">${line.display.price.toFixed(2)}</span>
+                  {!placedLines && (
                   <button
                     type="button"
-                    onClick={() => removeItem(line.id)}
+                    onClick={() => cart.removeItem(line.id)}
                     aria-label={`Remove ${line.display.title}`}
                     className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-abyss/50 hover:bg-foam hover:text-abyss"
                   >
@@ -43,6 +52,7 @@ export default function CheckoutPage() {
                       <path d="M6 6l12 12M18 6 6 18" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </button>
+                  )}
                 </li>
               ))}
             </ul>
@@ -55,7 +65,7 @@ export default function CheckoutPage() {
           <div className="lg:col-span-1">
             <div className="sticky top-24 rounded-2xl border border-rule bg-white p-5 shadow-xl shadow-abyss/10">
               <h2 className="font-display mb-4 text-lg text-abyss">Your details</h2>
-              <CheckoutDetailsAndPayment total={total} />
+              <CheckoutDetailsAndPayment total={total} onOrderPlaced={setPlacedLines} />
             </div>
           </div>
         </div>

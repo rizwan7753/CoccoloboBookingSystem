@@ -8,7 +8,7 @@ import { settingsApi, PublicSettings } from "@/lib/settingsApi";
 import { getStripePromise } from "@/lib/stripeClient";
 import CheckoutForm from "@/components/CheckoutForm";
 import NmiCardForm from "@/components/NmiCardForm";
-import { useCart } from "./CartContext";
+import { useCart, CartLine } from "./CartContext";
 
 type Step = "details" | "payment";
 
@@ -22,7 +22,14 @@ const inputClass =
  * checkout instead. Same offline/nmi/devBypass/stripe branching, same
  * CheckoutForm/NmiCardForm reuse (bookingId is just orderId here).
  */
-export default function CheckoutDetailsAndPayment({ total }: { total: number }) {
+export default function CheckoutDetailsAndPayment({
+  total,
+  onOrderPlaced,
+}: {
+  total: number;
+  /** Called with the ordered items just before the cart is emptied, so the page can keep showing them (and this component) during the payment step. */
+  onOrderPlaced?: (placedLines: CartLine[]) => void;
+}) {
   const router = useRouter();
   const { lines, clear } = useCart();
   const [step, setStep] = useState<Step>("details");
@@ -53,6 +60,11 @@ export default function CheckoutDetailsAndPayment({ total }: { total: number }) 
   const availablePaymentMethodCount = [settings?.stripeEnabled, settings?.nmiEnabled, settings?.offlinePaymentEnabled].filter(Boolean).length;
   const stripePromise = getStripePromise(settings?.stripePublishableKey);
 
+  function finishOrder() {
+    onOrderPlaced?.(lines);
+    clear();
+  }
+
   async function handleCreateOrder() {
     setSubmitting(true);
     setError(null);
@@ -70,25 +82,25 @@ export default function CheckoutDetailsAndPayment({ total }: { total: number }) 
         setOrderId(result.orderId);
         setOrderCode(result.bookingCode ?? null);
         setStep("payment");
-        clear();
+        finishOrder();
         return;
       }
       if (result.nmiPending) {
         setNmiPending(true);
         setOrderId(result.orderId);
         setStep("payment");
-        clear();
+        finishOrder();
         return;
       }
       if (result.devBypass || !result.clientSecret) {
-        clear();
+        finishOrder();
         router.push(`/order/confirmation/${result.orderId}`);
         return;
       }
       setClientSecret(result.clientSecret);
       setOrderId(result.orderId);
       setStep("payment");
-      clear();
+      finishOrder();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create order");
     } finally {
