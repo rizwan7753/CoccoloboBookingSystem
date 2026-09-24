@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
+import { getDefaultLocationId } from "../../lib/location";
 import { requireAdmin, AuthedRequest } from "../../middleware/requireAdmin";
 import { requirePermission } from "../../middleware/requirePermission";
 import { logAudit } from "../../lib/auditLog";
@@ -30,7 +31,6 @@ const menuSectionSchema = z.object({
 });
 
 const menuSchema = z.object({
-  locationId: z.string(),
   title: z.string().min(1),
   slug: z
     .string()
@@ -85,7 +85,11 @@ router.post("/", requirePermission("restaurant.manage"), async (req: AuthedReque
 
   const { sections, ...data } = parsed.data;
   const menu = await prisma.restaurantMenu.create({
-    data: { ...data, sections: sections ? { create: sectionsCreateData(sections) } : undefined },
+    data: {
+      ...data,
+      locationId: await getDefaultLocationId(),
+      sections: sections ? { create: sectionsCreateData(sections) } : undefined,
+    },
     include: sectionsInclude,
   });
   await logAudit(

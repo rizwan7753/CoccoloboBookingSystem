@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
+import { getDefaultLocationId } from "../../lib/location";
 import { requireAdmin, AuthedRequest } from "../../middleware/requireAdmin";
 import { requirePermission } from "../../middleware/requirePermission";
 import { logAudit } from "../../lib/auditLog";
@@ -8,7 +9,6 @@ import { logAudit } from "../../lib/auditLog";
 const router = Router();
 router.use(requireAdmin);
 
-const DEFAULT_LOCATION_ID = "coccolobo-main";
 
 const reviewSchema = z.object({
   itemType: z.enum(["EXCURSION", "RENTAL", "EVENT"]).nullable().optional(),
@@ -43,7 +43,7 @@ router.post("/", requirePermission("content.manage"), async (req: AuthedRequest,
   if (!parsed.success) return res.status(400).json({ error: "Invalid input", details: parsed.error.flatten() });
 
   const review = await prisma.review.create({
-    data: { ...parsed.data, locationId: DEFAULT_LOCATION_ID },
+    data: { ...parsed.data, locationId: await getDefaultLocationId() },
   });
   await logAudit({ adminUserId: req.admin!.sub, actorLabel: req.admin!.email }, "review.created", "Review", review.id, {
     title: review.title,

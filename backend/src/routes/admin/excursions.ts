@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
+import { getDefaultLocationId } from "../../lib/location";
 import { requireAdmin, AuthedRequest } from "../../middleware/requireAdmin";
 import { requirePermission } from "../../middleware/requirePermission";
 import { parseDateOnly } from "../../lib/dateOnly";
@@ -15,7 +16,6 @@ const departureTimeSchema = z.object({
 });
 
 const excursionSchema = z.object({
-  locationId: z.string(),
   title: z.string().min(1),
   slug: z
     .string()
@@ -68,6 +68,7 @@ router.post("/", requirePermission("excursions.manage"), async (req: AuthedReque
   const excursion = await prisma.excursion.create({
     data: {
       ...data,
+      locationId: await getDefaultLocationId(),
       departureTimes: departureTimes ? { create: departureTimes } : undefined,
     },
     include: { departureTimes: true },

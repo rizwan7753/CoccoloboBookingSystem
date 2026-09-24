@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../lib/prisma";
+import { getDefaultLocationId } from "../lib/location";
 
 const router = Router();
-const DEFAULT_LOCATION_ID = "coccolobo-main";
 
 const ITEM_TYPES = ["EXCURSION", "RENTAL", "EVENT"] as const;
 
@@ -59,7 +59,7 @@ router.post("/", async (req, res) => {
   if (!parsed.success) return res.status(400).json({ error: "Invalid input", details: parsed.error.flatten() });
 
   const review = await prisma.review.create({
-    data: { ...parsed.data, locationId: DEFAULT_LOCATION_ID, status: "PENDING" },
+    data: { ...parsed.data, locationId: await getDefaultLocationId(), status: "PENDING" },
   });
   res.status(201).json({ id: review.id, status: review.status });
 });

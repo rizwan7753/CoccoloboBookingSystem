@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
+import { getDefaultLocationId } from "../../lib/location";
 import { requireAdmin, AuthedRequest } from "../../middleware/requireAdmin";
 import { requirePermission } from "../../middleware/requirePermission";
 import { parseDateOnly } from "../../lib/dateOnly";
@@ -10,7 +11,6 @@ const router = Router();
 router.use(requireAdmin);
 
 const eventSchema = z.object({
-  locationId: z.string(),
   title: z.string().min(1),
   slug: z
     .string()
@@ -52,7 +52,9 @@ router.post("/", requirePermission("events.manage"), async (req: AuthedRequest, 
   if (!parsed.success) return res.status(400).json({ error: "Invalid input", details: parsed.error.flatten() });
 
   const { eventDate, ...data } = parsed.data;
-  const event = await prisma.event.create({ data: { ...data, eventDate: parseDateOnly(eventDate) } });
+  const event = await prisma.event.create({
+    data: { ...data, locationId: await getDefaultLocationId(), eventDate: parseDateOnly(eventDate) },
+  });
 
   await logAudit(
     { adminUserId: req.admin!.sub, actorLabel: req.admin!.email },

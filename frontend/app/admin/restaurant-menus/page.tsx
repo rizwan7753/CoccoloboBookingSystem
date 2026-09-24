@@ -7,7 +7,6 @@ import ImageUploadField from "@/components/ImageUploadField";
 import MultiImageUploadField from "@/components/MultiImageUploadField";
 import { slugify } from "@/lib/slugify";
 
-const DEFAULT_LOCATION_ID = "coccolobo-main"; // MVP: single location, seeded in prisma/seed.ts
 
 interface ItemDraft {
   name: string;
@@ -167,7 +166,7 @@ export default function AdminRestaurantMenusPage() {
       if (editingId) {
         await adminApi.updateRestaurantMenu(editingId, payload);
       } else {
-        await adminApi.createRestaurantMenu({ ...payload, locationId: DEFAULT_LOCATION_ID });
+        await adminApi.createRestaurantMenu(payload);
       }
       setShowForm(false);
       load();

@@ -8,7 +8,6 @@ import ImageUploadField from "@/components/ImageUploadField";
 import MultiImageUploadField from "@/components/MultiImageUploadField";
 import { slugify } from "@/lib/slugify";
 
-const DEFAULT_LOCATION_ID = "coccolobo-main"; // MVP: single location, seeded in prisma/seed.ts
 
 export default function EventForm({ initial }: { initial?: AdminEvent }) {
   const router = useRouter();
@@ -41,7 +40,6 @@ export default function EventForm({ initial }: { initial?: AdminEvent }) {
     setSubmitting(true);
     setError(null);
     const payload = {
-      locationId: DEFAULT_LOCATION_ID,
       title,
       slug,
       description,

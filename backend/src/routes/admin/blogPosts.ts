@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
+import { getDefaultLocationId } from "../../lib/location";
 import { requireAdmin, AuthedRequest } from "../../middleware/requireAdmin";
 import { requirePermission } from "../../middleware/requirePermission";
 import { logAudit } from "../../lib/auditLog";
@@ -8,7 +9,6 @@ import { logAudit } from "../../lib/auditLog";
 const router = Router();
 router.use(requireAdmin);
 
-const DEFAULT_LOCATION_ID = "coccolobo-main";
 
 const blogPostSchema = z.object({
   title: z.string().min(1),
@@ -36,7 +36,7 @@ router.post("/", requirePermission("content.manage"), async (req: AuthedRequest,
     const post = await prisma.blogPost.create({
       data: {
         ...parsed.data,
-        locationId: DEFAULT_LOCATION_ID,
+        locationId: await getDefaultLocationId(),
         publishedAt: parsed.data.status === "PUBLISHED" ? new Date() : null,
       },
     });

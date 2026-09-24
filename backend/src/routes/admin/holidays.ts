@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
+import { getDefaultLocationId } from "../../lib/location";
 import { requireAdmin, AuthedRequest } from "../../middleware/requireAdmin";
 import { requirePermission } from "../../middleware/requirePermission";
 import { parseDateOnly } from "../../lib/dateOnly";
@@ -11,7 +12,6 @@ router.use(requireAdmin);
 
 
 const holidaySchema = z.object({
-  locationId: z.string(),
   date: z.string(), // "2026-12-25"
   label: z.string().min(1),
   appliesToExcursions: z.boolean().optional(),
@@ -32,7 +32,7 @@ router.post("/", requirePermission("holidays.manage"), async (req: AuthedRequest
 
   try {
     const holiday = await prisma.holiday.create({
-      data: { ...parsed.data, date: parseDateOnly(parsed.data.date) },
+      data: { ...parsed.data, locationId: await getDefaultLocationId(), date: parseDateOnly(parsed.data.date) },
     });
     await logAudit(
       { adminUserId: req.admin!.sub, actorLabel: req.admin!.email },

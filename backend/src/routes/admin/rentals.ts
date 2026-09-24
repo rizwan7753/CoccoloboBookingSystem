@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
+import { getDefaultLocationId } from "../../lib/location";
 import { requireAdmin, AuthedRequest } from "../../middleware/requireAdmin";
 import { requirePermission } from "../../middleware/requirePermission";
 import { logAudit } from "../../lib/auditLog";
@@ -10,7 +11,6 @@ router.use(requireAdmin);
 
 
 const rentalItemSchema = z.object({
-  locationId: z.string(),
   name: z.string().min(1),
   slug: z
     .string()
@@ -52,7 +52,7 @@ router.post("/", requirePermission("rentals.manage"), async (req: AuthedRequest,
   const parsed = rentalItemSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid input", details: parsed.error.flatten() });
 
-  const item = await prisma.rentalItem.create({ data: parsed.data });
+  const item = await prisma.rentalItem.create({ data: { ...parsed.data, locationId: await getDefaultLocationId() } });
 
   await logAudit(
     { adminUserId: req.admin!.sub, actorLabel: req.admin!.email },

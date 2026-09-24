@@ -30,7 +30,6 @@ export interface AdminSession {
 }
 
 export interface AdminExcursionInput {
-  locationId: string;
   title: string;
   slug: string;
   description: string;
@@ -88,7 +87,6 @@ export interface AdminRentalItem {
 }
 
 export interface AdminRentalItemInput {
-  locationId: string;
   name: string;
   slug: string;
   description: string;
@@ -154,7 +152,6 @@ export interface AdminEvent {
 }
 
 export interface AdminEventInput {
-  locationId: string;
   title: string;
   slug: string;
   description: string;
@@ -217,7 +214,6 @@ export interface AdminHoliday {
 }
 
 export interface AdminHolidayInput {
-  locationId: string;
   date: string;
   label: string;
   appliesToExcursions?: boolean;
@@ -328,7 +324,6 @@ export interface AdminRestaurantMenuSectionInput {
 }
 
 export interface AdminRestaurantMenuInput {
-  locationId: string;
   title: string;
   slug: string;
   description?: string;

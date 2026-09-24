@@ -10,7 +10,6 @@ import MultiImageUploadField from "@/components/MultiImageUploadField";
 import { slugify } from "@/lib/slugify";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const DEFAULT_LOCATION_ID = "coccolobo-main"; // MVP: single location, seeded in prisma/seed.ts
 
 export default function ExcursionForm({ initial }: { initial?: Excursion }) {
   const router = useRouter();
@@ -58,7 +57,6 @@ export default function ExcursionForm({ initial }: { initial?: Excursion }) {
     setSubmitting(true);
     setError(null);
     const payload = {
-      locationId: DEFAULT_LOCATION_ID,
       title,
       slug,
       description,

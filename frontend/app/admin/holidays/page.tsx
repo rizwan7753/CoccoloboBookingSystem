@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { adminApi, AdminHoliday, getStoredAdmin, canManageHolidays } from "@/lib/adminApi";
 import { PageHeader, cardClass, inputClass, primaryButtonClass } from "@/components/admin/ui";
 
-const DEFAULT_LOCATION_ID = "coccolobo-main"; // MVP: single location, seeded in prisma/seed.ts
 
 function formatDate(iso: string) {
   return new Date(`${iso.slice(0, 10)}T00:00:00`).toLocaleDateString(undefined, {
@@ -44,7 +43,6 @@ export default function AdminHolidaysPage() {
     setError(null);
     try {
       await adminApi.createHoliday({
-        locationId: DEFAULT_LOCATION_ID,
         date,
         label,
         appliesToExcursions,
