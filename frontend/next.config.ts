@@ -9,6 +9,14 @@ const nextConfig: NextConfig = {
     cpus: 2,
     workerThreads: false,
   },
+  // The restaurant section was renamed Coco Grill — keep old links, bookmarks
+  // and search results working.
+  async redirects() {
+    return [
+      { source: "/restaurant", destination: "/coco-grill", permanent: true },
+      { source: "/restaurant/:path*", destination: "/coco-grill/:path*", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

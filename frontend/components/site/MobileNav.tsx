@@ -55,7 +55,7 @@ export default function MobileNav({ restaurantMenus = [] }: { restaurantMenus?: 
                 aria-expanded={restaurantOpen}
                 className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left transition hover:bg-foam/10"
               >
-                Restaurant
+                Coco Grill
                 <svg
                   className={`h-4 w-4 transition-transform ${restaurantOpen ? "rotate-180" : ""}`}
                   viewBox="0 0 24 24"
@@ -71,7 +71,7 @@ export default function MobileNav({ restaurantMenus = [] }: { restaurantMenus?: 
                   {restaurantMenus.map((menu) => (
                     <li key={menu.slug}>
                       <Link
-                        href={`/restaurant/${menu.slug}`}
+                        href={`/coco-grill/${menu.slug}`}
                         onClick={closeAll}
                         className="block rounded-lg px-3 py-2 text-sm text-foam/80 transition hover:bg-foam/10"
                       >

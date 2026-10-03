@@ -8,6 +8,7 @@ export interface EventItem {
   images?: string[] | null;
   cardImageUrl?: string | null;
   headerImageUrl?: string | null;
+  brochureUrl?: string | null;
   eventDate: string;
   startTime: string;
   endTime?: string | null;

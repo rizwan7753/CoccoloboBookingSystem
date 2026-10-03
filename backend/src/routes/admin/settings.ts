@@ -30,6 +30,14 @@ router.get("/", async (_req, res) => {
   res.json(serialize(location));
 });
 
+// A social profile link: a full http(s) URL, or "" to remove it (-> null).
+const optionalUrl = z
+  .string()
+  .trim()
+  .refine((v) => v === "" || /^https?:\/\/\S+$/i.test(v), "Enter the full link, starting with https://")
+  .transform((v) => v || null)
+  .optional();
+
 const settingsSchema = z.object({
   name: z.string().min(1).optional(),
   timezone: z.string().min(1).optional(),
@@ -53,6 +61,26 @@ const settingsSchema = z.object({
   nmiTokenizationKey: z.string().optional(),
   nmiSecurityKey: z.string().optional(), // omitted or blank = keep existing
   nmiGatewayDomain: z.string().optional(),
+  // Unlike the fields above, an empty string here CLEARS the value (stored
+  // as null) — that's how an admin removes a social link or the WhatsApp
+  // number so it stops showing on the site.
+  socialFacebookUrl: optionalUrl,
+  socialInstagramUrl: optionalUrl,
+  socialTiktokUrl: optionalUrl,
+  socialYoutubeUrl: optionalUrl,
+  socialXUrl: optionalUrl,
+  whatsappNumber: z
+    .string()
+    .trim()
+    .refine((v) => v === "" || /^\+?[\d\s()-]{7,20}$/.test(v), "Enter the WhatsApp number in international format, e.g. +1 869 555 0123")
+    .transform((v) => v || null)
+    .optional(),
+  whatsappMessage: z
+    .string()
+    .trim()
+    .max(180)
+    .transform((v) => v || null)
+    .optional(),
 });
 
 // PUT /api/admin/settings

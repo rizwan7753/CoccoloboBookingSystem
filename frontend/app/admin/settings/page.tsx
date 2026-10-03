@@ -132,6 +132,7 @@ const TABS = [
   { key: "stripe", label: "Stripe" },
   { key: "nmi", label: "NMI" },
   { key: "offline", label: "Offline Payment" },
+  { key: "social", label: "Social & WhatsApp" },
 ] as const;
 type TabKey = (typeof TABS)[number]["key"];
 
@@ -168,6 +169,14 @@ export default function AdminSettingsPage() {
   const [offlinePaymentInstructions, setOfflinePaymentInstructions] = useState("");
   const [offlinePaymentReceiptEmail, setOfflinePaymentReceiptEmail] = useState("");
 
+  const [socialFacebookUrl, setSocialFacebookUrl] = useState("");
+  const [socialInstagramUrl, setSocialInstagramUrl] = useState("");
+  const [socialTiktokUrl, setSocialTiktokUrl] = useState("");
+  const [socialYoutubeUrl, setSocialYoutubeUrl] = useState("");
+  const [socialXUrl, setSocialXUrl] = useState("");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [whatsappMessage, setWhatsappMessage] = useState("");
+
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -196,6 +205,13 @@ export default function AdminSettingsPage() {
     setOfflinePaymentEnabled(s.offlinePaymentEnabled);
     setOfflinePaymentInstructions(s.offlinePaymentInstructions ?? "");
     setOfflinePaymentReceiptEmail(s.offlinePaymentReceiptEmail ?? "");
+    setSocialFacebookUrl(s.socialFacebookUrl ?? "");
+    setSocialInstagramUrl(s.socialInstagramUrl ?? "");
+    setSocialTiktokUrl(s.socialTiktokUrl ?? "");
+    setSocialYoutubeUrl(s.socialYoutubeUrl ?? "");
+    setSocialXUrl(s.socialXUrl ?? "");
+    setWhatsappNumber(s.whatsappNumber ?? "");
+    setWhatsappMessage(s.whatsappMessage ?? "");
   }
 
   useEffect(() => {
@@ -234,6 +250,14 @@ export default function AdminSettingsPage() {
         offlinePaymentEnabled,
         offlinePaymentInstructions: offlinePaymentInstructions || undefined,
         offlinePaymentReceiptEmail: offlinePaymentReceiptEmail || undefined,
+        // Sent as-is: an empty field clears the link so it disappears from the site.
+        socialFacebookUrl,
+        socialInstagramUrl,
+        socialTiktokUrl,
+        socialYoutubeUrl,
+        socialXUrl,
+        whatsappNumber,
+        whatsappMessage,
       });
       applySettings(updated);
       setSmtpPassword("");
@@ -562,6 +586,56 @@ export default function AdminSettingsPage() {
                 </p>
               </div>
             )}
+          </>
+        )}
+
+        {tab === "social" && (
+          <>
+            <p className="text-sm text-stone-500">
+              Links shown as icons in the website footer. Paste the full address of each profile (starting with https://). Leave a field
+              empty and that icon won&apos;t appear on the site.
+            </p>
+            {(
+              [
+                ["Facebook", socialFacebookUrl, setSocialFacebookUrl, "https://facebook.com/yourpage"],
+                ["Instagram", socialInstagramUrl, setSocialInstagramUrl, "https://instagram.com/yourhandle"],
+                ["TikTok", socialTiktokUrl, setSocialTiktokUrl, "https://tiktok.com/@yourhandle"],
+                ["YouTube", socialYoutubeUrl, setSocialYoutubeUrl, "https://youtube.com/@yourchannel"],
+                ["X (Twitter)", socialXUrl, setSocialXUrl, "https://x.com/yourhandle"],
+              ] as const
+            ).map(([label, value, setValue, placeholder]) => (
+              <div key={label}>
+                <label className="mb-1 block text-sm font-medium text-stone-700">{label}</label>
+                <input type="url" value={value} onChange={(e) => setValue(e.target.value)} placeholder={placeholder} className={inputClass} />
+              </div>
+            ))}
+
+            <div className="border-t border-stone-100 pt-4">
+              <label className="mb-1 block text-sm font-medium text-stone-700">WhatsApp number</label>
+              <input
+                value={whatsappNumber}
+                onChange={(e) => setWhatsappNumber(e.target.value)}
+                placeholder="+1 869 555 0123"
+                className={inputClass}
+              />
+              <p className="mt-1 text-xs text-stone-400">
+                International format, including the country code. Shows a WhatsApp chat bubble on every page of the website; leave
+                empty to hide it.
+              </p>
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-stone-700">WhatsApp greeting message (optional)</label>
+              <input
+                value={whatsappMessage}
+                onChange={(e) => setWhatsappMessage(e.target.value)}
+                maxLength={180}
+                placeholder="Hi! I'd like to ask about booking a beach day."
+                className={inputClass}
+              />
+              <p className="mt-1 text-xs text-stone-400">
+                Pre-filled in the guest&apos;s WhatsApp when they start a chat — they can edit it before sending.
+              </p>
+            </div>
           </>
         )}
 

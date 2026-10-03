@@ -20,6 +20,7 @@ const eventSchema = z.object({
   images: z.array(z.string()).optional(),
   cardImageUrl: z.string().optional(),
   headerImageUrl: z.string().optional(),
+  brochureUrl: z.string().nullable().optional(), // null removes it
   eventDate: z.string(), // "2026-12-31"
   startTime: z.string().regex(/^\d{2}:\d{2}$/),
   endTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),

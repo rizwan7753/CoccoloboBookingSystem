@@ -31,7 +31,7 @@ export default async function RestaurantMenuPage({ params }: { params: Promise<{
       >
         {menu.imageUrl && <div className="pointer-events-none absolute inset-0 bg-black/40" />}
         <div className="wrap relative flex h-full flex-col justify-end pb-8">
-          <Link href="/restaurant" className="mb-3 flex w-fit items-center gap-1 text-sm text-shallow hover:text-foam">
+          <Link href="/coco-grill" className="mb-3 flex w-fit items-center gap-1 text-sm text-shallow hover:text-foam">
             <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
               <path d="M19 12H5M11 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>

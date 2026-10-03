@@ -10,12 +10,15 @@ export default function ImageUploadField({
   value,
   onChange,
   hint,
+  onRemove,
 }: {
   label: string;
   value: string | undefined;
   onChange: (url: string) => void;
   /** Recommended size/ratio for this slot — images are cropped to fill, not resized, so this matters. */
   hint?: string;
+  /** Shows a "Remove" button when set — only for fields whose save actually clears the image. */
+  onRemove?: () => void;
 }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +55,11 @@ export default function ImageUploadField({
           disabled={uploading}
           className={inputClass}
         />
+        {value && onRemove && (
+          <button type="button" onClick={onRemove} className="flex-shrink-0 text-sm font-medium text-rose-600 hover:text-rose-800">
+            Remove
+          </button>
+        )}
       </div>
       {uploading && <p className="mt-1 text-xs text-stone-400">Uploading…</p>}
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}

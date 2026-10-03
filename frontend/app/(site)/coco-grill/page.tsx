@@ -5,7 +5,7 @@ import ReservationForm from "@/components/site/ReservationForm";
 
 export const revalidate = 60;
 
-export const metadata = { title: "Restaurant" };
+export const metadata = { title: "Coco Grill" };
 
 export default async function RestaurantPage() {
   const menus = await restaurantApi.listMenus().catch(() => []);
@@ -18,7 +18,7 @@ export default async function RestaurantPage() {
             Dine with us
           </span>
           <h1 className="animate-fade-in-up font-display mt-5 max-w-4xl text-4xl text-foam sm:text-5xl" style={{ animationDelay: "80ms" }}>
-            Our Restaurant
+            Coco Grill
           </h1>
           <p className="animate-fade-in-up mt-4 max-w-xl text-lg text-foam/85" style={{ animationDelay: "160ms" }}>
             Browse our menus, then reserve a table — no card required, we&apos;ll confirm your booking by phone or email.
@@ -37,7 +37,7 @@ export default async function RestaurantPage() {
             {menus.map((menu, i) => (
               <Link
                 key={menu.id}
-                href={`/restaurant/${menu.slug}`}
+                href={`/coco-grill/${menu.slug}`}
                 className="card animate-fade-in-up group block no-underline"
                 style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
               >

@@ -146,6 +146,7 @@ export interface AdminEvent {
   status: string;
   cardImageUrl?: string | null;
   headerImageUrl?: string | null;
+  brochureUrl?: string | null;
   images?: string[] | null;
   ticketTiers?: AdminEventTier[];
   _count?: { bookings: number };
@@ -163,6 +164,7 @@ export interface AdminEventInput {
   status: string;
   cardImageUrl?: string;
   headerImageUrl?: string;
+  brochureUrl?: string | null;
   images?: string[];
 }
 
@@ -366,6 +368,13 @@ export interface AdminSettings {
   offlinePaymentEnabled: boolean;
   offlinePaymentInstructions?: string | null;
   offlinePaymentReceiptEmail?: string | null;
+  socialFacebookUrl?: string | null;
+  socialInstagramUrl?: string | null;
+  socialTiktokUrl?: string | null;
+  socialYoutubeUrl?: string | null;
+  socialXUrl?: string | null;
+  whatsappNumber?: string | null;
+  whatsappMessage?: string | null;
   adminNotificationEmail?: string | null;
   stripePublishableKey?: string | null;
   stripeSecretKeySet: boolean;
@@ -391,6 +400,13 @@ export interface AdminSettingsInput {
   offlinePaymentEnabled?: boolean;
   offlinePaymentInstructions?: string;
   offlinePaymentReceiptEmail?: string;
+  socialFacebookUrl?: string;
+  socialInstagramUrl?: string;
+  socialTiktokUrl?: string;
+  socialYoutubeUrl?: string;
+  socialXUrl?: string;
+  whatsappNumber?: string;
+  whatsappMessage?: string;
   adminNotificationEmail?: string;
   stripePublishableKey?: string;
   stripeSecretKey?: string; // blank/omitted = keep existing

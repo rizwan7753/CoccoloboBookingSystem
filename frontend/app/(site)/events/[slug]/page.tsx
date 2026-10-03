@@ -74,6 +74,21 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
           <div className="lg:col-span-2">
             <p className="whitespace-pre-line leading-relaxed opacity-85">{event.description}</p>
 
+            {event.brochureUrl && (
+              <figure className="mt-8">
+                <a href={mediaUrl(event.brochureUrl) ?? undefined} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-xl border border-rule bg-abyss">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={mediaUrl(event.brochureUrl) ?? undefined} alt={`${event.title} brochure`} className="mx-auto block h-auto w-full" />
+                </a>
+                <figcaption className="mt-2 text-sm opacity-70">
+                  Event brochure ·{" "}
+                  <a href={mediaUrl(event.brochureUrl) ?? undefined} target="_blank" rel="noreferrer" className="font-medium text-coral-ink underline underline-offset-2">
+                    Open full size
+                  </a>
+                </figcaption>
+              </figure>
+            )}
+
             {event.venue && (
               <div className="animate-fade-in-up mt-8 rounded-xl border border-rule bg-shell p-4 transition hover:-translate-y-0.5 hover:shadow-md">
                 <div className="flex items-center gap-2 text-abyss">

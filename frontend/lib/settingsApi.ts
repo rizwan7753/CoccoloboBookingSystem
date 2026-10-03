@@ -12,6 +12,13 @@ export interface PublicSettings {
   offlinePaymentEnabled: boolean;
   offlinePaymentInstructions?: string | null;
   offlinePaymentReceiptEmail?: string | null;
+  socialFacebookUrl?: string | null;
+  socialInstagramUrl?: string | null;
+  socialTiktokUrl?: string | null;
+  socialYoutubeUrl?: string | null;
+  socialXUrl?: string | null;
+  whatsappNumber?: string | null;
+  whatsappMessage?: string | null;
 }
 
 const FALLBACK: PublicSettings = {

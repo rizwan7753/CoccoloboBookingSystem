@@ -31,6 +31,7 @@ export default function EventForm({ initial }: { initial?: AdminEvent }) {
   const [cardImageUrl, setCardImageUrl] = useState(initial?.cardImageUrl || "");
   const [headerImageUrl, setHeaderImageUrl] = useState(initial?.headerImageUrl || "");
   const [images, setImages] = useState<string[]>(initial?.images ?? []);
+  const [brochureUrl, setBrochureUrl] = useState(initial?.brochureUrl || "");
 
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -51,6 +52,7 @@ export default function EventForm({ initial }: { initial?: AdminEvent }) {
       status,
       cardImageUrl: cardImageUrl || undefined,
       headerImageUrl: headerImageUrl || undefined,
+      brochureUrl: brochureUrl || null,
       images,
     };
     try {
@@ -103,6 +105,13 @@ export default function EventForm({ initial }: { initial?: AdminEvent }) {
         value={headerImageUrl}
         onChange={setHeaderImageUrl}
         hint="Recommended: 1920×600px wide landscape (~3:1), under 500KB. Spans the full page width — a tall or square photo will get heavily cropped."
+      />
+      <ImageUploadField
+        label="Brochure / flyer (optional)"
+        value={brochureUrl}
+        onChange={setBrochureUrl}
+        onRemove={() => setBrochureUrl("")}
+        hint="Shown in full — never cropped — beside the event on the homepage and on the event page. Portrait flyers work best; JPG, PNG or WebP under 5MB."
       />
       <MultiImageUploadField
         label="Gallery"

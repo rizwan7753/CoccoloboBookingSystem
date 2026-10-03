@@ -11,6 +11,7 @@ import { DISH_PLACEHOLDER_PHOTOS, HERO_PHOTOS, INTRO_PHOTO, pickPhoto } from "@/
 import HeroSlideshow from "@/components/site/HeroSlideshow";
 import ExcursionCard from "@/components/site/ExcursionCard";
 import ChairCard from "@/components/site/ChairCard";
+import FloatingIcons from "@/components/site/FloatingIcons";
 import EventCard from "@/components/site/EventCard";
 import Carousel from "@/components/site/Carousel";
 import ScrollReveal from "@/components/site/ScrollReveal";
@@ -20,15 +21,20 @@ import Medal from "@/components/site/Medal";
 export const revalidate = 60; // ISR: this content changes rarely
 
 const WHY_TILES = [
-  { icon: "ic-bar", kicker: "OPEN BAR", title: "Named spirits, not house pours", body: "Johnnie Walker Black, Absolut, Beefeater, Mount Gay, local beers, house wines and rum punch on VIP and cabana bookings." },
-  { icon: "ic-vip", kicker: "SERVICE", title: "A server who stays with you", body: "VIP and cabana guests get one person looking after the group all day, rather than whoever is nearest." },
-  { icon: "ic-card", kicker: "NO DEPOSIT", title: "Hold a booking without paying", body: "Send a request with no card details. We confirm by phone or email, usually within a few hours." },
-  { icon: "ic-group", kicker: "GROUPS", title: "Six to eighty guests", body: "The VIP experience scales to eighty. Tastings and classes run from four up to forty." },
-  { icon: "ic-wave", kicker: "SAME DAY", title: "Chairs you can book this morning", body: "Excursions need notice. A chair and an umbrella don't — reserve your spot on the day." },
-  { icon: "ic-kids", kicker: "FAMILIES", title: "A menu built for children", body: "Mini pizzas, mac and cheese, chicken tenders and fish fingers — a separate menu, not an afterthought." },
-  { icon: "ic-catch", kicker: "THE KITCHEN", title: "Kittitian cooking, done properly", body: "Spiny lobster, catch of the day, saltfish pizza and the chef's local dish, changing with what comes in." },
-  { icon: "ic-clock", kicker: "FULL DAYS", title: "Six hours, not a rushed slot", body: "Day passes and cabanas run 360 minutes. Long enough to swim, eat, sleep it off and swim again." },
+  { icon: "ic-bar", kicker: "BAR", title: "Named spirits, not house pours", body: "Johnnie Walker Black, Absolut, Beefeater, Mount Gay, local beers, house wines and rum punch." },
+  { icon: "ic-vip", kicker: "SERVICE", title: "Warm Caribbean hospitality", body: "From the moment you arrive, our friendly Coccolobo team is here to make your beach day relaxed, easy and memorable." },
+  { icon: "ic-umbrella", kicker: "BOOK EARLY", title: "Secure your spot in paradise", body: "Coccolobo can get busy, so we recommend booking in advance. Walk-ins are always welcome, subject to availability." },
+  { icon: "ic-group", kicker: "GROUPS", title: "Bringing a big group? No problem!", body: "Just book in advance or give us a call, and we’ll arrange all the details to make your day at Coccolobo easy and enjoyable." },
+  { icon: "ic-chair", kicker: "SAME DAY", title: "Beach time, your way", body: "Walk-ins are welcome subject to availability, but advance reservations are recommended." },
+  { icon: "ic-kids", kicker: "FAMILIES", title: "Fun for the whole family", body: "Swim, relax, enjoy great food and make memories together — Coccolobo is a beach day the whole family can enjoy." },
+  { icon: "ic-lobster", kicker: "COCO GRILL", title: "Fresh from Coco Grill", body: "Enjoy lobster, chicken, ribs and fish, cooked to your liking in plain sight while you soak up the relaxed Caribbean atmosphere." },
+  { icon: "ic-daypass", kicker: "FULL DAYS", title: "Want to spend the whole day at Coccolobo? No problem!", body: "Book your beach chair, umbrella and lunch package today, then settle in, relax and enjoy your day in paradise." },
 ];
+
+// Excursions are hidden from the homepage (their section and the hero
+// booking tab) until Stingray Haven launches and replaces them there.
+// The excursion pages themselves stay live. Set to true to bring them back.
+const SHOW_EXCURSIONS = false;
 
 function formatPostMeta(post: { publishedAt?: string | null; readMinutes?: number | null }): string {
   const dateLabel = post.publishedAt
@@ -89,21 +95,17 @@ export default async function HomePage() {
         <HeroSlideshow photos={HERO_PHOTOS} />
 
         <div className="wrap hero-inner">
-          <p className="hero-eyebrow">CABANAS · EXCURSIONS · BEACHFRONT DINING</p>
-          <h1 className="font-display" aria-label="A day on the water, arranged before you arrive.">
+          <p className="hero-eyebrow">BEACH CHAIRS · COCO GRILL · BEACHFRONT</p>
+          <h1 className="font-display" aria-label={`Welcome To ${name}`}>
             <span style={{ animationDelay: ".25s" }} aria-hidden="true">
-              A&nbsp;day&nbsp;on&nbsp;the&nbsp;water,
+              Welcome&nbsp;To
             </span>{" "}
             <span style={{ animationDelay: ".42s" }} aria-hidden="true">
-              arranged&nbsp;before
-            </span>{" "}
-            <span style={{ animationDelay: ".58s" }} aria-hidden="true">
-              you&nbsp;arrive.
+              {name}
             </span>
           </h1>
           <p className="hero-sub">
-            {excursions.length || 7} excursions, {rentals.length ? "chairs" : "two cabanas"} and a kitchen that cooks Kittitian — all on
-            one stretch of St. Kitts sand.
+            Set on beautiful South Friars Bay, {name} is your place to relax, dine and enjoy the Caribbean.
           </p>
         </div>
 
@@ -116,27 +118,25 @@ export default async function HomePage() {
 
       {/* ================= BOOKING TEASER ================= */}
       <section className="booking wrap" aria-label="Check availability">
-        <BookingTeaser excursions={excursions} rentals={rentals} events={events} />
+        <BookingTeaser excursions={excursions} rentals={rentals} events={events} showExcursions={SHOW_EXCURSIONS} />
       </section>
 
       {/* ================= INTRO ================= */}
       <section className="section wrap grid gap-[clamp(2rem,5vw,4.5rem)] lg:grid-cols-[1fr_1.1fr] lg:items-start">
         <ScrollReveal>
-          <h2 className="font-display mb-5 text-[clamp(2rem,1.3rem+3vw,3.6rem)]">On one of the quieter stretches of St. Kitts</h2>
+          <h2 className="font-display mb-5 text-[clamp(2rem,1.3rem+3vw,3.6rem)]">Relax on beautiful South Friars Bay</h2>
           <p className="mb-5 max-w-[62ch] text-[1.2rem] leading-[1.55]">
-            {name} takes its name from the sea grape — the low, round-leafed tree that holds the sand together along this shore and
-            gives the beach its shade.
+            {name} is located on South Friars Bay, one of St. Kitts&apos; inviting stretches of Caribbean coastline. Arrive to a warm
+            welcome from our friendly team and settle into the club&apos;s relaxed, rustic island atmosphere.
           </p>
           <p className="mb-4 max-w-[62ch]">
-            The club is built around a simple idea: decide what kind of day you want before you get here, and let us have it ready.
-            That might be a chair and an umbrella for four hours. It might be a private cabana with your own server and an open bar.
-            It might be an afternoon learning to roll sushi, or tasting your way through Kittitian cooking with a recipe card to take
-            home.
+            Spend your day exactly as you please — relax on the beach, enjoy the Caribbean music, or visit Coco Grill where lobster,
+            chicken, ribs and fish are prepared to your liking in full view.
           </p>
           <p className="max-w-[62ch]">
-            Because every experience is prepared for a set number of guests, excursions close for booking the evening before and
-            walk-ins aren&apos;t accepted. Beach chairs are the exception — reserve one on the morning itself if the weather turns
-            good.
+            Beach guests have access to Wi-Fi and restrooms. Food, beverages and umbrellas are available separately. Advance
+            reservations are recommended to avoid disappointment, particularly on busy cruise-ship days, although walk-ins are
+            welcome subject to availability.
           </p>
         </ScrollReveal>
 
@@ -149,11 +149,15 @@ export default async function HomePage() {
       </section>
 
       {/* ================= WHY ================= */}
-      <section className="section bg-foam" id="why">
+      <section
+        className="section parallax why-parallax"
+        id="why"
+        style={{ "--parallax-image": "url(/hero/P1317200.jpg)" } as React.CSSProperties}
+      >
         <div className="wrap">
           <ScrollReveal as="div" className="sec-head">
             <p className="kicker">WHY {name.toUpperCase()}</p>
-            <h2 className="font-display">What you get, and what you never have to ask for</h2>
+            <h2 className="font-display">Enjoy the Coccolobo Beach Experience</h2>
           </ScrollReveal>
 
           <div className="tiles">
@@ -170,6 +174,7 @@ export default async function HomePage() {
       </section>
 
       {/* ================= EXCURSIONS CAROUSEL ================= */}
+      {SHOW_EXCURSIONS && (
       <section className="section" id="excursions">
         <div className="wrap">
           <ScrollReveal as="div" className="sec-head sec-head-row">
@@ -192,14 +197,19 @@ export default async function HomePage() {
           )}
         </div>
       </section>
+      )}
 
       {/* ================= CHAIRS ================= */}
-      <section className="section bg-sand" id="chairs">
-        <div className="wrap">
+      <section className="section bg-sand relative overflow-hidden" id="chairs">
+        <FloatingIcons />
+        <div className="wrap relative z-[1]">
           <ScrollReveal as="div" className="sec-head">
-            <p className="kicker">SAME-DAY BOOKING</p>
-            <h2 className="font-display">Beach chairs and loungers</h2>
-            <p>Pick your exact spot by the water. The one thing here you can book on the morning itself.</p>
+            <p className="kicker">BEACH DAY PACKAGE</p>
+            <h2 className="font-display">Book Your Beach Chair, Umbrella &amp; Lunch</h2>
+            <p>
+              Everything you need for a relaxing day at Coccolobo. Book your beach chair, umbrella and lunch package in advance, then
+              simply arrive, settle in and enjoy the Caribbean.
+            </p>
           </ScrollReveal>
 
           {rentals.length === 0 ? (
@@ -218,19 +228,26 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ================= RESTAURANT ================= */}
-      <section className="section kitchen" id="restaurant">
+      {/* ================= COCO GRILL ================= */}
+      <section
+        className="section kitchen parallax"
+        id="coco-grill"
+        style={{ "--parallax-image": "url(/hero/P1316894.jpg)" } as React.CSSProperties}
+      >
         <div className="wrap">
           <ScrollReveal as="div" className="sec-head">
-            <p className="kicker">THE RESTAURANT</p>
-            <h2 className="font-display">Caribbean cooking, with St. Kitts at the centre</h2>
-            <p>Reserve a table and we&apos;ll confirm by phone or email. No payment or card required.</p>
+            <p className="kicker">COCO GRILL</p>
+            <h2 className="font-display">Fresh Caribbean cooking from Coco Grill, St. Kitts.</h2>
+            <p>
+              Enjoy lobster, chicken, ribs and fish prepared to your liking in plain sight, with sweet Caribbean music and the laid-back
+              atmosphere of South Friars Bay in the background.
+            </p>
           </ScrollReveal>
 
           {menus.length > 0 && (
             <ScrollReveal as="nav" className="menu-links" delay={60}>
               {menus.map((m) => (
-                <Link key={m.id} href={`/restaurant/${m.slug}`}>
+                <Link key={m.id} href={`/coco-grill/${m.slug}`}>
                   {m.title}
                 </Link>
               ))}
@@ -253,7 +270,7 @@ export default async function HomePage() {
             </ul>
           )}
 
-          <Link href="/restaurant" className="btn btn-light mt-10 inline-block">
+          <Link href="/coco-grill" className="btn btn-light mt-10 inline-block">
             See all menus
           </Link>
         </div>
@@ -390,37 +407,38 @@ export default async function HomePage() {
             <span>READY WHEN YOU ARE</span>
           </ScrollReveal>
           <ScrollReveal as="h2" className="font-display">
-            Book before you come
+            Reserve your day at Coccolobo
           </ScrollReveal>
           <ScrollReveal as="p" delay={60}>
-            Send a request and we&apos;ll come back to you, usually within a few hours.
+            Advance bookings are recommended to help guarantee your spot, especially on busy cruise-ship days. Walk-ins are
+            welcome subject to availability.
           </ScrollReveal>
           <ScrollReveal as="ul" delay={120}>
             <li>
               <svg className="tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" aria-hidden="true">
                 <path d="M4 12.5 9 17.5 20 6.5" />
               </svg>
-              No payment or card required
+              Book your beach experience.
             </li>
             <li>
               <svg className="tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" aria-hidden="true">
                 <path d="M4 12.5 9 17.5 20 6.5" />
               </svg>
-              Confirmed by phone or email
+              Receive your confirmation online.
             </li>
             <li>
               <svg className="tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" aria-hidden="true">
                 <path d="M4 12.5 9 17.5 20 6.5" />
               </svg>
-              Usually within a few hours
+              Immediate Booking Response.
             </li>
           </ScrollReveal>
           <ScrollReveal as="div" className="cta-actions" delay={180}>
             <Link className="btn" href="/excursions">
-              Browse excursions
+              Browse Experiences
             </Link>
             <Link className="btn btn-light" href="/find-booking">
-              Find my booking
+              Find my Booking
             </Link>
           </ScrollReveal>
         </div>

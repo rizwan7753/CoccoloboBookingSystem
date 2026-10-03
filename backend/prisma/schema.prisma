@@ -140,6 +140,16 @@ model Location {
   // domain. Defaults to secure.nmi.com when unset.
   nmiGatewayDomain String?
 
+  // Guest-facing contact links. Each is optional — an empty one is simply not
+  // shown on the site (no footer icon / no WhatsApp bubble).
+  socialFacebookUrl  String?
+  socialInstagramUrl String?
+  socialTiktokUrl    String?
+  socialYoutubeUrl   String?
+  socialXUrl         String?
+  whatsappNumber     String? // international format, e.g. +1 869 555 0123
+  whatsappMessage    String? // pre-filled first message when a guest opens the chat
+
   excursions Excursion[]
   rentalItems RentalItem[]
   events      Event[]
@@ -492,6 +502,7 @@ model Event {
   images      Json?
   cardImageUrl   String?
   headerImageUrl String?
+  brochureUrl    String? // event flyer image — shown whole (never cropped) on the event page and homepage events section
   eventDate   DateTime          @db.Date
   startTime   String            // "19:00"
   endTime     String?           // optional, for display only

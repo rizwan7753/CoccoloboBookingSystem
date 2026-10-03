@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { settingsApi } from "@/lib/settingsApi";
 import { restaurantApi } from "@/lib/restaurantApi";
 import AnnouncementBar from "./AnnouncementBar";
@@ -21,11 +20,8 @@ export default async function Header() {
     // which spans the full page height, so the header can stay pinned for
     // the whole scroll. site-body's font/color still inherit through fine.
     <div className="site-body contents print:hidden">
-      <AnnouncementBar>
-        Advance booking is required for all excursions — walk-ins are not accepted.{" "}
-        <Link href="/beach-chairs" className="font-medium underline underline-offset-3">
-          Beach chairs are available same day ›
-        </Link>
+      <AnnouncementBar id="stingray-haven">
+        Experience St. Kitts&apos; Exclusive Stingray Haven — An Unforgettable Marine Life Encounter
       </AnnouncementBar>
 
       <HeaderBar name={name} menuLinks={menuLinks} />

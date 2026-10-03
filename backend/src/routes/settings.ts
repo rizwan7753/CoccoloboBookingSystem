@@ -27,6 +27,13 @@ router.get("/", async (_req, res) => {
     offlinePaymentEnabled: location.offlinePaymentEnabled,
     offlinePaymentInstructions: location.offlinePaymentInstructions,
     offlinePaymentReceiptEmail: location.offlinePaymentReceiptEmail,
+    socialFacebookUrl: location.socialFacebookUrl,
+    socialInstagramUrl: location.socialInstagramUrl,
+    socialTiktokUrl: location.socialTiktokUrl,
+    socialYoutubeUrl: location.socialYoutubeUrl,
+    socialXUrl: location.socialXUrl,
+    whatsappNumber: location.whatsappNumber,
+    whatsappMessage: location.whatsappMessage,
   });
 });
 

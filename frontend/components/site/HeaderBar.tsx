@@ -62,8 +62,8 @@ export default function HeaderBar({
           <Link href="/beach-chairs" className="opacity-90 transition hover:opacity-100 hover:underline hover:underline-offset-5">
             Beach chairs
           </Link>
-          <Link href="/restaurant" className="opacity-90 transition hover:opacity-100 hover:underline hover:underline-offset-5">
-            Restaurant
+          <Link href="/coco-grill" className="opacity-90 transition hover:opacity-100 hover:underline hover:underline-offset-5">
+            Coco Grill
           </Link>
           <Link href="/events" className="opacity-90 transition hover:opacity-100 hover:underline hover:underline-offset-5">
             Events
@@ -89,7 +89,7 @@ export default function HeaderBar({
             Find my booking
           </Link>
           <Link href="/#book" className="pill whitespace-nowrap !px-2.5 !py-1.5 text-xs sm:!px-[1.15rem] sm:!py-2 sm:text-sm">
-            Book now
+            BOOK NOW
           </Link>
           <CartButton />
           <div className="lg:hidden">

@@ -24,12 +24,15 @@ export default function BookingTeaser({
   excursions,
   rentals,
   events,
+  showExcursions = true,
 }: {
   excursions: Excursion[];
   rentals: RentalItem[];
   events: EventItem[];
+  /** Off while excursions are hidden from the homepage (pending the Stingray Haven launch). */
+  showExcursions?: boolean;
 }) {
-  const [tab, setTab] = useState<Tab>("excursions");
+  const [tab, setTab] = useState<Tab>(showExcursions ? "excursions" : "chairs");
   const [date, setDate] = useState(todayISO());
   const [guests, setGuests] = useState(2);
 
@@ -112,12 +115,14 @@ export default function BookingTeaser({
   return (
     <div className="booking-box">
       <div className="tabs" role="tablist" aria-label="What would you like to book?">
+        {showExcursions && (
         <button className="tab" role="tab" aria-selected={tab === "excursions"} onClick={() => switchTab("excursions")}>
           <svg aria-hidden="true">
             <use href="#ic-cabana" />
           </svg>
           Excursions
         </button>
+        )}
         <button className="tab" role="tab" aria-selected={tab === "chairs"} onClick={() => switchTab("chairs")}>
           <svg aria-hidden="true">
             <use href="#ic-chair" />
@@ -128,7 +133,7 @@ export default function BookingTeaser({
           <svg aria-hidden="true">
             <use href="#ic-fish" />
           </svg>
-          Restaurant
+          Coco Grill
         </button>
         <button className="tab" role="tab" aria-selected={tab === "events"} onClick={() => switchTab("events")}>
           <svg aria-hidden="true">
@@ -252,7 +257,7 @@ export default function BookingTeaser({
           <p className="m-0 self-center text-sm opacity-70">
             A request, not a confirmed booking — reserve a table and we&apos;ll reply by phone or email.
           </p>
-          <Link href="/restaurant#reserve" className="btn">
+          <Link href="/coco-grill#reserve" className="btn">
             Reserve a table
           </Link>
         </div>
