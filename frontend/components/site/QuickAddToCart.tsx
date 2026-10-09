@@ -7,7 +7,7 @@ import { Excursion } from "@/lib/api";
 import { rentalApi, RentalItem, RentalTimeSlot } from "@/lib/rentalApi";
 import { eventApi, EventItem, TierAvailability } from "@/lib/eventApi";
 import { mediaUrl } from "@/lib/media";
-import { formatTimeRange, formatTime12h } from "@/lib/time";
+import { formatTimeRange, formatTime12h, formatDuration } from "@/lib/time";
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
@@ -169,7 +169,7 @@ export function ExcursionQuickAdd({ excursion, photo }: { excursion: Excursion; 
         photo={photo ?? mediaUrl(excursion.cardImageUrl)}
         title={excursion.title}
         description={excursion.description}
-        meta={`${excursion.durationMinutes} min · $${excursion.priceAdult}${excursion.pricingType === "FLAT_RATE" ? " flat rate" : " / adult"}`}
+        meta={`${formatDuration(excursion.durationMinutes)} · $${excursion.priceAdult}${excursion.pricingType === "FLAT_RATE" ? " flat rate" : " / adult"}`}
         loading={false}
         error={timesForDate.length === 0 ? "No departures on this date." : null}
         confirmDisabled={!time}

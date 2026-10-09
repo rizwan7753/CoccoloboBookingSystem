@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { api } from "@/lib/api";
 import { settingsApi } from "@/lib/settingsApi";
 import ExcursionCard from "@/components/site/ExcursionCard";
@@ -16,9 +17,15 @@ export default async function ExcursionsPage() {
         <div className="wrap hero-inner">
           <p className="hero-eyebrow">EXCURSIONS &amp; ACTIVITIES</p>
           <h1 className="font-display" style={{ fontSize: "clamp(2rem,1.4rem+3.4vw,3.6rem)" }}>
-            <span>Ways to spend the day at {name}</span>
+            <span>Choose Your Perfect Day at {name}</span>
           </h1>
-          <p className="hero-sub">Each has its own duration, group minimum and booking cut-off. All of them close the evening before.</p>
+          <p className="hero-sub">
+            Choose from our beach experiences below, or book a{" "}
+            <Link href="/beach-chairs" className="underline underline-offset-4">
+              Beach Chair, Beach Chair and Umbrella, or Beach Chair, Umbrella and Lunch
+            </Link>
+            . Advance booking is recommended, with reservations closing at 9:00 PM the evening before.
+          </p>
         </div>
       </section>
 

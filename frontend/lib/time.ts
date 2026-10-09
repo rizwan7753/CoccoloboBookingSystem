@@ -16,6 +16,15 @@ export function addMinutesToTime(time: string, minutes: number): string {
   return `${String(newH).padStart(2, "0")}:${String(newM).padStart(2, "0")}`;
 }
 
+/** 360 -> "6 hours", 210 -> "3.5 hours", 60 -> "1 hour", 45 -> "45 minutes".
+ *  Guest-facing copy says hours, not raw minutes (the admin forms still
+ *  edit the underlying minutes). */
+export function formatDuration(minutes: number): string {
+  if (minutes < 60) return `${minutes} minutes`;
+  const hours = Math.round((minutes / 60) * 10) / 10;
+  return `${hours} ${hours === 1 ? "hour" : "hours"}`;
+}
+
 /** "14:05", 90 -> "2:05 PM – 3:35 PM" */
 export function formatTimeRange(time: string, durationMinutes: number): string {
   const end = addMinutesToTime(time, durationMinutes);

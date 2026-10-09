@@ -65,7 +65,10 @@ export default function BookingWidget({ excursion }: { excursion: Excursion }) {
   const [slots, setSlots] = useState<AvailabilityDay[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [adultCount, setAdultCount] = useState(2);
+  // Start at the excursion's own minimum where that's above 2 (e.g. the VIP
+  // experience needs 6), so the form doesn't open already below the minimum
+  // and showing a warning the guest has to resolve.
+  const [adultCount, setAdultCount] = useState(Math.max(2, excursion.minGuests ?? 1));
   const [childCount, setChildCount] = useState(0);
 
   const [guestName, setGuestName] = useState("");

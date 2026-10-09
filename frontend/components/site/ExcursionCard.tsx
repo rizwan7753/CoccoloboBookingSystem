@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Excursion } from "@/lib/api";
-import { formatTime12h } from "@/lib/time";
+import { formatDuration, formatTime12h } from "@/lib/time";
 import { mediaUrl } from "@/lib/media";
 import { EXCURSION_PLACEHOLDER_PHOTOS, pickPhoto } from "@/lib/placeholderPhotos";
 import { ExcursionQuickAdd } from "./QuickAddToCart";
@@ -26,7 +26,7 @@ export default function ExcursionCard({ excursion }: { excursion: Excursion }) {
       <div className="card-visual">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={photo} alt={excursion.title} loading="lazy" decoding="async" />
-        <span className="card-dur">{excursion.durationMinutes} min</span>
+        <span className="card-dur">{formatDuration(excursion.durationMinutes)}</span>
       </div>
       <div className="card-body">
         <h3 className="font-display">

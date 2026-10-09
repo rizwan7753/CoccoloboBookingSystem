@@ -15,8 +15,8 @@ export default async function Footer() {
     <footer className="site-body bg-abyss pt-14 text-foam print:hidden">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="mb-12 max-w-3xl rounded-2xl border border-foam/20 px-6 py-5 text-[.96rem] opacity-90">
-          <strong className="font-semibold">Advance bookings are recommended to avoid disappointment.</strong> Walk-ins are
-          welcome subject to availability, but on busy days we recommend reserving your spot at {name} in advance.
+          <strong className="font-semibold">Advance booking is strongly recommended.</strong> Some experiences require
+          pre-booking and do not accept walk-ins; please check the individual experience details before visiting.
         </div>
 
         {/* One row of five on desktop (brand, Book, Eat, Legal, Talk to us) —
@@ -25,7 +25,7 @@ export default async function Footer() {
           <div>
             <h4 className="font-display mb-[.9rem] text-base font-bold">{name}</h4>
             <p className="mt-1.5 max-w-[26ch] text-[.94rem] opacity-80">
-              Named for the sea grapes that hold the sand along this shore.
+              Named after the sea grape trees that naturally protect and shape this beautiful stretch of coastline.
             </p>
             <SocialIcons settings={settings} />
           </div>

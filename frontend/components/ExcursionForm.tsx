@@ -121,7 +121,7 @@ export default function ExcursionForm({ initial }: { initial?: Excursion }) {
           onChange={(e) => setIncluded(e.target.value)}
           rows={2}
           className={inputClass}
-          placeholder="e.g. Beach chair, umbrella, WiFi access, welcome drink"
+          placeholder="e.g. Beach chair, umbrella, Wi-Fi access, welcome drink"
         />
       </div>
       <div>

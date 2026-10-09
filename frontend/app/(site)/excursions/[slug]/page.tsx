@@ -1,3 +1,4 @@
+import { formatDuration, formatTime12h } from "@/lib/time";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
@@ -59,7 +60,7 @@ export default async function ExcursionDetailPage({ params }: { params: Promise<
           </Link>
           <h1 className="animate-fade-in-up font-display max-w-4xl text-3xl text-foam sm:text-4xl">{excursion.title}</h1>
           <p className="animate-fade-in-up mt-2 text-sm text-foam/80" style={{ animationDelay: "80ms" }}>
-            {excursion.durationMinutes} minutes
+            {formatDuration(excursion.durationMinutes)}
           </p>
         </div>
       </div>
@@ -104,7 +105,9 @@ export default async function ExcursionDetailPage({ params }: { params: Promise<
               </svg>
               <div className="text-sm text-abyss">
                 <p className="font-semibold">Advance booking required — walk-ins are not accepted.</p>
-                <p className="mt-0.5">Bookings must be made by {excursion.cutoffTime} the evening before the excursion date.</p>
+                <p className="mt-0.5">
+                  Bookings must be made by {formatTime12h(excursion.cutoffTime)} the evening before the excursion date.
+                </p>
               </div>
             </div>
 
