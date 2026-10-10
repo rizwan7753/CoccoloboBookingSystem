@@ -8,7 +8,7 @@ import {
   getStoredAdmin,
   canManageRestaurantReservations,
 } from "@/lib/adminApi";
-import { PageHeader, Badge, cardClass, inputClass } from "@/components/admin/ui";
+import { PageHeader, Badge, cardClass, inputClass, primaryButtonClass, secondaryButtonClass } from "@/components/admin/ui";
 import { DateRangeFilter } from "@/components/admin/DateRangeFilter";
 
 const STATUSES: RestaurantReservationStatus[] = ["NEW", "CONTACTED", "CONFIRMED", "DECLINED"];
@@ -73,7 +73,7 @@ export default function AdminRestaurantReservationsPage() {
       <div className={`${cardClass} flex flex-wrap items-end gap-3 p-4`}>
         <DateRangeFilter from={from} to={to} onFromChange={setFrom} onToChange={setTo} />
         <div>
-          <label className="mb-1 block text-xs font-medium text-stone-500">Status</label>
+          <label className="mb-1 block text-xs font-medium text-admin-muted">Status</label>
           <select value={status} onChange={(e) => setStatus(e.target.value)} className={inputClass}>
             <option value="">All statuses</option>
             {STATUSES.map((s) => (
@@ -83,29 +83,29 @@ export default function AdminRestaurantReservationsPage() {
             ))}
           </select>
         </div>
-        <button onClick={search} className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-800">
+        <button onClick={search} className={primaryButtonClass}>
           Search
         </button>
         <button
           onClick={handleExport}
           disabled={exporting}
-          className="rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 transition hover:border-teal-600 hover:text-teal-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className={secondaryButtonClass}
         >
           {exporting ? "Exporting…" : "Export to Excel"}
         </button>
       </div>
-      {exportError && <p className="mt-2 text-sm text-red-600">{exportError}</p>}
+      {exportError && <p className="mt-2 text-sm text-admin-danger-ink">{exportError}</p>}
 
       {loading ? (
-        <p className="mt-6 text-sm text-stone-400">Loading…</p>
+        <p className="mt-6 text-sm text-admin-faint">Loading…</p>
       ) : (
         <div className={`${cardClass} mt-6 overflow-hidden`}>
           {reservations.length === 0 ? (
-            <p className="p-6 text-sm text-stone-400">No reservation requests found for this range.</p>
+            <p className="p-6 text-sm text-admin-faint">No reservation requests found for this range.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[850px] text-left text-sm">
-                <thead className="border-b border-stone-100 text-xs uppercase tracking-wide text-stone-400">
+                <thead className="border-b border-admin-line-soft text-xs uppercase tracking-wide text-admin-faint">
                   <tr>
                     <th className="px-4 py-2.5 font-medium">Reference</th>
                     <th className="px-4 py-2.5 font-medium">Date/Time</th>
@@ -119,21 +119,21 @@ export default function AdminRestaurantReservationsPage() {
                 </thead>
                 <tbody>
                   {reservations.map((r) => (
-                    <tr key={r.id} className="border-b border-stone-50 align-top last:border-0 hover:bg-stone-50/60">
-                      <td className="max-w-[130px] truncate px-4 py-2 font-mono text-xs text-stone-500" title={r.bookingCode ?? r.id}>
+                    <tr key={r.id} className="border-b border-admin-line-soft align-top last:border-0 hover:bg-admin-surface-soft">
+                      <td className="max-w-[130px] truncate px-4 py-2 font-mono text-xs text-admin-muted" title={r.bookingCode ?? r.id}>
                         {r.bookingCode ?? r.id}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-2 text-stone-600">
+                      <td className="whitespace-nowrap px-4 py-2 text-admin-muted">
                         {r.date.slice(0, 10)}
-                        <div className="text-xs text-stone-400">{r.time}</div>
+                        <div className="text-xs text-admin-faint">{r.time}</div>
                       </td>
-                      <td className="px-4 py-2 font-medium text-stone-900">{r.guestName}</td>
-                      <td className="px-4 py-2 text-stone-600">
+                      <td className="px-4 py-2 font-medium text-admin-ink">{r.guestName}</td>
+                      <td className="px-4 py-2 text-admin-muted">
                         {r.guestEmail}
-                        {r.guestPhone ? <div className="text-xs text-stone-400">{r.guestPhone}</div> : null}
+                        {r.guestPhone ? <div className="text-xs text-admin-faint">{r.guestPhone}</div> : null}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-2 text-stone-600">{r.partySize}</td>
-                      <td className="max-w-[200px] truncate px-4 py-2 text-stone-600" title={r.specialRequests ?? undefined}>
+                      <td className="whitespace-nowrap px-4 py-2 text-admin-muted">{r.partySize}</td>
+                      <td className="max-w-[200px] truncate px-4 py-2 text-admin-muted" title={r.specialRequests ?? undefined}>
                         {r.specialRequests || "—"}
                       </td>
                       <td className="px-4 py-2">
@@ -141,7 +141,7 @@ export default function AdminRestaurantReservationsPage() {
                           <select
                             value={r.status}
                             onChange={(e) => handleStatusChange(r.id, e.target.value as RestaurantReservationStatus)}
-                            className="rounded-md border border-stone-300 px-2 py-1 text-sm"
+                            className="rounded-md border border-admin-line px-2 py-1 text-sm"
                           >
                             {STATUSES.map((s) => (
                               <option key={s} value={s}>
@@ -155,7 +155,7 @@ export default function AdminRestaurantReservationsPage() {
                       </td>
                       {canManage && (
                         <td className="whitespace-nowrap px-4 py-2 text-right">
-                          <button onClick={() => handleDelete(r.id)} className="text-rose-600 hover:text-rose-800">
+                          <button onClick={() => handleDelete(r.id)} className="text-admin-danger-ink hover:text-admin-danger-ink">
                             Delete
                           </button>
                         </td>

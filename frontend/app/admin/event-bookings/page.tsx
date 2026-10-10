@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { adminApi, AdminEvent, AdminEventBooking, getStoredAdmin, canCancelBookings } from "@/lib/adminApi";
-import { PageHeader, Badge, cardClass, primaryButtonClass, inputClass } from "@/components/admin/ui";
+import { PageHeader, Badge, cardClass, primaryButtonClass, inputClass, secondaryButtonClass } from "@/components/admin/ui";
 import { DateRangeFilter } from "@/components/admin/DateRangeFilter";
 
 // toISOString() gives UTC's calendar date, which can be a day off from the
@@ -86,7 +86,7 @@ function EventBookingsPageInner() {
 
       <div className={`${cardClass} flex flex-wrap items-end gap-3 p-4`}>
         <div>
-          <label className="mb-1 block text-xs font-medium text-stone-500">Event</label>
+          <label className="mb-1 block text-xs font-medium text-admin-muted">Event</label>
           <select value={eventId} onChange={(e) => setEventId(e.target.value)} className={inputClass}>
             <option value="">All events</option>
             {events.map((event) => (
@@ -103,29 +103,29 @@ function EventBookingsPageInner() {
         <button
           onClick={handleExport}
           disabled={exporting}
-          className="rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 transition hover:border-fuchsia-600 hover:text-fuchsia-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className={secondaryButtonClass}
         >
           {exporting ? "Exporting…" : "Export to Excel"}
         </button>
       </div>
-      {exportError && <p className="mt-2 text-sm text-red-600">{exportError}</p>}
+      {exportError && <p className="mt-2 text-sm text-admin-danger-ink">{exportError}</p>}
 
-      {loading && <p className="mt-6 text-sm text-stone-400">Loading…</p>}
+      {loading && <p className="mt-6 text-sm text-admin-faint">Loading…</p>}
 
       {!loading && (
         <div className={`${cardClass} mt-6 overflow-hidden`}>
-          <div className="flex items-center justify-between border-b border-stone-100 px-5 py-3">
-            <p className="text-sm text-stone-600">
-              <span className="font-semibold text-stone-900">{bookings.length}</span> booking(s) ·{" "}
-              <span className="font-semibold text-stone-900">{totalTickets}</span> ticket(s) sold
+          <div className="flex items-center justify-between border-b border-admin-line-soft px-5 py-3">
+            <p className="text-sm text-admin-muted">
+              <span className="font-semibold text-admin-ink">{bookings.length}</span> booking(s) ·{" "}
+              <span className="font-semibold text-admin-ink">{totalTickets}</span> ticket(s) sold
             </p>
           </div>
           {bookings.length === 0 ? (
-            <p className="p-6 text-sm text-stone-400">No bookings found for this range.</p>
+            <p className="p-6 text-sm text-admin-faint">No bookings found for this range.</p>
           ) : (
             <div className="overflow-x-auto">
             <table className="w-full min-w-[750px] text-left text-sm">
-              <thead className="border-b border-stone-100 text-xs uppercase tracking-wide text-stone-400">
+              <thead className="border-b border-admin-line-soft text-xs uppercase tracking-wide text-admin-faint">
                 <tr>
                   <th className="px-4 py-2.5 font-medium">Reference</th>
                   {!eventId && <th className="max-w-[180px] px-4 py-2.5 font-medium">Event</th>}
@@ -138,22 +138,22 @@ function EventBookingsPageInner() {
               </thead>
               <tbody>
                 {bookings.map((b) => (
-                  <tr key={b.id} className="border-b border-stone-50 align-top last:border-0 hover:bg-stone-50/60">
-                    <td className="max-w-[130px] truncate px-4 py-2 font-mono text-xs text-stone-500" title={b.bookingCode ?? b.id}>
+                  <tr key={b.id} className="border-b border-admin-line-soft align-top last:border-0 hover:bg-admin-surface-soft">
+                    <td className="max-w-[130px] truncate px-4 py-2 font-mono text-xs text-admin-muted" title={b.bookingCode ?? b.id}>
                       {b.bookingCode ?? b.id}
                     </td>
                     {!eventId && (
-                      <td className="max-w-[180px] truncate px-4 py-2 text-stone-600" title={b.event?.title}>
+                      <td className="max-w-[180px] truncate px-4 py-2 text-admin-muted" title={b.event?.title}>
                         {b.event?.title}
-                        <div className="text-xs text-stone-400">{b.event?.eventDate.slice(0, 10)}</div>
+                        <div className="text-xs text-admin-faint">{b.event?.eventDate.slice(0, 10)}</div>
                       </td>
                     )}
-                    <td className="max-w-[180px] truncate px-4 py-2 text-stone-900" title={`${b.guestName} · ${b.guestEmail}`}>
+                    <td className="max-w-[180px] truncate px-4 py-2 text-admin-ink" title={`${b.guestName} · ${b.guestEmail}`}>
                       {b.guestName}
-                      <div className="truncate text-xs text-stone-400">{b.guestEmail}</div>
+                      <div className="truncate text-xs text-admin-faint">{b.guestEmail}</div>
                     </td>
-                    <td className="max-w-[140px] truncate px-4 py-2 text-stone-600">{b.tier.name}</td>
-                    <td className="whitespace-nowrap px-4 py-2 text-stone-600">{b.quantity}</td>
+                    <td className="max-w-[140px] truncate px-4 py-2 text-admin-muted">{b.tier.name}</td>
+                    <td className="whitespace-nowrap px-4 py-2 text-admin-muted">{b.quantity}</td>
                     <td className="px-4 py-2">
                       <Badge status={b.status === "CANCELLED" ? "CANCELLED" : b.paymentStatus} />
                     </td>
@@ -164,12 +164,12 @@ function EventBookingsPageInner() {
                             {b.paymentMethod === "offline" && b.paymentStatus !== "PAID" && (
                               <button
                                 onClick={() => handleMarkPaid(b.id)}
-                                className="mr-3 text-emerald-700 hover:text-emerald-900"
+                                className="mr-3 text-admin-success-ink hover:text-admin-success-ink"
                               >
                                 Mark as paid
                               </button>
                             )}
-                            <button onClick={() => handleCancel(b.id)} className="text-rose-600 hover:text-rose-800">
+                            <button onClick={() => handleCancel(b.id)} className="text-admin-danger-ink hover:text-admin-danger-ink">
                               Cancel
                             </button>
                           </>

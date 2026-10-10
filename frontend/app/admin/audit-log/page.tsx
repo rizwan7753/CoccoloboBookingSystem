@@ -24,13 +24,13 @@ export default function AuditLogPage() {
 
       <div className={`${cardClass} overflow-hidden`}>
         {loading ? (
-          <p className="p-6 text-sm text-stone-400">Loading…</p>
+          <p className="p-6 text-sm text-admin-faint">Loading…</p>
         ) : logs.length === 0 ? (
-          <p className="p-6 text-sm text-stone-400">No activity recorded yet.</p>
+          <p className="p-6 text-sm text-admin-faint">No activity recorded yet.</p>
         ) : (
           <div className="overflow-x-auto">
           <table className="w-full min-w-[700px] text-left text-sm">
-            <thead className="border-b border-stone-100 text-xs uppercase tracking-wide text-stone-400">
+            <thead className="border-b border-admin-line-soft text-xs uppercase tracking-wide text-admin-faint">
               <tr>
                 <th className="px-5 py-3 font-medium">When</th>
                 <th className="px-5 py-3 font-medium">Actor</th>
@@ -41,14 +41,14 @@ export default function AuditLogPage() {
             </thead>
             <tbody>
               {logs.map((log) => (
-                <tr key={log.id} className="border-b border-stone-50 align-top last:border-0 hover:bg-stone-50/60">
-                  <td className="whitespace-nowrap px-5 py-3 text-stone-500">{new Date(log.createdAt).toLocaleString()}</td>
-                  <td className="px-5 py-3 text-stone-900">{log.actorLabel}</td>
-                  <td className="px-5 py-3 font-mono text-xs text-teal-700">{log.action}</td>
-                  <td className="px-5 py-3 text-stone-500">
+                <tr key={log.id} className="border-b border-admin-line-soft align-top last:border-0 hover:bg-admin-surface-soft">
+                  <td className="whitespace-nowrap px-5 py-3 text-admin-muted">{new Date(log.createdAt).toLocaleString()}</td>
+                  <td className="px-5 py-3 text-admin-ink">{log.actorLabel}</td>
+                  <td className="px-5 py-3 font-mono text-xs text-admin-primary-ink">{log.action}</td>
+                  <td className="px-5 py-3 text-admin-muted">
                     {log.entityType} · {log.entityId.slice(0, 10)}…
                   </td>
-                  <td className="max-w-sm truncate px-5 py-3 text-stone-500">
+                  <td className="max-w-sm truncate px-5 py-3 text-admin-muted">
                     {log.detail ? JSON.stringify(log.detail) : "—"}
                   </td>
                 </tr>

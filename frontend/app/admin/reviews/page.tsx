@@ -22,11 +22,11 @@ const ITEM_TYPE_LABELS: Record<string, string> = {
 
 function ScopeLabel({ review }: { review: AdminReview }) {
   if (!review.itemType || !review.itemTitle) {
-    return <span className="text-stone-400">General (homepage)</span>;
+    return <span className="text-admin-faint">General (homepage)</span>;
   }
   return (
     <span>
-      <span className="text-stone-400">{ITEM_TYPE_LABELS[review.itemType] ?? review.itemType}:</span> {review.itemTitle}
+      <span className="text-admin-faint">{ITEM_TYPE_LABELS[review.itemType] ?? review.itemType}:</span> {review.itemTitle}
     </span>
   );
 }
@@ -147,16 +147,16 @@ export default function AdminReviewsPage() {
         }
       />
 
-      <div className="mb-4 flex gap-1 border-b border-stone-200">
+      <div className="mb-4 flex gap-1 border-b border-admin-line">
         <button
           onClick={() => setTab("pending")}
-          className={`px-4 py-2 text-sm font-medium ${tab === "pending" ? "border-b-2 border-teal-700 text-teal-800" : "text-stone-500 hover:text-stone-800"}`}
+          className={`px-4 py-2 text-sm font-medium ${tab === "pending" ? "border-b-2 border-admin-primary text-admin-primary-ink" : "text-admin-muted hover:text-admin-ink"}`}
         >
-          Pending {pending.length > 0 && <span className="ml-1 rounded-full bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800">{pending.length}</span>}
+          Pending {pending.length > 0 && <span className="ml-1 rounded-full bg-admin-warning-tint px-1.5 py-0.5 text-xs text-admin-cat-rental-ink">{pending.length}</span>}
         </button>
         <button
           onClick={() => setTab("all")}
-          className={`px-4 py-2 text-sm font-medium ${tab === "all" ? "border-b-2 border-teal-700 text-teal-800" : "text-stone-500 hover:text-stone-800"}`}
+          className={`px-4 py-2 text-sm font-medium ${tab === "all" ? "border-b-2 border-admin-primary text-admin-primary-ink" : "text-admin-muted hover:text-admin-ink"}`}
         >
           All reviews
         </button>
@@ -164,13 +164,13 @@ export default function AdminReviewsPage() {
 
       {showForm && (
         <form onSubmit={handleSubmit} className={`${cardClass} mb-6 max-w-2xl space-y-4 p-5`}>
-          <p className="text-xs text-stone-400">
+          <p className="text-xs text-admin-faint">
             This adds a general testimonial shown on the homepage. Reviews scoped to a specific excursion/chair/event come from guests via that
             item&apos;s page — approve or reject those instead of creating them here.
           </p>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-sm font-medium text-stone-700">Rating</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Rating</label>
               <select
                 value={form.rating}
                 onChange={(e) => setForm((f) => ({ ...f, rating: Number(e.target.value) }))}
@@ -184,7 +184,7 @@ export default function AdminReviewsPage() {
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-stone-700">Status</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Status</label>
               <select
                 value={form.status}
                 onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as AdminReviewStatus }))}
@@ -197,7 +197,7 @@ export default function AdminReviewsPage() {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-stone-700">Title (optional)</label>
+            <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Title (optional)</label>
             <input
               value={form.title}
               onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
@@ -207,7 +207,7 @@ export default function AdminReviewsPage() {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-stone-700">Quote</label>
+            <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Quote</label>
             <textarea
               value={form.quote}
               onChange={(e) => setForm((f) => ({ ...f, quote: e.target.value }))}
@@ -219,7 +219,7 @@ export default function AdminReviewsPage() {
 
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="mb-1 block text-sm font-medium text-stone-700">Author name</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Author name</label>
               <input
                 value={form.authorName}
                 onChange={(e) => setForm((f) => ({ ...f, authorName: e.target.value }))}
@@ -229,7 +229,7 @@ export default function AdminReviewsPage() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-stone-700">Initials (optional)</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Initials (optional)</label>
               <input
                 value={form.authorInitials}
                 onChange={(e) => setForm((f) => ({ ...f, authorInitials: e.target.value }))}
@@ -239,7 +239,7 @@ export default function AdminReviewsPage() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-stone-700">Meta (optional)</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Meta (optional)</label>
               <input
                 value={form.authorMeta}
                 onChange={(e) => setForm((f) => ({ ...f, authorMeta: e.target.value }))}
@@ -249,13 +249,13 @@ export default function AdminReviewsPage() {
             </div>
           </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-admin-danger-ink">{error}</p>}
 
           <div className="flex gap-2">
             <button type="submit" disabled={submitting} className={primaryButtonClass}>
               {submitting ? "Saving…" : editingId ? "Save changes" : "Add review"}
             </button>
-            <button type="button" onClick={() => setShowForm(false)} className="rounded-lg px-4 py-2 text-sm font-medium text-stone-500 hover:bg-stone-100">
+            <button type="button" onClick={() => setShowForm(false)} className="rounded-lg px-4 py-2 text-sm font-medium text-admin-muted hover:bg-admin-surface-sunk">
               Cancel
             </button>
           </div>
@@ -264,15 +264,15 @@ export default function AdminReviewsPage() {
 
       <div className={`${cardClass} overflow-hidden`}>
         {loading ? (
-          <p className="p-6 text-sm text-stone-400">Loading…</p>
+          <p className="p-6 text-sm text-admin-faint">Loading…</p>
         ) : visible.length === 0 ? (
-          <p className="p-6 text-sm text-stone-400">
+          <p className="p-6 text-sm text-admin-faint">
             {tab === "pending" ? "No reviews waiting on approval." : "No reviews yet."}
           </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[750px] text-left text-sm">
-              <thead className="border-b border-stone-100 text-xs uppercase tracking-wide text-stone-400">
+              <thead className="border-b border-admin-line-soft text-xs uppercase tracking-wide text-admin-faint">
                 <tr>
                   <th className="px-5 py-3 font-medium">Rating</th>
                   <th className="px-5 py-3 font-medium">Review</th>
@@ -284,16 +284,16 @@ export default function AdminReviewsPage() {
               </thead>
               <tbody>
                 {visible.map((r) => (
-                  <tr key={r.id} className="border-b border-stone-50 last:border-0 hover:bg-stone-50/60 align-top">
-                    <td className="px-5 py-3 whitespace-nowrap text-stone-600">{"★".repeat(r.rating)}</td>
+                  <tr key={r.id} className="border-b border-admin-line-soft last:border-0 hover:bg-admin-surface-soft align-top">
+                    <td className="px-5 py-3 whitespace-nowrap text-admin-muted">{"★".repeat(r.rating)}</td>
                     <td className="max-w-[22rem] px-5 py-3">
-                      {r.title && <p className="font-medium text-stone-900">{r.title}</p>}
-                      <p className="line-clamp-2 text-xs text-stone-500">{r.quote}</p>
+                      {r.title && <p className="font-medium text-admin-ink">{r.title}</p>}
+                      <p className="line-clamp-2 text-xs text-admin-muted">{r.quote}</p>
                     </td>
-                    <td className="px-5 py-3 text-stone-600">
+                    <td className="px-5 py-3 text-admin-muted">
                       <ScopeLabel review={r} />
                     </td>
-                    <td className="px-5 py-3 text-stone-600">{r.authorName}</td>
+                    <td className="px-5 py-3 text-admin-muted">{r.authorName}</td>
                     <td className="px-5 py-3">
                       <Badge status={r.status}>{r.status.charAt(0) + r.status.slice(1).toLowerCase()}</Badge>
                     </td>
@@ -304,23 +304,23 @@ export default function AdminReviewsPage() {
                             <button
                               onClick={() => handleApprove(r.id)}
                               disabled={actioningId === r.id}
-                              className="mr-3 font-medium text-emerald-700 hover:text-emerald-900 disabled:opacity-50"
+                              className="mr-3 font-medium text-admin-success-ink hover:text-admin-success-ink disabled:opacity-50"
                             >
                               Approve
                             </button>
                             <button
                               onClick={() => handleReject(r.id)}
                               disabled={actioningId === r.id}
-                              className="mr-3 font-medium text-amber-700 hover:text-amber-900 disabled:opacity-50"
+                              className="mr-3 font-medium text-admin-warning-ink hover:text-admin-warning-ink disabled:opacity-50"
                             >
                               Reject
                             </button>
                           </>
                         )}
-                        <button onClick={() => startEdit(r)} className="mr-3 text-teal-700 hover:text-teal-900">
+                        <button onClick={() => startEdit(r)} className="mr-3 text-admin-primary-ink hover:text-admin-primary-ink">
                           Edit
                         </button>
-                        <button onClick={() => handleDelete(r.id)} className="text-rose-600 hover:text-rose-800">
+                        <button onClick={() => handleDelete(r.id)} className="text-admin-danger-ink hover:text-admin-danger-ink">
                           Delete
                         </button>
                       </td>

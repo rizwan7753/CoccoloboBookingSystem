@@ -45,20 +45,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="flex min-h-screen bg-stone-50">
+    <div className="flex min-h-screen bg-admin-bg">
       <Sidebar admin={admin} systemName={systemName} onSignOut={signOut} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="sticky top-0 z-30 flex items-center gap-3 border-b border-stone-200 bg-white px-4 py-3 lg:hidden">
+        <div className="sticky top-0 z-30 flex items-center gap-3 border-b border-admin-line-soft bg-admin-surface px-4 py-3 lg:hidden">
           <button
             onClick={() => setSidebarOpen(true)}
             aria-label="Open menu"
-            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-stone-600 hover:bg-stone-100"
+            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-admin-muted hover:bg-admin-surface-sunk"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
               <path d="M4 7h16M4 12h16M4 17h16" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
-          <p className="truncate text-sm font-semibold text-stone-900">{systemName}</p>
+          <p className="truncate text-sm font-semibold text-admin-ink">{systemName}</p>
         </div>
         <main className="min-w-0 flex-1 overflow-x-hidden px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">{children}</main>
       </div>

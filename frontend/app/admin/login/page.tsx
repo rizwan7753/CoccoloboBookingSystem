@@ -34,26 +34,26 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-stone-50 px-4">
+    <main className="flex min-h-screen items-center justify-center bg-admin-bg px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-teal-700 text-lg font-bold text-white">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-admin-primary text-lg font-bold text-admin-on-primary">
             {systemName.slice(0, 1).toUpperCase()}
           </div>
-          <h1 className="mt-3 text-lg font-semibold text-stone-900">{systemName} Admin</h1>
-          <p className="text-sm text-stone-400">Sign in with your staff account</p>
+          <h1 className="mt-3 text-lg font-semibold text-admin-ink">{systemName} Admin</h1>
+          <p className="text-sm text-admin-muted">Sign in with your staff account</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm space-y-3">
+        <form onSubmit={handleSubmit} className="rounded-2xl border border-admin-line-soft bg-admin-surface p-6 shadow-sm space-y-3">
           <div>
-            <label className="mb-1 block text-sm font-medium text-stone-700">Email</label>
+            <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Email</label>
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} autoFocus />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-stone-700">Password</label>
+            <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Password</label>
             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className={inputClass} />
           </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-admin-danger-ink">{error}</p>}
           <button type="submit" disabled={submitting} className={`${primaryButtonClass} w-full py-2.5`}>
             {submitting ? "Signing in…" : "Sign in"}
           </button>

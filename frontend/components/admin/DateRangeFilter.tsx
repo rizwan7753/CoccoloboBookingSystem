@@ -16,11 +16,11 @@ export function DateRangeFilter({
   return (
     <>
       <div>
-        <label className="mb-1 block text-xs font-medium text-stone-500">From</label>
+        <label className="mb-1 block text-xs font-medium text-admin-muted">From</label>
         <input type="date" value={from} onChange={(e) => onFromChange(e.target.value)} className={inputClass} />
       </div>
       <div>
-        <label className="mb-1 block text-xs font-medium text-stone-500">To (optional)</label>
+        <label className="mb-1 block text-xs font-medium text-admin-muted">To (optional)</label>
         <input type="date" value={to} onChange={(e) => onToChange(e.target.value)} className={inputClass} />
       </div>
     </>

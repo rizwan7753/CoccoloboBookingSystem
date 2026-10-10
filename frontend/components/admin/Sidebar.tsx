@@ -85,7 +85,7 @@ export default function Sidebar({
           href={item.href}
           onClick={onClose}
           className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
-            isActive(item.href) ? "bg-teal-50 text-teal-800" : "text-stone-600 hover:bg-stone-50 hover:text-stone-900"
+            isActive(item.href) ? "bg-admin-primary text-admin-on-primary" : "text-admin-nav-ink hover:bg-admin-nav-line hover:text-white"
           }`}
         >
           <Icon name={item.icon} />
@@ -98,22 +98,22 @@ export default function Sidebar({
     <>
       {open && <div className="fixed inset-0 z-40 bg-black/40 lg:hidden" onClick={onClose} />}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex h-screen w-64 flex-shrink-0 flex-col overflow-y-auto border-r border-stone-200 bg-white transition-transform duration-200 lg:static lg:z-auto lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex h-screen w-64 flex-shrink-0 flex-col overflow-y-auto border-r border-admin-nav-line bg-admin-nav transition-transform duration-200 lg:static lg:z-auto lg:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
       <div className="flex items-center gap-2 px-5 py-5">
-        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-teal-700 text-sm font-bold text-white">
+        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-admin-primary text-sm font-bold text-admin-on-primary">
           {systemName.slice(0, 1).toUpperCase()}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-stone-900">{systemName}</p>
-          <p className="text-xs text-stone-400">Booking Admin</p>
+          <p className="truncate text-sm font-semibold text-white">{systemName}</p>
+          <p className="text-xs text-admin-nav-ink/70">Booking Admin</p>
         </div>
         <button
           onClick={onClose}
           aria-label="Close menu"
-          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-stone-500 hover:bg-stone-100 lg:hidden"
+          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-admin-nav-ink hover:bg-admin-nav-line lg:hidden"
         >
           <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
             <path d="M6 6l12 12M18 6 6 18" strokeLinecap="round" strokeLinejoin="round" />
@@ -126,7 +126,7 @@ export default function Sidebar({
           href="/admin"
           onClick={onClose}
           className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
-            pathname === "/admin" ? "bg-teal-50 text-teal-800" : "text-stone-600 hover:bg-stone-50 hover:text-stone-900"
+            pathname === "/admin" ? "bg-admin-primary text-admin-on-primary" : "text-admin-nav-ink hover:bg-admin-nav-line hover:text-white"
           }`}
         >
           <Icon name="dashboard" />
@@ -134,38 +134,38 @@ export default function Sidebar({
         </Link>
 
         <div>
-          <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-wide text-stone-400">Manage</p>
+          <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-wide text-admin-nav-ink/60">Manage</p>
           <div className="space-y-1">{renderItems(manageItems)}</div>
         </div>
 
         <div>
-          <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-wide text-stone-400">Bookings</p>
+          <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-wide text-admin-nav-ink/60">Bookings</p>
           <div className="space-y-1">{renderItems(bookingItems)}</div>
         </div>
 
         {otherItems.some((i) => i.show) && (
           <div>
-            <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-wide text-stone-400">Admin</p>
+            <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-wide text-admin-nav-ink/60">Admin</p>
             <div className="space-y-1">{renderItems(otherItems)}</div>
           </div>
         )}
       </nav>
 
-      <div className="border-t border-stone-100 p-4">
+      <div className="border-t border-admin-nav-line p-4">
         {admin && (
           <div className="mb-3 flex items-center gap-2.5">
-            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-stone-200 text-xs font-semibold text-stone-600">
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-admin-nav-line text-xs font-semibold text-admin-nav-ink">
               {admin.name.slice(0, 1).toUpperCase()}
             </div>
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-stone-900">{admin.name}</p>
-              <p className="truncate text-xs text-stone-400">{admin.roleName}</p>
+              <p className="truncate text-sm font-medium text-white">{admin.name}</p>
+              <p className="truncate text-xs text-admin-nav-ink/70">{admin.roleName}</p>
             </div>
           </div>
         )}
         <button
           onClick={onSignOut}
-          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-stone-500 transition hover:bg-stone-50 hover:text-stone-800"
+          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-admin-nav-ink transition hover:bg-admin-nav-line hover:text-white"
         >
           <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" strokeLinecap="round" strokeLinejoin="round" />

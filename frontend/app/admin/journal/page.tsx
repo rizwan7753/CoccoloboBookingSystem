@@ -116,11 +116,11 @@ export default function AdminJournalPage() {
       {showForm && (
         <form onSubmit={handleSubmit} className={`${cardClass} mb-6 max-w-2xl space-y-4 p-5`}>
           <div>
-            <label className="mb-1 block text-sm font-medium text-stone-700">Title</label>
+            <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Title</label>
             <input value={form.title} onChange={(e) => handleTitleChange(e.target.value)} required className={inputClass} />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-stone-700">Slug (URL)</label>
+            <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Slug (URL)</label>
             <input
               value={form.slug}
               onChange={(e) => {
@@ -130,7 +130,7 @@ export default function AdminJournalPage() {
               required
               className={inputClass}
             />
-            <p className="mt-1 text-xs text-stone-400">Auto-generated from the title — edit if you want a different URL.</p>
+            <p className="mt-1 text-xs text-admin-faint">Auto-generated from the title — edit if you want a different URL.</p>
           </div>
 
           <ImageUploadField
@@ -141,7 +141,7 @@ export default function AdminJournalPage() {
           />
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-stone-700">Excerpt</label>
+            <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Excerpt</label>
             <textarea
               value={form.excerpt}
               onChange={(e) => setForm((f) => ({ ...f, excerpt: e.target.value }))}
@@ -153,7 +153,7 @@ export default function AdminJournalPage() {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-stone-700">Body (optional)</label>
+            <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Body (optional)</label>
             <textarea
               value={form.body}
               onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))}
@@ -165,7 +165,7 @@ export default function AdminJournalPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-sm font-medium text-stone-700">Read time, minutes (optional)</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Read time, minutes (optional)</label>
               <input
                 type="number"
                 min={1}
@@ -175,7 +175,7 @@ export default function AdminJournalPage() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-stone-700">Status</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Status</label>
               <select
                 value={form.status}
                 onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as "DRAFT" | "PUBLISHED" }))}
@@ -187,13 +187,13 @@ export default function AdminJournalPage() {
             </div>
           </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-admin-danger-ink">{error}</p>}
 
           <div className="flex gap-2">
             <button type="submit" disabled={submitting} className={primaryButtonClass}>
               {submitting ? "Saving…" : editingId ? "Save changes" : "Add post"}
             </button>
-            <button type="button" onClick={() => setShowForm(false)} className="rounded-lg px-4 py-2 text-sm font-medium text-stone-500 hover:bg-stone-100">
+            <button type="button" onClick={() => setShowForm(false)} className="rounded-lg px-4 py-2 text-sm font-medium text-admin-muted hover:bg-admin-surface-sunk">
               Cancel
             </button>
           </div>
@@ -202,13 +202,13 @@ export default function AdminJournalPage() {
 
       <div className={`${cardClass} overflow-hidden`}>
         {loading ? (
-          <p className="p-6 text-sm text-stone-400">Loading…</p>
+          <p className="p-6 text-sm text-admin-faint">Loading…</p>
         ) : posts.length === 0 ? (
-          <p className="p-6 text-sm text-stone-400">No journal posts yet.</p>
+          <p className="p-6 text-sm text-admin-faint">No journal posts yet.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[650px] text-left text-sm">
-              <thead className="border-b border-stone-100 text-xs uppercase tracking-wide text-stone-400">
+              <thead className="border-b border-admin-line-soft text-xs uppercase tracking-wide text-admin-faint">
                 <tr>
                   <th className="px-5 py-3 font-medium">Title</th>
                   <th className="px-5 py-3 font-medium">Slug</th>
@@ -218,18 +218,18 @@ export default function AdminJournalPage() {
               </thead>
               <tbody>
                 {posts.map((p) => (
-                  <tr key={p.id} className="border-b border-stone-50 last:border-0 hover:bg-stone-50/60">
-                    <td className="px-5 py-3 font-medium text-stone-900">{p.title}</td>
-                    <td className="px-5 py-3 font-mono text-xs text-stone-500">{p.slug}</td>
+                  <tr key={p.id} className="border-b border-admin-line-soft last:border-0 hover:bg-admin-surface-soft">
+                    <td className="px-5 py-3 font-medium text-admin-ink">{p.title}</td>
+                    <td className="px-5 py-3 font-mono text-xs text-admin-muted">{p.slug}</td>
                     <td className="px-5 py-3">
                       <Badge status={p.status}>{p.status === "PUBLISHED" ? "Published" : "Draft"}</Badge>
                     </td>
                     {canEdit && (
                       <td className="px-5 py-3 text-right">
-                        <button onClick={() => startEdit(p)} className="mr-3 text-teal-700 hover:text-teal-900">
+                        <button onClick={() => startEdit(p)} className="mr-3 text-admin-primary-ink hover:text-admin-primary-ink">
                           Edit
                         </button>
-                        <button onClick={() => handleDelete(p.id)} className="text-rose-600 hover:text-rose-800">
+                        <button onClick={() => handleDelete(p.id)} className="text-admin-danger-ink hover:text-admin-danger-ink">
                           Delete
                         </button>
                       </td>

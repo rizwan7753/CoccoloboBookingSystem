@@ -79,7 +79,7 @@ export default function AdminHolidaysPage() {
 
   function ScopeBadge({ active, label: l }: { active: boolean; label: string }) {
     return (
-      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${active ? "bg-rose-100 text-rose-700" : "bg-stone-100 text-stone-400"}`}>
+      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${active ? "bg-admin-danger-tint text-admin-danger-ink" : "bg-admin-surface-sunk text-admin-muted"}`}>
         {l}
       </span>
     );
@@ -96,11 +96,11 @@ export default function AdminHolidaysPage() {
         <form onSubmit={handleCreate} className={`${cardClass} mb-6 max-w-2xl space-y-3 p-5`}>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-sm font-medium text-stone-700">Date</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Date</label>
               <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputClass} required />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-stone-700">Label</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Label</label>
               <input
                 placeholder="e.g. Christmas Day"
                 value={label}
@@ -112,8 +112,8 @@ export default function AdminHolidaysPage() {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-stone-700">Applies to</label>
-            <div className="flex gap-4 text-sm text-stone-600">
+            <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Applies to</label>
+            <div className="flex gap-4 text-sm text-admin-muted">
               <label className="flex items-center gap-1.5">
                 <input type="checkbox" checked={appliesToExcursions} onChange={(e) => setAppliesToExcursions(e.target.checked)} />
                 Excursions
@@ -129,7 +129,7 @@ export default function AdminHolidaysPage() {
             </div>
           </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-admin-danger-ink">{error}</p>}
 
           <button type="submit" disabled={submitting} className={primaryButtonClass}>
             {submitting ? "Adding…" : "Add closure"}
@@ -139,13 +139,13 @@ export default function AdminHolidaysPage() {
 
       <div className={`${cardClass} overflow-hidden`}>
         {loading ? (
-          <p className="p-6 text-sm text-stone-400">Loading…</p>
+          <p className="p-6 text-sm text-admin-faint">Loading…</p>
         ) : holidays.length === 0 ? (
-          <p className="p-6 text-sm text-stone-400">No holidays or closures configured.</p>
+          <p className="p-6 text-sm text-admin-faint">No holidays or closures configured.</p>
         ) : (
           <div className="overflow-x-auto">
           <table className="w-full min-w-[550px] text-left text-sm">
-            <thead className="border-b border-stone-100 text-xs uppercase tracking-wide text-stone-400">
+            <thead className="border-b border-admin-line-soft text-xs uppercase tracking-wide text-admin-faint">
               <tr>
                 <th className="px-5 py-3 font-medium">Date</th>
                 <th className="px-5 py-3 font-medium">Label</th>
@@ -155,9 +155,9 @@ export default function AdminHolidaysPage() {
             </thead>
             <tbody>
               {[...upcoming, ...past].map((h) => (
-                <tr key={h.id} className={`border-b border-stone-50 last:border-0 hover:bg-stone-50/60 ${h.date.slice(0, 10) < today ? "opacity-50" : ""}`}>
-                  <td className="px-5 py-3 font-medium text-stone-900">{formatDate(h.date)}</td>
-                  <td className="px-5 py-3 text-stone-600">{h.label}</td>
+                <tr key={h.id} className={`border-b border-admin-line-soft last:border-0 hover:bg-admin-surface-soft ${h.date.slice(0, 10) < today ? "opacity-50" : ""}`}>
+                  <td className="px-5 py-3 font-medium text-admin-ink">{formatDate(h.date)}</td>
+                  <td className="px-5 py-3 text-admin-muted">{h.label}</td>
                   <td className="px-5 py-3">
                     <div className="flex gap-1.5">
                       <button onClick={() => canEdit && handleToggleScope(h, "appliesToExcursions")} disabled={!canEdit}>
@@ -173,7 +173,7 @@ export default function AdminHolidaysPage() {
                   </td>
                   {canEdit && (
                     <td className="px-5 py-3 text-right">
-                      <button onClick={() => handleDelete(h.id)} className="text-rose-600 hover:text-rose-800">
+                      <button onClick={() => handleDelete(h.id)} className="text-admin-danger-ink hover:text-admin-danger-ink">
                         Remove
                       </button>
                     </td>

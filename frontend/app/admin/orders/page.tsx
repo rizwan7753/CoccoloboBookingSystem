@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { adminApi, getStoredAdmin, canCancelBookings, AdminOrder } from "@/lib/adminApi";
-import { PageHeader, Badge, cardClass, inputClass } from "@/components/admin/ui";
+import { PageHeader, Badge, cardClass, inputClass, primaryButtonClass, secondaryButtonClass } from "@/components/admin/ui";
 import { DateRangeFilter } from "@/components/admin/DateRangeFilter";
 
 function itemSummary(order: AdminOrder): string {
@@ -72,25 +72,25 @@ export default function AdminOrdersPage() {
 
       <div className={`${cardClass} flex flex-wrap items-end gap-3 p-4`}>
         <DateRangeFilter from={from} to={to} onFromChange={setFrom} onToChange={setTo} />
-        <button onClick={search} className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-800">
+        <button onClick={search} className={primaryButtonClass}>
           Search
         </button>
         <button
           onClick={handleExport}
           disabled={exporting}
-          className="rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 transition hover:border-teal-600 hover:text-teal-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className={secondaryButtonClass}
         >
           {exporting ? "Exporting…" : "Export to Excel"}
         </button>
       </div>
-      {exportError && <p className="mt-2 text-sm text-red-600">{exportError}</p>}
+      {exportError && <p className="mt-2 text-sm text-admin-danger-ink">{exportError}</p>}
 
       {loading ? (
-        <p className="mt-6 text-sm text-stone-400">Loading…</p>
+        <p className="mt-6 text-sm text-admin-faint">Loading…</p>
       ) : (
         <div className={`${cardClass} mt-6 overflow-hidden`}>
           {orders.length === 0 ? (
-            <p className="p-6 text-sm text-stone-400">No orders found for this range.</p>
+            <p className="p-6 text-sm text-admin-faint">No orders found for this range.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[900px] table-fixed text-left text-sm">
@@ -103,7 +103,7 @@ export default function AdminOrdersPage() {
                   <col className="w-[8%]" />
                   {canCancel && <col className="w-[12%]" />}
                 </colgroup>
-                <thead className="border-b border-stone-100 text-xs uppercase tracking-wide text-stone-400">
+                <thead className="border-b border-admin-line-soft text-xs uppercase tracking-wide text-admin-faint">
                   <tr>
                     <th className="px-4 py-2.5 font-medium">Reference</th>
                     <th className="px-4 py-2.5 font-medium">Items</th>
@@ -116,22 +116,22 @@ export default function AdminOrdersPage() {
                 </thead>
                 <tbody>
                   {orders.map((o) => (
-                    <tr key={o.id} className="border-b border-stone-50 align-top last:border-0 hover:bg-stone-50/60">
-                      <td className="truncate px-4 py-2 font-mono text-xs text-stone-500" title={o.bookingCode ?? o.id}>
+                    <tr key={o.id} className="border-b border-admin-line-soft align-top last:border-0 hover:bg-admin-surface-soft">
+                      <td className="truncate px-4 py-2 font-mono text-xs text-admin-muted" title={o.bookingCode ?? o.id}>
                         {o.bookingCode ?? o.id}
                       </td>
-                      <td className="truncate px-4 py-2 text-stone-700" title={itemSummary(o)}>
+                      <td className="truncate px-4 py-2 text-admin-ink-soft" title={itemSummary(o)}>
                         {itemSummary(o)}
-                        <div className="text-xs text-stone-400">{itemCount(o)} item{itemCount(o) === 1 ? "" : "s"}</div>
+                        <div className="text-xs text-admin-faint">{itemCount(o)} item{itemCount(o) === 1 ? "" : "s"}</div>
                       </td>
-                      <td className="truncate px-4 py-2 font-medium text-stone-900" title={o.guestName}>
+                      <td className="truncate px-4 py-2 font-medium text-admin-ink" title={o.guestName}>
                         {o.guestName}
                       </td>
-                      <td className="truncate px-4 py-2 text-stone-600" title={`${o.guestEmail}${o.guestPhone ? ` · ${o.guestPhone}` : ""}`}>
+                      <td className="truncate px-4 py-2 text-admin-muted" title={`${o.guestEmail}${o.guestPhone ? ` · ${o.guestPhone}` : ""}`}>
                         {o.guestEmail}
-                        {o.guestPhone ? <div className="text-xs text-stone-400">{o.guestPhone}</div> : null}
+                        {o.guestPhone ? <div className="text-xs text-admin-faint">{o.guestPhone}</div> : null}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-2 text-stone-600">${o.amountTotal}</td>
+                      <td className="whitespace-nowrap px-4 py-2 text-admin-muted">${o.amountTotal}</td>
                       <td className="px-4 py-2">
                         <Badge status={o.status === "CANCELLED" ? "CANCELLED" : o.paymentStatus} />
                       </td>
@@ -140,11 +140,11 @@ export default function AdminOrdersPage() {
                           {o.status !== "CANCELLED" && (
                             <>
                               {o.paymentMethod === "offline" && o.paymentStatus !== "PAID" && (
-                                <button onClick={() => handleMarkPaid(o.id)} className="mr-3 text-emerald-700 hover:text-emerald-900">
+                                <button onClick={() => handleMarkPaid(o.id)} className="mr-3 text-admin-success-ink hover:text-admin-success-ink">
                                   Mark as paid
                                 </button>
                               )}
-                              <button onClick={() => handleCancel(o.id)} className="text-rose-600 hover:text-rose-800">
+                              <button onClick={() => handleCancel(o.id)} className="text-admin-danger-ink hover:text-admin-danger-ink">
                                 Cancel
                               </button>
                             </>

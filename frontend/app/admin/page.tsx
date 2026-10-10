@@ -43,21 +43,21 @@ export default function AdminDashboardPage() {
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <StatCard label="Scheduled today" value={String(k?.scheduledToday ?? "–")} icon="calendar" accent="teal" />
-        <StatCard label="Upcoming bookings" value={String(k?.upcomingBookings ?? "–")} icon="users" accent="sky" />
+        <StatCard label="Scheduled today" value={String(k?.scheduledToday ?? "–")} icon="calendar" accent="excursion" />
+        <StatCard label="Upcoming bookings" value={String(k?.upcomingBookings ?? "–")} icon="users" accent="event" />
         <StatCard
           label="Upcoming revenue (paid)"
           value={k ? `$${k.upcomingRevenuePaid.toFixed(0)}` : "–"}
           icon="revenue"
-          accent="amber"
+          accent="rental"
         />
-        <StatCard label="Active excursions" value={String(k?.activeExcursions ?? "–")} icon="compass" accent="teal" />
-        <StatCard label="Active rentals" value={String(k?.activeRentalItems ?? "–")} icon="compass" accent="sky" />
+        <StatCard label="Active excursions" value={String(k?.activeExcursions ?? "–")} icon="compass" accent="excursion" />
+        <StatCard label="Active rentals" value={String(k?.activeRentalItems ?? "–")} icon="compass" accent="rental" />
       </div>
 
       <div className={`${cardClass} mt-6 p-5`}>
         {loading && !summary ? (
-          <p className="py-10 text-center text-sm text-stone-400">Loading calendar…</p>
+          <p className="py-10 text-center text-sm text-admin-faint">Loading calendar…</p>
         ) : (
           <BookingCalendar
             month={month}
@@ -66,7 +66,7 @@ export default function AdminDashboardPage() {
             onNextMonth={() => setMonth((m) => new Date(m.getFullYear(), m.getMonth() + 1, 1))}
           />
         )}
-        <p className="mt-3 text-xs text-stone-400">
+        <p className="mt-3 text-xs text-admin-faint">
           Click a badge on any day to jump to that booking type&apos;s list — excursion manifest, beach chair bookings, or event bookings.
         </p>
       </div>

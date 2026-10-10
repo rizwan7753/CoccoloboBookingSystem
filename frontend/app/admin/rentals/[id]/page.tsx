@@ -102,8 +102,8 @@ export default function EditRentalPage() {
     }
   }
 
-  if (loading) return <p className="text-sm text-stone-400">Loading…</p>;
-  if (!item) return <p className="text-sm text-red-600">Rental item not found.</p>;
+  if (loading) return <p className="text-sm text-admin-faint">Loading…</p>;
+  if (!item) return <p className="text-sm text-admin-danger-ink">Rental item not found.</p>;
 
   return (
     <div className="space-y-8">
@@ -121,28 +121,28 @@ export default function EditRentalPage() {
 
       {canEdit && (
         <div>
-          <h2 className="mb-3 text-sm font-semibold text-stone-900">Spots</h2>
+          <h2 className="mb-3 text-sm font-semibold text-admin-ink">Spots</h2>
           <div className={`${cardClass} max-w-2xl p-5`}>
             <div className="flex flex-wrap gap-2">
               {item.spots?.map((spot) => (
                 <div
                   key={spot.id}
                   className={`flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-sm ${
-                    spot.isActive ? "border-stone-300 text-stone-700" : "border-stone-200 bg-stone-50 text-stone-400"
+                    spot.isActive ? "border-admin-line text-admin-ink-soft" : "border-admin-line bg-admin-surface-soft text-admin-muted"
                   }`}
                 >
                   <button onClick={() => handleToggleSpot(spot.id, spot.isActive)} className="hover:underline">
-                    {spot.code} <span className="text-stone-400">({spot.quantity} chairs)</span>
+                    {spot.code} <span className="text-admin-faint">({spot.quantity} chairs)</span>
                   </button>
-                  <button onClick={() => handleDeleteSpot(spot.id)} className="text-rose-500 hover:text-rose-700">
+                  <button onClick={() => handleDeleteSpot(spot.id)} className="text-admin-danger-ink hover:text-admin-danger-ink">
                     ×
                   </button>
                 </div>
               ))}
-              {(!item.spots || item.spots.length === 0) && <p className="text-sm text-stone-400">No spots yet.</p>}
+              {(!item.spots || item.spots.length === 0) && <p className="text-sm text-admin-faint">No spots yet.</p>}
             </div>
 
-            <p className="mt-4 text-sm font-medium text-stone-700">
+            <p className="mt-4 text-sm font-medium text-admin-ink-soft">
               Total chairs: {item.spots?.reduce((sum, s) => sum + s.quantity, 0) ?? 0}
             </p>
 
@@ -167,8 +167,8 @@ export default function EditRentalPage() {
                 Add spot
               </button>
             </form>
-            {spotError && <p className="mt-2 text-sm text-red-600">{spotError}</p>}
-            <p className="mt-2 text-xs text-stone-400">
+            {spotError && <p className="mt-2 text-sm text-admin-danger-ink">{spotError}</p>}
+            <p className="mt-2 text-xs text-admin-faint">
               Click a spot&apos;s name to activate/deactivate it. × removes it entirely. A spot holds multiple chairs —
               one booking can take more than one.
             </p>
@@ -178,49 +178,49 @@ export default function EditRentalPage() {
 
       {canEdit && (
         <div>
-          <h2 className="mb-3 text-sm font-semibold text-stone-900">Time slots</h2>
+          <h2 className="mb-3 text-sm font-semibold text-admin-ink">Time slots</h2>
           <div className={`${cardClass} max-w-2xl p-5`}>
             <div className="flex flex-wrap gap-2">
               {item.timeSlots?.map((slot) => (
                 <div
                   key={slot.id}
                   className={`flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-sm ${
-                    slot.isActive ? "border-stone-300 text-stone-700" : "border-stone-200 bg-stone-50 text-stone-400"
+                    slot.isActive ? "border-admin-line text-admin-ink-soft" : "border-admin-line bg-admin-surface-soft text-admin-muted"
                   }`}
                 >
                   <button onClick={() => handleToggleTimeSlot(slot.id, slot.isActive)} className="hover:underline">
-                    {slot.label} <span className="text-stone-400">({slot.startTime}–{slot.endTime})</span>
+                    {slot.label} <span className="text-admin-faint">({slot.startTime}–{slot.endTime})</span>
                   </button>
-                  <button onClick={() => handleDeleteTimeSlot(slot.id)} className="text-rose-500 hover:text-rose-700">
+                  <button onClick={() => handleDeleteTimeSlot(slot.id)} className="text-admin-danger-ink hover:text-admin-danger-ink">
                     ×
                   </button>
                 </div>
               ))}
               {(!item.timeSlots || item.timeSlots.length === 0) && (
-                <p className="text-sm text-stone-400">No time slots yet — add at least one before going live.</p>
+                <p className="text-sm text-admin-faint">No time slots yet — add at least one before going live.</p>
               )}
             </div>
 
-            <div className="mt-4 rounded-lg border border-stone-200 bg-stone-50 p-3">
-              <p className="text-sm font-medium text-stone-700">
+            <div className="mt-4 rounded-lg border border-admin-line bg-admin-surface-soft p-3">
+              <p className="text-sm font-medium text-admin-ink-soft">
                 Generate slots from the {item.durationMinutes}-minute session duration
               </p>
               <form onSubmit={handleGenerateSlots} className="mt-2 flex flex-wrap items-end gap-2">
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-stone-500">Operating hours from</label>
+                  <label className="mb-1 block text-xs font-medium text-admin-muted">Operating hours from</label>
                   <input type="time" value={operatingStart} onChange={(e) => setOperatingStart(e.target.value)} className={`${inputClass} w-32`} required />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-stone-500">to</label>
+                  <label className="mb-1 block text-xs font-medium text-admin-muted">to</label>
                   <input type="time" value={operatingEnd} onChange={(e) => setOperatingEnd(e.target.value)} className={`${inputClass} w-32`} required />
                 </div>
                 <button type="submit" className={primaryButtonClass}>
                   Generate slots
                 </button>
               </form>
-              {generateMessage && <p className="mt-2 text-sm text-emerald-700">{generateMessage}</p>}
-              {generateError && <p className="mt-2 text-sm text-red-600">{generateError}</p>}
-              <p className="mt-2 text-xs text-stone-400">
+              {generateMessage && <p className="mt-2 text-sm text-admin-success-ink">{generateMessage}</p>}
+              {generateError && <p className="mt-2 text-sm text-admin-danger-ink">{generateError}</p>}
+              <p className="mt-2 text-xs text-admin-faint">
                 Splits the operating window into consecutive {item.durationMinutes}-minute slots (e.g. 9:00 AM–5:00 PM
                 at 240 min → two 4-hour slots). Change the session duration above and re-generate to adjust slot length.
                 Existing slots with the same time range are left alone.
@@ -228,7 +228,7 @@ export default function EditRentalPage() {
             </div>
 
             <details className="mt-4">
-              <summary className="cursor-pointer text-sm font-medium text-stone-700">Or add one manually</summary>
+              <summary className="cursor-pointer text-sm font-medium text-admin-ink-soft">Or add one manually</summary>
               <form onSubmit={handleAddTimeSlot} className="mt-2 flex flex-wrap gap-2">
                 <input
                   placeholder="e.g. Morning"
@@ -243,10 +243,10 @@ export default function EditRentalPage() {
                   Add time slot
                 </button>
               </form>
-              {slotError && <p className="mt-2 text-sm text-red-600">{slotError}</p>}
+              {slotError && <p className="mt-2 text-sm text-admin-danger-ink">{slotError}</p>}
             </details>
 
-            <p className="mt-3 text-xs text-stone-400">
+            <p className="mt-3 text-xs text-admin-faint">
               Click a time slot&apos;s name to activate/deactivate it. × removes it entirely. Each spot&apos;s chair
               count resets per time slot — the same chair can be booked in the morning and again in the afternoon.
             </p>

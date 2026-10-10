@@ -32,6 +32,70 @@
   --rule: rgba(22, 74, 89, 0.14);
   --ease: cubic-bezier(0.22, 0.68, 0.28, 1);
   --gutter: clamp(1rem, 4vw, 3.5rem);
+
+  /* ---- Admin panel ----------------------------------------------------
+     The admin panel used to be generic Tailwind teal + stone, which read as
+     a different product from the guest site. These derive it from the brand
+     palette above instead, and every admin colour goes through one of these
+     tokens — so re-skinning the panel later means editing this block rather
+     than hunting ~470 utilities across 27 files.
+
+     The neutrals are cool greys mixed down from Deep Ocean rather than
+     Tailwind's warm stone, so they sit under Aqua without clashing. Each
+     status colour has a "-tint" for fills and an "-ink" for text on those
+     fills; the raw brand Aqua and Sunshine are too light to set text on
+     white, which is why text never uses them directly. */
+  --admin-bg: #f4fafb; /* app background behind the cards */
+  --admin-surface: #ffffff; /* cards, table bodies, inputs */
+  --admin-surface-soft: #f6fbfc; /* zebra rows, muted panels */
+  --admin-surface-sunk: #e8f3f5; /* avatar wells, hover on muted panels */
+
+  --admin-ink: #0e3b47; /* headings and primary table text */
+  --admin-ink-soft: #27596a; /* labels, body copy */
+  --admin-muted: #46707d; /* secondary copy, table headers */
+  --admin-faint: #577b87; /* captions, hints, empty states */
+
+  --admin-line: rgba(22, 74, 89, 0.18); /* input and card borders */
+  --admin-line-soft: rgba(22, 74, 89, 0.08); /* table row dividers */
+
+  --admin-primary: var(--aqua);
+  --admin-primary-lift: var(--aqua-lift);
+  --admin-primary-ink: var(--aqua-ink); /* links and active nav text */
+  --admin-primary-tint: var(--foam);
+  /* Deep Ocean, not white: white on Aqua is only ~1.9:1. */
+  --admin-on-primary: var(--abyss);
+
+  --admin-nav: var(--abyss); /* sidebar */
+  --admin-nav-ink: #cdeef3; /* sidebar inactive text */
+  --admin-nav-line: rgba(230, 249, 251, 0.14);
+
+  --admin-danger: var(--coral);
+  --admin-danger-ink: #b23c23; /* 4.5:1 on white and on the tint */
+  --admin-danger-tint: #ffeae5;
+
+  --admin-success-ink: #156e3e;
+  --admin-success-tint: #dcf5e6;
+
+  --admin-warning-ink: #7d5800; /* Sunshine is unreadable as text */
+  --admin-warning-tint: var(--sand);
+
+  --admin-info-ink: var(--aqua-ink);
+  --admin-info-tint: var(--foam);
+
+  /* Booking-type categories — the calendar legend and dashboard stat icons.
+     These are categories, not statuses, so they get their own names even
+     where a hue is shared with one: the legend and the pill labels say which
+     is which, and naming them separately keeps a later palette change from
+     having to untangle "is this green success, or events?". */
+  --admin-cat-excursion: var(--aqua);
+  --admin-cat-excursion-tint: var(--foam);
+  --admin-cat-excursion-ink: var(--aqua-ink);
+  --admin-cat-rental: var(--sunshine);
+  --admin-cat-rental-tint: var(--sand);
+  --admin-cat-rental-ink: var(--admin-warning-ink);
+  --admin-cat-event: var(--palm);
+  --admin-cat-event-tint: #e3f7ea;
+  --admin-cat-event-ink: #1b7a46;
 }
 
 /* Native <button> doesn't get a pointer cursor by default (unlike <a>) —
@@ -74,6 +138,45 @@ button:disabled {
   --color-coral-lift: var(--coral-lift);
   --color-coral-ink: var(--coral-ink);
   --color-rule: var(--rule);
+
+  /* Admin tokens, exposed as utilities (bg-admin-surface, text-admin-ink,
+     border-admin-line, ring-admin-primary, …). */
+  --color-admin-bg: var(--admin-bg);
+  --color-admin-surface: var(--admin-surface);
+  --color-admin-surface-soft: var(--admin-surface-soft);
+  --color-admin-surface-sunk: var(--admin-surface-sunk);
+  --color-admin-ink: var(--admin-ink);
+  --color-admin-ink-soft: var(--admin-ink-soft);
+  --color-admin-muted: var(--admin-muted);
+  --color-admin-faint: var(--admin-faint);
+  --color-admin-line: var(--admin-line);
+  --color-admin-line-soft: var(--admin-line-soft);
+  --color-admin-primary: var(--admin-primary);
+  --color-admin-primary-lift: var(--admin-primary-lift);
+  --color-admin-primary-ink: var(--admin-primary-ink);
+  --color-admin-primary-tint: var(--admin-primary-tint);
+  --color-admin-on-primary: var(--admin-on-primary);
+  --color-admin-nav: var(--admin-nav);
+  --color-admin-nav-ink: var(--admin-nav-ink);
+  --color-admin-nav-line: var(--admin-nav-line);
+  --color-admin-danger: var(--admin-danger);
+  --color-admin-danger-ink: var(--admin-danger-ink);
+  --color-admin-danger-tint: var(--admin-danger-tint);
+  --color-admin-success-ink: var(--admin-success-ink);
+  --color-admin-success-tint: var(--admin-success-tint);
+  --color-admin-warning-ink: var(--admin-warning-ink);
+  --color-admin-warning-tint: var(--admin-warning-tint);
+  --color-admin-info-ink: var(--admin-info-ink);
+  --color-admin-info-tint: var(--admin-info-tint);
+  --color-admin-cat-excursion: var(--admin-cat-excursion);
+  --color-admin-cat-excursion-tint: var(--admin-cat-excursion-tint);
+  --color-admin-cat-excursion-ink: var(--admin-cat-excursion-ink);
+  --color-admin-cat-rental: var(--admin-cat-rental);
+  --color-admin-cat-rental-tint: var(--admin-cat-rental-tint);
+  --color-admin-cat-rental-ink: var(--admin-cat-rental-ink);
+  --color-admin-cat-event: var(--admin-cat-event);
+  --color-admin-cat-event-tint: var(--admin-cat-event-tint);
+  --color-admin-cat-event-ink: var(--admin-cat-event-ink);
 }
 
 body {

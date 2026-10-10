@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { adminApi, getStoredAdmin, canCancelBookings } from "@/lib/adminApi";
 import { Booking, Excursion } from "@/lib/api";
 import { formatTimeRange } from "@/lib/time";
-import { PageHeader, Badge, cardClass, inputClass } from "@/components/admin/ui";
+import { PageHeader, Badge, cardClass, inputClass, primaryButtonClass, secondaryButtonClass } from "@/components/admin/ui";
 import { DateRangeFilter } from "@/components/admin/DateRangeFilter";
 
 // toISOString() gives UTC's calendar date, which can be a day off from the
@@ -92,7 +92,7 @@ function BookingsPageInner() {
 
       <div className={`${cardClass} flex flex-wrap items-end gap-3 p-4`}>
         <div>
-          <label className="mb-1 block text-xs font-medium text-stone-500">Excursion</label>
+          <label className="mb-1 block text-xs font-medium text-admin-muted">Excursion</label>
           <select value={excursionId} onChange={(e) => setExcursionId(e.target.value)} className={inputClass}>
             <option value="">All excursions</option>
             {excursions.map((ex) => (
@@ -103,25 +103,25 @@ function BookingsPageInner() {
           </select>
         </div>
         <DateRangeFilter from={from} to={to} onFromChange={setFrom} onToChange={setTo} />
-        <button onClick={search} className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-800">
+        <button onClick={search} className={primaryButtonClass}>
           Search
         </button>
         <button
           onClick={handleExport}
           disabled={exporting}
-          className="rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 transition hover:border-teal-600 hover:text-teal-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className={secondaryButtonClass}
         >
           {exporting ? "Exporting…" : "Export to Excel"}
         </button>
       </div>
-      {exportError && <p className="mt-2 text-sm text-red-600">{exportError}</p>}
+      {exportError && <p className="mt-2 text-sm text-admin-danger-ink">{exportError}</p>}
 
       {loading ? (
-        <p className="mt-6 text-sm text-stone-400">Loading…</p>
+        <p className="mt-6 text-sm text-admin-faint">Loading…</p>
       ) : (
         <div className={`${cardClass} mt-6 overflow-hidden`}>
           {bookings.length === 0 ? (
-            <p className="p-6 text-sm text-stone-400">No bookings found for this range.</p>
+            <p className="p-6 text-sm text-admin-faint">No bookings found for this range.</p>
           ) : (
             <div className="overflow-x-auto">
             <table className="w-full min-w-[900px] table-fixed text-left text-sm">
@@ -136,7 +136,7 @@ function BookingsPageInner() {
                 <col className="w-[8%]" />
                 {canCancel && <col className="w-[14%]" />}
               </colgroup>
-              <thead className="border-b border-stone-100 text-xs uppercase tracking-wide text-stone-400">
+              <thead className="border-b border-admin-line-soft text-xs uppercase tracking-wide text-admin-faint">
                 <tr>
                   <th className="px-4 py-2.5 font-medium">Reference</th>
                   <th className="px-4 py-2.5 font-medium">Excursion</th>
@@ -151,30 +151,30 @@ function BookingsPageInner() {
               </thead>
               <tbody>
                 {bookings.map((b) => (
-                  <tr key={b.id} className="border-b border-stone-50 align-top last:border-0 hover:bg-stone-50/60">
-                    <td className="truncate px-4 py-2 font-mono text-xs text-stone-500" title={b.bookingCode ?? b.id}>
+                  <tr key={b.id} className="border-b border-admin-line-soft align-top last:border-0 hover:bg-admin-surface-soft">
+                    <td className="truncate px-4 py-2 font-mono text-xs text-admin-muted" title={b.bookingCode ?? b.id}>
                       {b.bookingCode ?? b.id}
                     </td>
-                    <td className="truncate px-4 py-2 font-medium text-stone-900" title={b.excursion?.title}>
+                    <td className="truncate px-4 py-2 font-medium text-admin-ink" title={b.excursion?.title}>
                       {b.excursion?.title}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-2 text-stone-600">
+                    <td className="whitespace-nowrap px-4 py-2 text-admin-muted">
                       {b.slot?.date.slice(0, 10)}
                       {b.slot?.time && b.excursion ? (
-                        <div className="whitespace-nowrap text-xs text-stone-400">{formatTimeRange(b.slot.time, b.excursion.durationMinutes)}</div>
+                        <div className="whitespace-nowrap text-xs text-admin-faint">{formatTimeRange(b.slot.time, b.excursion.durationMinutes)}</div>
                       ) : null}
                     </td>
-                    <td className="truncate px-4 py-2 font-medium text-stone-900" title={b.guestName}>
+                    <td className="truncate px-4 py-2 font-medium text-admin-ink" title={b.guestName}>
                       {b.guestName}
                     </td>
-                    <td className="truncate px-4 py-2 text-stone-600" title={`${b.guestEmail}${b.guestPhone ? ` · ${b.guestPhone}` : ""}`}>
+                    <td className="truncate px-4 py-2 text-admin-muted" title={`${b.guestEmail}${b.guestPhone ? ` · ${b.guestPhone}` : ""}`}>
                       {b.guestEmail}
-                      {b.guestPhone ? <div className="text-xs text-stone-400">{b.guestPhone}</div> : null}
+                      {b.guestPhone ? <div className="text-xs text-admin-faint">{b.guestPhone}</div> : null}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-2 text-stone-600">
+                    <td className="whitespace-nowrap px-4 py-2 text-admin-muted">
                       {b.adultCount}A / {b.childCount}C
                     </td>
-                    <td className="truncate px-4 py-2 text-stone-600">{b.roomNumber || "—"}</td>
+                    <td className="truncate px-4 py-2 text-admin-muted">{b.roomNumber || "—"}</td>
                     <td className="px-4 py-2">
                       <Badge status={b.status === "CANCELLED" ? "CANCELLED" : b.paymentStatus} />
                     </td>
@@ -185,12 +185,12 @@ function BookingsPageInner() {
                             {b.paymentMethod === "offline" && b.paymentStatus !== "PAID" && (
                               <button
                                 onClick={() => handleMarkPaid(b.id)}
-                                className="mr-3 text-emerald-700 hover:text-emerald-900"
+                                className="mr-3 text-admin-success-ink hover:text-admin-success-ink"
                               >
                                 Mark as paid
                               </button>
                             )}
-                            <button onClick={() => handleCancel(b.id)} className="text-rose-600 hover:text-rose-800">
+                            <button onClick={() => handleCancel(b.id)} className="text-admin-danger-ink hover:text-admin-danger-ink">
                               Cancel
                             </button>
                           </>

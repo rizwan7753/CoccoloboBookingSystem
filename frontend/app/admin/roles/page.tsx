@@ -20,10 +20,10 @@ function PermissionChecklist({
     <div className="grid gap-4 sm:grid-cols-2">
       {groups.map((group) => (
         <div key={group.label}>
-          <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-stone-400">{group.label}</p>
+          <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-admin-faint">{group.label}</p>
           <div className="space-y-1.5">
             {group.permissions.map((p) => (
-              <label key={p.key} className="flex items-start gap-2 text-sm text-stone-700">
+              <label key={p.key} className="flex items-start gap-2 text-sm text-admin-ink-soft">
                 <input
                   type="checkbox"
                   className="mt-0.5"
@@ -31,7 +31,7 @@ function PermissionChecklist({
                   disabled={lockedOn}
                   onChange={() => onToggle(p.key)}
                 />
-                <span className={lockedOn ? "text-stone-400" : ""}>{p.label}</span>
+                <span className={lockedOn ? "text-admin-faint" : ""}>{p.label}</span>
               </label>
             ))}
           </div>
@@ -153,7 +153,7 @@ export default function RolesPage() {
       {showNewForm && (
         <form onSubmit={handleCreate} className={`${cardClass} mb-6 space-y-4 p-5`}>
           <div className="max-w-sm">
-            <label className="mb-1 block text-sm font-medium text-stone-700">Role name</label>
+            <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Role name</label>
             <input
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
@@ -163,7 +163,7 @@ export default function RolesPage() {
             />
           </div>
           <PermissionChecklist groups={groups} selected={newPermissions} onToggle={(k) => toggle(newPermissions, setNewPermissions, k)} />
-          {createError && <p className="text-sm text-red-600">{createError}</p>}
+          {createError && <p className="text-sm text-admin-danger-ink">{createError}</p>}
           <button type="submit" disabled={creating} className={primaryButtonClass}>
             {creating ? "Creating…" : "Create role"}
           </button>
@@ -171,7 +171,7 @@ export default function RolesPage() {
       )}
 
       {loading ? (
-        <p className="text-sm text-stone-400">Loading…</p>
+        <p className="text-sm text-admin-faint">Loading…</p>
       ) : (
         <div className="space-y-4">
           {roles.map((role) => (
@@ -179,28 +179,28 @@ export default function RolesPage() {
               <div className="flex flex-wrap items-center justify-between gap-3 p-5">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="font-semibold text-stone-900">{role.name}</h2>
+                    <h2 className="font-semibold text-admin-ink">{role.name}</h2>
                     {role.isSystem && (
-                      <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-500">Built-in</span>
+                      <span className="rounded-full bg-admin-surface-sunk px-2 py-0.5 text-xs font-medium text-admin-muted">Built-in</span>
                     )}
                   </div>
-                  <p className="mt-0.5 text-xs text-stone-400">
+                  <p className="mt-0.5 text-xs text-admin-faint">
                     {role.permissions.length} permission{role.permissions.length === 1 ? "" : "s"} · {role.staffCount} staff account
                     {role.staffCount === 1 ? "" : "s"}
                   </p>
                 </div>
                 <div className="flex gap-3">
                   {expandedId === role.id ? (
-                    <button onClick={() => setExpandedId(null)} className="text-sm text-stone-500 hover:text-stone-700">
+                    <button onClick={() => setExpandedId(null)} className="text-sm text-admin-muted hover:text-admin-ink-soft">
                       Cancel
                     </button>
                   ) : (
-                    <button onClick={() => startEdit(role)} className="text-sm font-medium text-teal-700 hover:text-teal-900">
+                    <button onClick={() => startEdit(role)} className="text-sm font-medium text-admin-primary-ink hover:text-admin-primary-ink">
                       Edit permissions
                     </button>
                   )}
                   {role.id !== "SUPER_ADMIN" && expandedId !== role.id && (
-                    <button onClick={() => handleDelete(role)} className="text-sm text-rose-600 hover:text-rose-800">
+                    <button onClick={() => handleDelete(role)} className="text-sm text-admin-danger-ink hover:text-admin-danger-ink">
                       Delete
                     </button>
                   )}
@@ -208,10 +208,10 @@ export default function RolesPage() {
               </div>
 
               {expandedId === role.id && (
-                <div className="space-y-4 border-t border-stone-100 p-5">
+                <div className="space-y-4 border-t border-admin-line-soft p-5">
                   {!role.isSystem && (
                     <div className="max-w-sm">
-                      <label className="mb-1 block text-sm font-medium text-stone-700">Role name</label>
+                      <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Role name</label>
                       <input value={draftName} onChange={(e) => setDraftName(e.target.value)} className={inputClass} />
                     </div>
                   )}
@@ -222,9 +222,9 @@ export default function RolesPage() {
                     lockedOn={role.id === "SUPER_ADMIN"}
                   />
                   {role.id === "SUPER_ADMIN" && (
-                    <p className="text-xs text-stone-400">Super Admin always keeps every permission, to prevent a full lockout.</p>
+                    <p className="text-xs text-admin-faint">Super Admin always keeps every permission, to prevent a full lockout.</p>
                   )}
-                  {error && <p className="text-sm text-red-600">{error}</p>}
+                  {error && <p className="text-sm text-admin-danger-ink">{error}</p>}
                   <button onClick={() => handleSave(role)} disabled={saving} className={primaryButtonClass}>
                     {saving ? "Saving…" : "Save changes"}
                   </button>

@@ -47,13 +47,13 @@ export default function AdminEventsPage() {
 
       <div className={`${cardClass} overflow-hidden`}>
         {loading ? (
-          <p className="p-6 text-sm text-stone-400">Loading…</p>
+          <p className="p-6 text-sm text-admin-faint">Loading…</p>
         ) : events.length === 0 ? (
-          <p className="p-6 text-sm text-stone-400">No events yet.</p>
+          <p className="p-6 text-sm text-admin-faint">No events yet.</p>
         ) : (
           <div className="overflow-x-auto">
           <table className="w-full min-w-[750px] text-left text-sm">
-            <thead className="border-b border-stone-100 text-xs uppercase tracking-wide text-stone-400">
+            <thead className="border-b border-admin-line-soft text-xs uppercase tracking-wide text-admin-faint">
               <tr>
                 <th className="px-5 py-3 font-medium">Title</th>
                 <th className="px-5 py-3 font-medium">Date</th>
@@ -65,23 +65,23 @@ export default function AdminEventsPage() {
             </thead>
             <tbody>
               {events.map((event) => (
-                <tr key={event.id} className="border-b border-stone-50 last:border-0 hover:bg-stone-50/60">
-                  <td className="px-5 py-3 font-medium text-stone-900">{event.title}</td>
-                  <td className="px-5 py-3 text-stone-600">
+                <tr key={event.id} className="border-b border-admin-line-soft last:border-0 hover:bg-admin-surface-soft">
+                  <td className="px-5 py-3 font-medium text-admin-ink">{event.title}</td>
+                  <td className="px-5 py-3 text-admin-muted">
                     {formatEventDate(event.eventDate)} · {event.startTime}
                   </td>
                   <td className="px-5 py-3">
                     <Badge status={event.status} />
                   </td>
-                  <td className="px-5 py-3 text-stone-600">{event.ticketTiers?.length ?? 0}</td>
-                  <td className="px-5 py-3 text-stone-600">{event._count?.bookings ?? 0}</td>
+                  <td className="px-5 py-3 text-admin-muted">{event.ticketTiers?.length ?? 0}</td>
+                  <td className="px-5 py-3 text-admin-muted">{event._count?.bookings ?? 0}</td>
                   {canEdit && (
                     <td className="px-5 py-3 text-right">
-                      <Link href={`/admin/events/${event.id}`} className="text-teal-700 hover:text-teal-900">
+                      <Link href={`/admin/events/${event.id}`} className="text-admin-primary-ink hover:text-admin-primary-ink">
                         Manage
                       </Link>{" "}
-                      <span className="text-stone-300">·</span>{" "}
-                      <button onClick={() => handleDelete(event.id)} className="text-rose-600 hover:text-rose-800">
+                      <span className="text-admin-faint">·</span>{" "}
+                      <button onClick={() => handleDelete(event.id)} className="text-admin-danger-ink hover:text-admin-danger-ink">
                         Delete
                       </button>
                     </td>

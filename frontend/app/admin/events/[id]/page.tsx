@@ -60,8 +60,8 @@ export default function EditEventPage() {
     loadEvent();
   }
 
-  if (loading) return <p className="text-sm text-stone-400">Loading…</p>;
-  if (!event) return <p className="text-sm text-red-600">Event not found.</p>;
+  if (loading) return <p className="text-sm text-admin-faint">Loading…</p>;
+  if (!event) return <p className="text-sm text-admin-danger-ink">Event not found.</p>;
 
   const totalCapacity = event.ticketTiers?.reduce((sum, t) => sum + t.capacity, 0) ?? 0;
 
@@ -81,31 +81,31 @@ export default function EditEventPage() {
 
       {canEdit && (
         <div>
-          <h2 className="mb-3 text-sm font-semibold text-stone-900">Ticket tiers</h2>
+          <h2 className="mb-3 text-sm font-semibold text-admin-ink">Ticket tiers</h2>
           <div className={`${cardClass} max-w-2xl p-5`}>
             <div className="space-y-2">
               {event.ticketTiers?.map((tier) => (
                 <div
                   key={tier.id}
                   className={`flex items-center justify-between rounded-lg border px-3 py-2 text-sm ${
-                    tier.isActive ? "border-stone-300 text-stone-700" : "border-stone-200 bg-stone-50 text-stone-400"
+                    tier.isActive ? "border-admin-line text-admin-ink-soft" : "border-admin-line bg-admin-surface-soft text-admin-muted"
                   }`}
                 >
                   <button onClick={() => handleToggleTier(tier.id, tier.isActive)} className="text-left hover:underline">
                     <span className="font-medium">{tier.name}</span> — ${tier.price} × {tier.capacity} capacity
-                    {tier.description && <span className="block text-xs text-stone-400">{tier.description}</span>}
+                    {tier.description && <span className="block text-xs text-admin-faint">{tier.description}</span>}
                   </button>
-                  <button onClick={() => handleDeleteTier(tier.id)} className="ml-3 text-rose-500 hover:text-rose-700">
+                  <button onClick={() => handleDeleteTier(tier.id)} className="ml-3 text-admin-danger-ink hover:text-admin-danger-ink">
                     ×
                   </button>
                 </div>
               ))}
               {(!event.ticketTiers || event.ticketTiers.length === 0) && (
-                <p className="text-sm text-stone-400">No ticket tiers yet — add at least one before going live.</p>
+                <p className="text-sm text-admin-faint">No ticket tiers yet — add at least one before going live.</p>
               )}
             </div>
 
-            <p className="mt-4 text-sm font-medium text-stone-700">Total capacity: {totalCapacity} tickets</p>
+            <p className="mt-4 text-sm font-medium text-admin-ink-soft">Total capacity: {totalCapacity} tickets</p>
 
             <form onSubmit={handleAddTier} className="mt-3 grid grid-cols-2 gap-2">
               <input placeholder="Tier name (e.g. VIP)" value={tierName} onChange={(e) => setTierName(e.target.value)} className={inputClass} required />
@@ -133,8 +133,8 @@ export default function EditEventPage() {
                 Add tier
               </button>
             </form>
-            {tierError && <p className="mt-2 text-sm text-red-600">{tierError}</p>}
-            <p className="mt-2 text-xs text-stone-400">Click a tier&apos;s name to activate/deactivate it. × removes it entirely.</p>
+            {tierError && <p className="mt-2 text-sm text-admin-danger-ink">{tierError}</p>}
+            <p className="mt-2 text-xs text-admin-faint">Click a tier&apos;s name to activate/deactivate it. × removes it entirely.</p>
           </div>
         </div>
       )}

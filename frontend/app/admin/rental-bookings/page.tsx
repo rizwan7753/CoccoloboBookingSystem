@@ -86,7 +86,7 @@ function RentalBookingsPageInner() {
 
       <div className={`${cardClass} flex flex-wrap items-end gap-3 p-4`}>
         <div>
-          <label className="mb-1 block text-xs font-medium text-stone-500">Rental item</label>
+          <label className="mb-1 block text-xs font-medium text-admin-muted">Rental item</label>
           <select value={itemId} onChange={(e) => setItemId(e.target.value)} className={inputClass}>
             <option value="">All items</option>
             {items.map((item) => (
@@ -103,19 +103,19 @@ function RentalBookingsPageInner() {
         <button
           onClick={handleExport}
           disabled={exporting}
-          className="rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 transition hover:border-amber-600 hover:text-amber-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg border border-admin-line px-4 py-2 text-sm font-medium text-admin-ink-soft transition hover:border-admin-warning-ink hover:text-admin-warning-ink disabled:cursor-not-allowed disabled:opacity-50"
         >
           {exporting ? "Exporting…" : "Export to Excel"}
         </button>
       </div>
-      {exportError && <p className="mt-2 text-sm text-red-600">{exportError}</p>}
+      {exportError && <p className="mt-2 text-sm text-admin-danger-ink">{exportError}</p>}
 
-      {loading && <p className="mt-6 text-sm text-stone-400">Loading…</p>}
+      {loading && <p className="mt-6 text-sm text-admin-faint">Loading…</p>}
 
       {!loading && (
         <div className={`${cardClass} mt-6 overflow-hidden`}>
           {selectedItem?.spots && selectedItem.spots.length > 0 && (
-            <div className="flex flex-wrap gap-2 border-b border-stone-100 p-4">
+            <div className="flex flex-wrap gap-2 border-b border-admin-line-soft p-4">
               {selectedItem.spots.map((spot) => {
                 const booked = bookings.filter((b) => b.spotId === spot.id).reduce((sum, b) => sum + b.quantity, 0);
                 const remaining = Math.max(spot.quantity - booked, 0);
@@ -123,7 +123,7 @@ function RentalBookingsPageInner() {
                   <span
                     key={spot.id}
                     className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                      remaining === 0 ? "bg-rose-100 text-rose-700" : "bg-emerald-100 text-emerald-800"
+                      remaining === 0 ? "bg-admin-danger-tint text-admin-danger-ink" : "bg-admin-success-tint text-admin-success-ink"
                     }`}
                   >
                     {spot.code}: {remaining} of {spot.quantity} left
@@ -134,11 +134,11 @@ function RentalBookingsPageInner() {
           )}
 
           {bookings.length === 0 ? (
-            <p className="p-6 text-sm text-stone-400">No reservations found for this range.</p>
+            <p className="p-6 text-sm text-admin-faint">No reservations found for this range.</p>
           ) : (
             <div className="overflow-x-auto">
             <table className="w-full min-w-[800px] text-left text-sm">
-              <thead className="border-b border-stone-100 text-xs uppercase tracking-wide text-stone-400">
+              <thead className="border-b border-admin-line-soft text-xs uppercase tracking-wide text-admin-faint">
                 <tr>
                   <th className="px-4 py-2.5 font-medium">Reference</th>
                   {!itemId && <th className="max-w-[160px] px-4 py-2.5 font-medium">Item</th>}
@@ -152,23 +152,23 @@ function RentalBookingsPageInner() {
               </thead>
               <tbody>
                 {bookings.map((b) => (
-                  <tr key={b.id} className="border-b border-stone-50 align-top last:border-0 hover:bg-stone-50/60">
-                    <td className="max-w-[130px] truncate px-4 py-2 font-mono text-xs text-stone-500" title={b.bookingCode ?? b.id}>
+                  <tr key={b.id} className="border-b border-admin-line-soft align-top last:border-0 hover:bg-admin-surface-soft">
+                    <td className="max-w-[130px] truncate px-4 py-2 font-mono text-xs text-admin-muted" title={b.bookingCode ?? b.id}>
                       {b.bookingCode ?? b.id}
                     </td>
                     {!itemId && (
-                      <td className="max-w-[160px] truncate px-4 py-2 text-stone-600" title={b.rentalItem?.name}>
+                      <td className="max-w-[160px] truncate px-4 py-2 text-admin-muted" title={b.rentalItem?.name}>
                         {b.rentalItem?.name}
                       </td>
                     )}
-                    <td className="whitespace-nowrap px-4 py-2 text-stone-600">{b.date.slice(0, 10)}</td>
-                    <td className="px-4 py-2 font-medium text-stone-900">{b.spot.code}</td>
-                    <td className="max-w-[180px] truncate px-4 py-2 text-stone-600" title={`${b.guestName} · ${b.guestEmail}`}>
+                    <td className="whitespace-nowrap px-4 py-2 text-admin-muted">{b.date.slice(0, 10)}</td>
+                    <td className="px-4 py-2 font-medium text-admin-ink">{b.spot.code}</td>
+                    <td className="max-w-[180px] truncate px-4 py-2 text-admin-muted" title={`${b.guestName} · ${b.guestEmail}`}>
                       {b.guestName}
-                      <div className="truncate text-xs text-stone-400">{b.guestEmail}</div>
+                      <div className="truncate text-xs text-admin-faint">{b.guestEmail}</div>
                     </td>
-                    <td className="whitespace-nowrap px-4 py-2 text-stone-600">
-                      {b.quantity} <span className="text-stone-400">({b.adultCount}A / {b.childCount}C)</span>
+                    <td className="whitespace-nowrap px-4 py-2 text-admin-muted">
+                      {b.quantity} <span className="text-admin-faint">({b.adultCount}A / {b.childCount}C)</span>
                     </td>
                     <td className="px-4 py-2">
                       <Badge status={b.status === "CANCELLED" ? "CANCELLED" : b.paymentStatus} />
@@ -180,12 +180,12 @@ function RentalBookingsPageInner() {
                             {b.paymentMethod === "offline" && b.paymentStatus !== "PAID" && (
                               <button
                                 onClick={() => handleMarkPaid(b.id)}
-                                className="mr-3 text-emerald-700 hover:text-emerald-900"
+                                className="mr-3 text-admin-success-ink hover:text-admin-success-ink"
                               >
                                 Mark as paid
                               </button>
                             )}
-                            <button onClick={() => handleCancel(b.id)} className="text-rose-600 hover:text-rose-800">
+                            <button onClick={() => handleCancel(b.id)} className="text-admin-danger-ink hover:text-admin-danger-ink">
                               Cancel
                             </button>
                           </>

@@ -19,8 +19,8 @@ export default function EditExcursionPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  if (loading) return <p className="text-sm text-stone-400">Loading…</p>;
-  if (!excursion) return <p className="text-sm text-red-600">Excursion not found.</p>;
+  if (loading) return <p className="text-sm text-admin-faint">Loading…</p>;
+  if (!excursion) return <p className="text-sm text-admin-danger-ink">Excursion not found.</p>;
 
   return (
     <div>

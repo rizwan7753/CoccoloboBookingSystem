@@ -285,14 +285,14 @@ export default function AdminSettingsPage() {
     }
   }
 
-  if (loading) return <p className="text-sm text-stone-400">Loading…</p>;
-  if (!settings) return <p className="text-sm text-red-600">Settings not found.</p>;
+  if (loading) return <p className="text-sm text-admin-faint">Loading…</p>;
+  if (!settings) return <p className="text-sm text-admin-danger-ink">Settings not found.</p>;
 
   return (
     <div className="space-y-6">
       <PageHeader title="Settings" description="System-wide configuration — Super Admin only." />
 
-      <div className="flex gap-1 border-b border-stone-200">
+      <div className="flex gap-1 border-b border-admin-line">
         {TABS.map((t) => (
           <button
             key={t.key}
@@ -300,8 +300,8 @@ export default function AdminSettingsPage() {
             onClick={() => setTab(t.key)}
             className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium transition ${
               tab === t.key
-                ? "border-teal-700 text-teal-700"
-                : "border-transparent text-stone-500 hover:text-stone-800"
+                ? "border-admin-primary text-admin-primary-ink"
+                : "border-transparent text-admin-muted hover:text-admin-ink"
             }`}
           >
             {t.label}
@@ -313,14 +313,14 @@ export default function AdminSettingsPage() {
         {tab === "general" && (
           <>
             <div>
-              <label className="mb-1 block text-sm font-medium text-stone-700">Booking system name</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Booking system name</label>
               <input value={name} onChange={(e) => setName(e.target.value)} className={inputClass} required />
-              <p className="mt-1 text-xs text-stone-400">Shown in the site header, footer, page titles, and admin panel.</p>
+              <p className="mt-1 text-xs text-admin-faint">Shown in the site header, footer, page titles, and admin panel.</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="mb-1 block text-sm font-medium text-stone-700">Timezone</label>
+                <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Timezone</label>
                 <select value={timezone} onChange={(e) => setTimezone(e.target.value)} className={inputClass}>
                   {!COMMON_TIMEZONES.includes(timezone) && timezone && (
                     <option value={timezone}>
@@ -339,7 +339,7 @@ export default function AdminSettingsPage() {
                 </select>
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-stone-700">Currency</label>
+                <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Currency</label>
                 <select value={currency} onChange={(e) => setCurrency(e.target.value)} className={inputClass}>
                   {!COMMON_CURRENCIES.includes(currency) && <option value={currency}>{currency}</option>}
                   {COMMON_CURRENCIES.map((c) => (
@@ -352,7 +352,7 @@ export default function AdminSettingsPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-stone-700">Admin notification email</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Admin notification email</label>
               <input
                 type="email"
                 value={adminNotificationEmail}
@@ -360,7 +360,7 @@ export default function AdminSettingsPage() {
                 placeholder="staff@example.com"
                 className={inputClass}
               />
-              <p className="mt-1 text-xs text-stone-400">
+              <p className="mt-1 text-xs text-admin-faint">
                 Staff get a &quot;new booking&quot; email here whenever a guest books anything. Leave blank to disable.
               </p>
             </div>
@@ -369,26 +369,26 @@ export default function AdminSettingsPage() {
 
         {tab === "email" && (
           <>
-            <p className="text-xs text-stone-400">
+            <p className="text-xs text-admin-faint">
               Used to send booking confirmations and staff notifications. Leave blank to keep notifications logged to
               the server console only (nothing is actually emailed until this is configured).
             </p>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="mb-1 block text-sm font-medium text-stone-700">SMTP host</label>
+                <label className="mb-1 block text-sm font-medium text-admin-ink-soft">SMTP host</label>
                 <input placeholder="smtp.sendgrid.net" value={smtpHost} onChange={(e) => setSmtpHost(e.target.value)} className={inputClass} />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-stone-700">Port</label>
+                <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Port</label>
                 <input type="number" value={smtpPort} onChange={(e) => setSmtpPort(Number(e.target.value))} className={inputClass} />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-stone-700">Username</label>
+                <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Username</label>
                 <input value={smtpUsername} onChange={(e) => setSmtpUsername(e.target.value)} className={inputClass} />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-stone-700">Password</label>
+                <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Password</label>
                 <input
                   type="password"
                   placeholder={settings.smtpPasswordSet ? "•••••••• (leave blank to keep)" : "Not set"}
@@ -398,7 +398,7 @@ export default function AdminSettingsPage() {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-stone-700">From email</label>
+                <label className="mb-1 block text-sm font-medium text-admin-ink-soft">From email</label>
                 <input
                   type="email"
                   placeholder="bookings@yourdomain.com"
@@ -408,19 +408,19 @@ export default function AdminSettingsPage() {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-stone-700">From name</label>
+                <label className="mb-1 block text-sm font-medium text-admin-ink-soft">From name</label>
                 <input placeholder="e.g. Coccolobo Bookings" value={smtpFromName} onChange={(e) => setSmtpFromName(e.target.value)} className={inputClass} />
               </div>
             </div>
 
-            <label className="flex items-center gap-2 text-sm text-stone-600">
+            <label className="flex items-center gap-2 text-sm text-admin-muted">
               <input type="checkbox" checked={smtpSecure} onChange={(e) => setSmtpSecure(e.target.checked)} />
               Use TLS (typically on for port 465, off for 587/25)
             </label>
 
-            <div className="border-t border-stone-100 pt-4">
-              <h3 className="text-sm font-semibold text-stone-900">Send a test email</h3>
-              <p className="mt-1 text-xs text-stone-400">Sends using whatever SMTP settings are currently saved (save first if you just changed them).</p>
+            <div className="border-t border-admin-line-soft pt-4">
+              <h3 className="text-sm font-semibold text-admin-ink">Send a test email</h3>
+              <p className="mt-1 text-xs text-admin-faint">Sends using whatever SMTP settings are currently saved (save first if you just changed them).</p>
               <div className="mt-3 flex gap-2">
                 <input
                   type="email"
@@ -433,36 +433,36 @@ export default function AdminSettingsPage() {
                   {testSending ? "Sending…" : "Send test"}
                 </button>
               </div>
-              {testResult && <p className="mt-2 text-sm text-stone-600">{testResult}</p>}
+              {testResult && <p className="mt-2 text-sm text-admin-muted">{testResult}</p>}
             </div>
           </>
         )}
 
         {tab === "stripe" && (
           <>
-            <p className="text-xs text-stone-400">
+            <p className="text-xs text-admin-faint">
               Card payments via Stripe. Keys come from your{" "}
-              <span className="font-medium text-stone-600">Stripe Dashboard → Developers → API keys</span>. Changes here
+              <span className="font-medium text-admin-muted">Stripe Dashboard → Developers → API keys</span>. Changes here
               take effect immediately — no redeploy needed.
             </p>
 
-            <label className="flex items-center gap-2 text-sm text-stone-600">
+            <label className="flex items-center gap-2 text-sm text-admin-muted">
               <input type="checkbox" checked={stripeEnabled} onChange={(e) => setStripeEnabled(e.target.checked)} />
               Accept card payments (Stripe)
             </label>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-stone-700">Publishable key</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Publishable key</label>
               <input
                 placeholder="pk_test_... or pk_live_..."
                 value={stripePublishableKey}
                 onChange={(e) => setStripePublishableKey(e.target.value)}
                 className={inputClass}
               />
-              <p className="mt-1 text-xs text-stone-400">Sent to the guest&apos;s browser — this one isn&apos;t secret.</p>
+              <p className="mt-1 text-xs text-admin-faint">Sent to the guest&apos;s browser — this one isn&apos;t secret.</p>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-stone-700">Secret key</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Secret key</label>
               <input
                 type="password"
                 placeholder={settings.stripeSecretKeySet ? "•••••••• (leave blank to keep)" : "sk_test_... or sk_live_..."}
@@ -470,10 +470,10 @@ export default function AdminSettingsPage() {
                 onChange={(e) => setStripeSecretKey(e.target.value)}
                 className={inputClass}
               />
-              <p className="mt-1 text-xs text-stone-400">Never shown once saved — only whether one is set.</p>
+              <p className="mt-1 text-xs text-admin-faint">Never shown once saved — only whether one is set.</p>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-stone-700">Webhook signing secret</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Webhook signing secret</label>
               <input
                 type="password"
                 placeholder={settings.stripeWebhookSecretSet ? "•••••••• (leave blank to keep)" : "whsec_..."}
@@ -481,9 +481,9 @@ export default function AdminSettingsPage() {
                 onChange={(e) => setStripeWebhookSecret(e.target.value)}
                 className={inputClass}
               />
-              <p className="mt-1 text-xs text-stone-400">
+              <p className="mt-1 text-xs text-admin-faint">
                 From your webhook endpoint in Stripe Dashboard → Developers → Webhooks (point it at{" "}
-                <code className="rounded bg-stone-100 px-1 py-0.5 text-[11px]">/api/webhooks/stripe</code>).
+                <code className="rounded bg-admin-surface-sunk px-1 py-0.5 text-[11px]">/api/webhooks/stripe</code>).
               </p>
             </div>
           </>
@@ -491,29 +491,29 @@ export default function AdminSettingsPage() {
 
         {tab === "nmi" && (
           <>
-            <p className="text-xs text-stone-400">
+            <p className="text-xs text-admin-faint">
               A second card gateway alongside Stripe. Keys come from your{" "}
-              <span className="font-medium text-stone-600">NMI merchant portal → Security Keys</span>. Changes here
+              <span className="font-medium text-admin-muted">NMI merchant portal → Security Keys</span>. Changes here
               take effect immediately — no redeploy needed.
             </p>
 
-            <label className="flex items-center gap-2 text-sm text-stone-600">
+            <label className="flex items-center gap-2 text-sm text-admin-muted">
               <input type="checkbox" checked={nmiEnabled} onChange={(e) => setNmiEnabled(e.target.checked)} />
               Accept card payments via NMI
             </label>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-stone-700">Tokenization key</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Tokenization key</label>
               <input
                 placeholder="Collect.js tokenization key"
                 value={nmiTokenizationKey}
                 onChange={(e) => setNmiTokenizationKey(e.target.value)}
                 className={inputClass}
               />
-              <p className="mt-1 text-xs text-stone-400">Sent to the guest&apos;s browser to load the card form — this one isn&apos;t secret.</p>
+              <p className="mt-1 text-xs text-admin-faint">Sent to the guest&apos;s browser to load the card form — this one isn&apos;t secret.</p>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-stone-700">Security key</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Security key</label>
               <input
                 type="password"
                 placeholder={settings.nmiSecurityKeySet ? "•••••••• (leave blank to keep)" : "NMI API security key"}
@@ -521,19 +521,19 @@ export default function AdminSettingsPage() {
                 onChange={(e) => setNmiSecurityKey(e.target.value)}
                 className={inputClass}
               />
-              <p className="mt-1 text-xs text-stone-400">Never shown once saved — only whether one is set. Used server-side to charge the token guests submit.</p>
+              <p className="mt-1 text-xs text-admin-faint">Never shown once saved — only whether one is set. Used server-side to charge the token guests submit.</p>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-stone-700">Gateway domain</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Gateway domain</label>
               <input
                 placeholder="secure.nmi.com"
                 value={nmiGatewayDomain}
                 onChange={(e) => setNmiGatewayDomain(e.target.value)}
                 className={inputClass}
               />
-              <p className="mt-1 text-xs text-stone-400">
+              <p className="mt-1 text-xs text-admin-faint">
                 NMI is white-label — sandbox accounts and some resellers use their own domain instead of{" "}
-                <code className="rounded bg-stone-100 px-1 py-0.5 text-[11px]">secure.nmi.com</code>. Check your NMI
+                <code className="rounded bg-admin-surface-sunk px-1 py-0.5 text-[11px]">secure.nmi.com</code>. Check your NMI
                 welcome email or portal if unsure. Leave blank to use the default.
               </p>
             </div>
@@ -542,12 +542,12 @@ export default function AdminSettingsPage() {
 
         {tab === "offline" && (
           <>
-            <p className="text-xs text-stone-400">
+            <p className="text-xs text-admin-faint">
               Guests can pay by bank deposit/transfer instead of card. If more than one payment method is on, guests
               pick one at checkout; if only one is on, it&apos;s used automatically.
             </p>
 
-            <label className="flex items-center gap-2 text-sm text-stone-600">
+            <label className="flex items-center gap-2 text-sm text-admin-muted">
               <input
                 type="checkbox"
                 checked={offlinePaymentEnabled}
@@ -557,7 +557,7 @@ export default function AdminSettingsPage() {
             </label>
             {offlinePaymentEnabled && (
               <div>
-                <label className="mb-1 block text-sm font-medium text-stone-700">Offline payment instructions</label>
+                <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Offline payment instructions</label>
                 <textarea
                   value={offlinePaymentInstructions}
                   onChange={(e) => setOfflinePaymentInstructions(e.target.value)}
@@ -565,14 +565,14 @@ export default function AdminSettingsPage() {
                   placeholder="e.g. Bank: ..., Account name: ..., Account number: ..., Reference: your booking ID"
                   className={inputClass}
                 />
-                <p className="mt-1 text-xs text-stone-400">
+                <p className="mt-1 text-xs text-admin-faint">
                   Shown to guests who choose offline payment, and included in their booking-received email.
                 </p>
               </div>
             )}
             {offlinePaymentEnabled && (
               <div>
-                <label className="mb-1 block text-sm font-medium text-stone-700">Receipt email</label>
+                <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Receipt email</label>
                 <input
                   type="email"
                   value={offlinePaymentReceiptEmail}
@@ -580,7 +580,7 @@ export default function AdminSettingsPage() {
                   placeholder="payments@yourdomain.com"
                   className={inputClass}
                 />
-                <p className="mt-1 text-xs text-stone-400">
+                <p className="mt-1 text-xs text-admin-faint">
                   Guests are told to send their payment receipt here, referencing their booking ID, so staff know
                   when to mark a booking as paid.
                 </p>
@@ -591,7 +591,7 @@ export default function AdminSettingsPage() {
 
         {tab === "social" && (
           <>
-            <p className="text-sm text-stone-500">
+            <p className="text-sm text-admin-muted">
               Links shown as icons in the website footer. Paste the full address of each profile (starting with https://). Leave a field
               empty and that icon won&apos;t appear on the site.
             </p>
@@ -605,26 +605,26 @@ export default function AdminSettingsPage() {
               ] as const
             ).map(([label, value, setValue, placeholder]) => (
               <div key={label}>
-                <label className="mb-1 block text-sm font-medium text-stone-700">{label}</label>
+                <label className="mb-1 block text-sm font-medium text-admin-ink-soft">{label}</label>
                 <input type="url" value={value} onChange={(e) => setValue(e.target.value)} placeholder={placeholder} className={inputClass} />
               </div>
             ))}
 
-            <div className="border-t border-stone-100 pt-4">
-              <label className="mb-1 block text-sm font-medium text-stone-700">WhatsApp number</label>
+            <div className="border-t border-admin-line-soft pt-4">
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">WhatsApp number</label>
               <input
                 value={whatsappNumber}
                 onChange={(e) => setWhatsappNumber(e.target.value)}
                 placeholder="+1 869 555 0123"
                 className={inputClass}
               />
-              <p className="mt-1 text-xs text-stone-400">
+              <p className="mt-1 text-xs text-admin-faint">
                 International format, including the country code. Shows a WhatsApp chat bubble on every page of the website; leave
                 empty to hide it.
               </p>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-stone-700">WhatsApp greeting message (optional)</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">WhatsApp greeting message (optional)</label>
               <input
                 value={whatsappMessage}
                 onChange={(e) => setWhatsappMessage(e.target.value)}
@@ -632,15 +632,15 @@ export default function AdminSettingsPage() {
                 placeholder="Hi! I'd like to ask about booking a beach day."
                 className={inputClass}
               />
-              <p className="mt-1 text-xs text-stone-400">
+              <p className="mt-1 text-xs text-admin-faint">
                 Pre-filled in the guest&apos;s WhatsApp when they start a chat — they can edit it before sending.
               </p>
             </div>
           </>
         )}
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        {saveMessage && <p className="text-sm text-emerald-700">{saveMessage}</p>}
+        {error && <p className="text-sm text-admin-danger-ink">{error}</p>}
+        {saveMessage && <p className="text-sm text-admin-success-ink">{saveMessage}</p>}
 
         <button type="submit" disabled={saving} className={primaryButtonClass}>
           {saving ? "Saving…" : "Save settings"}

@@ -11,26 +11,31 @@ export default function StatCard({
   label,
   value,
   icon,
-  accent = "teal",
+  accent = "excursion",
 }: {
   label: string;
   value: string;
   icon: keyof typeof ICONS;
-  accent?: "teal" | "amber" | "sky";
+  /** Named after the booking type the figure refers to, not the colour. */
+  accent?: "excursion" | "rental" | "event";
 }) {
-  const accentClass = { teal: "bg-teal-50 text-teal-700", amber: "bg-amber-50 text-amber-700", sky: "bg-sky-50 text-sky-700" }[accent];
+  const accentClass = {
+    excursion: "bg-admin-cat-excursion-tint text-admin-cat-excursion-ink",
+    rental: "bg-admin-cat-rental-tint text-admin-cat-rental-ink",
+    event: "bg-admin-cat-event-tint text-admin-cat-event-ink",
+  }[accent];
 
   return (
     <div className={`${cardClass} p-5`}>
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-stone-500">{label}</span>
+        <span className="text-sm font-medium text-admin-muted">{label}</span>
         <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${accentClass}`}>
           <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
             {ICONS[icon]}
           </svg>
         </div>
       </div>
-      <p className="mt-3 text-2xl font-bold text-stone-900">{value}</p>
+      <p className="mt-3 text-2xl font-bold text-admin-ink">{value}</p>
     </div>
   );
 }

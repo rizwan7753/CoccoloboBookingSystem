@@ -206,7 +206,7 @@ export default function AdminRestaurantMenusPage() {
         <form onSubmit={handleSubmit} className={`${cardClass} mb-6 max-w-3xl space-y-5 p-5`}>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-sm font-medium text-stone-700">Title</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Title</label>
               <input
                 value={form.title}
                 onChange={(e) => handleTitleChange(e.target.value)}
@@ -216,7 +216,7 @@ export default function AdminRestaurantMenusPage() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-stone-700">Slug (URL)</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Slug (URL)</label>
               <input
                 value={form.slug}
                 onChange={(e) => {
@@ -227,13 +227,13 @@ export default function AdminRestaurantMenusPage() {
                 required
                 className={inputClass}
               />
-              <p className="mt-1 text-xs text-stone-400">Auto-generated from the title — edit if you want a different URL.</p>
+              <p className="mt-1 text-xs text-admin-faint">Auto-generated from the title — edit if you want a different URL.</p>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-sm font-medium text-stone-700">Description (optional)</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Description (optional)</label>
               <textarea
                 value={form.description}
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
@@ -243,7 +243,7 @@ export default function AdminRestaurantMenusPage() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-stone-700">Timings (optional)</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Timings (optional)</label>
               <input
                 value={form.timings}
                 onChange={(e) => setForm((f) => ({ ...f, timings: e.target.value }))}
@@ -262,17 +262,17 @@ export default function AdminRestaurantMenusPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-sm font-medium text-stone-700">Sort order</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Sort order</label>
               <input
                 type="number"
                 value={form.sortOrder}
                 onChange={(e) => setForm((f) => ({ ...f, sortOrder: Number(e.target.value) }))}
                 className={inputClass}
               />
-              <p className="mt-1 text-xs text-stone-400">Lower numbers show first.</p>
+              <p className="mt-1 text-xs text-admin-faint">Lower numbers show first.</p>
             </div>
             <div className="flex items-end pb-2">
-              <label className="flex items-center gap-2 text-sm text-stone-700">
+              <label className="flex items-center gap-2 text-sm text-admin-ink-soft">
                 <input
                   type="checkbox"
                   checked={form.isActive}
@@ -283,20 +283,20 @@ export default function AdminRestaurantMenusPage() {
             </div>
           </div>
 
-          <div className="space-y-4 border-t border-stone-100 pt-4">
+          <div className="space-y-4 border-t border-admin-line-soft pt-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-stone-900">Sections</h3>
-              <button type="button" onClick={addSection} className="text-sm font-medium text-teal-700 hover:text-teal-900">
+              <h3 className="text-sm font-semibold text-admin-ink">Sections</h3>
+              <button type="button" onClick={addSection} className="text-sm font-medium text-admin-primary-ink hover:text-admin-primary-ink">
                 + Add section
               </button>
             </div>
 
             {form.sections.map((section, sectionIndex) => (
-              <div key={sectionIndex} className="rounded-xl border border-stone-200 p-4">
+              <div key={sectionIndex} className="rounded-xl border border-admin-line p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="grid flex-1 grid-cols-2 gap-3">
                     <div>
-                      <label className="mb-1 block text-xs font-medium text-stone-500">Heading</label>
+                      <label className="mb-1 block text-xs font-medium text-admin-muted">Heading</label>
                       <input
                         value={section.heading}
                         onChange={(e) => updateSection(sectionIndex, { heading: e.target.value })}
@@ -305,7 +305,7 @@ export default function AdminRestaurantMenusPage() {
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block text-xs font-medium text-stone-500">Subheading (optional)</label>
+                      <label className="mb-1 block text-xs font-medium text-admin-muted">Subheading (optional)</label>
                       <input
                         value={section.subheading}
                         onChange={(e) => updateSection(sectionIndex, { subheading: e.target.value })}
@@ -318,7 +318,7 @@ export default function AdminRestaurantMenusPage() {
                     <button
                       type="button"
                       onClick={() => removeSection(sectionIndex)}
-                      className="mt-5 text-xs font-medium text-rose-600 hover:text-rose-800"
+                      className="mt-5 text-xs font-medium text-admin-danger-ink hover:text-admin-danger-ink"
                     >
                       Remove section
                     </button>
@@ -327,9 +327,9 @@ export default function AdminRestaurantMenusPage() {
 
                 <div className="mt-4 space-y-3">
                   {section.items.map((item, itemIndex) => (
-                    <div key={itemIndex} className="grid grid-cols-12 items-start gap-2 rounded-lg bg-stone-50 p-3">
+                    <div key={itemIndex} className="grid grid-cols-12 items-start gap-2 rounded-lg bg-admin-surface-soft p-3">
                       <div className="col-span-4">
-                        <label className="mb-1 block text-xs font-medium text-stone-500">Item name</label>
+                        <label className="mb-1 block text-xs font-medium text-admin-muted">Item name</label>
                         <input
                           value={item.name}
                           onChange={(e) => updateItem(sectionIndex, itemIndex, { name: e.target.value })}
@@ -338,7 +338,7 @@ export default function AdminRestaurantMenusPage() {
                         />
                       </div>
                       <div className="col-span-5">
-                        <label className="mb-1 block text-xs font-medium text-stone-500">Description (optional)</label>
+                        <label className="mb-1 block text-xs font-medium text-admin-muted">Description (optional)</label>
                         <input
                           value={item.description}
                           onChange={(e) => updateItem(sectionIndex, itemIndex, { description: e.target.value })}
@@ -347,7 +347,7 @@ export default function AdminRestaurantMenusPage() {
                         />
                       </div>
                       <div className="col-span-2">
-                        <label className="mb-1 block text-xs font-medium text-stone-500">Price (optional)</label>
+                        <label className="mb-1 block text-xs font-medium text-admin-muted">Price (optional)</label>
                         <input
                           type="number"
                           step="0.01"
@@ -364,7 +364,7 @@ export default function AdminRestaurantMenusPage() {
                             type="button"
                             onClick={() => removeItem(sectionIndex, itemIndex)}
                             aria-label="Remove item"
-                            className="text-rose-500 hover:text-rose-700"
+                            className="text-admin-danger-ink hover:text-admin-danger-ink"
                           >
                             ✕
                           </button>
@@ -382,7 +382,7 @@ export default function AdminRestaurantMenusPage() {
                   <button
                     type="button"
                     onClick={() => addItem(sectionIndex)}
-                    className="text-xs font-medium text-teal-700 hover:text-teal-900"
+                    className="text-xs font-medium text-admin-primary-ink hover:text-admin-primary-ink"
                   >
                     + Add item
                   </button>
@@ -391,7 +391,7 @@ export default function AdminRestaurantMenusPage() {
             ))}
           </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-admin-danger-ink">{error}</p>}
 
           <button type="submit" disabled={submitting} className={primaryButtonClass}>
             {submitting ? "Saving…" : editingId ? "Save changes" : "Create menu"}
@@ -401,13 +401,13 @@ export default function AdminRestaurantMenusPage() {
 
       <div className={`${cardClass} overflow-hidden`}>
         {loading ? (
-          <p className="p-6 text-sm text-stone-400">Loading…</p>
+          <p className="p-6 text-sm text-admin-faint">Loading…</p>
         ) : menus.length === 0 ? (
-          <p className="p-6 text-sm text-stone-400">No menus yet.</p>
+          <p className="p-6 text-sm text-admin-faint">No menus yet.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[650px] text-left text-sm">
-              <thead className="border-b border-stone-100 text-xs uppercase tracking-wide text-stone-400">
+              <thead className="border-b border-admin-line-soft text-xs uppercase tracking-wide text-admin-faint">
                 <tr>
                   <th className="px-5 py-3 font-medium">Title</th>
                   <th className="px-5 py-3 font-medium">Slug</th>
@@ -419,13 +419,13 @@ export default function AdminRestaurantMenusPage() {
               </thead>
               <tbody>
                 {menus.map((menu) => (
-                  <tr key={menu.id} className="border-b border-stone-50 last:border-0 hover:bg-stone-50/60">
-                    <td className="px-5 py-3 font-medium text-stone-900">{menu.title}</td>
-                    <td className="px-5 py-3 font-mono text-xs text-stone-500">{menu.slug}</td>
-                    <td className="px-5 py-3 text-stone-600">
+                  <tr key={menu.id} className="border-b border-admin-line-soft last:border-0 hover:bg-admin-surface-soft">
+                    <td className="px-5 py-3 font-medium text-admin-ink">{menu.title}</td>
+                    <td className="px-5 py-3 font-mono text-xs text-admin-muted">{menu.slug}</td>
+                    <td className="px-5 py-3 text-admin-muted">
                       {menu.sections.length === 0 ? "—" : menu.sections.map((s) => s.heading).join(", ")}
                     </td>
-                    <td className="px-5 py-3 text-stone-600">{menu.sortOrder}</td>
+                    <td className="px-5 py-3 text-admin-muted">{menu.sortOrder}</td>
                     <td className="px-5 py-3">
                       <button onClick={() => canEdit && handleToggleActive(menu)} disabled={!canEdit}>
                         <Badge status={menu.isActive ? "ACTIVE" : "INACTIVE"} />
@@ -433,10 +433,10 @@ export default function AdminRestaurantMenusPage() {
                     </td>
                     {canEdit && (
                       <td className="px-5 py-3 text-right">
-                        <button onClick={() => startEdit(menu)} className="mr-3 text-teal-700 hover:text-teal-900">
+                        <button onClick={() => startEdit(menu)} className="mr-3 text-admin-primary-ink hover:text-admin-primary-ink">
                           Edit
                         </button>
-                        <button onClick={() => handleDelete(menu.id)} className="text-rose-600 hover:text-rose-800">
+                        <button onClick={() => handleDelete(menu.id)} className="text-admin-danger-ink hover:text-admin-danger-ink">
                           Delete
                         </button>
                       </td>

@@ -130,15 +130,15 @@ export default function StaffPage() {
         <form onSubmit={handleCreate} className={`${cardClass} mb-6 max-w-xl space-y-3 p-5`}>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-sm font-medium text-stone-700">Name</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Name</label>
               <input value={name} onChange={(e) => setName(e.target.value)} required className={inputClass} />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-stone-700">Email</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Email</label>
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className={inputClass} />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-stone-700">Temporary password</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Temporary password</label>
               <input
                 type="text"
                 value={password}
@@ -149,7 +149,7 @@ export default function StaffPage() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-stone-700">Role</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Role</label>
               <select value={role} onChange={(e) => setRole(e.target.value)} className={inputClass}>
                 {roles.map((r) => (
                   <option key={r.id} value={r.id}>
@@ -159,7 +159,7 @@ export default function StaffPage() {
               </select>
             </div>
             <div className="col-span-2">
-              <label className="mb-1 block text-sm font-medium text-stone-700">Location</label>
+              <label className="mb-1 block text-sm font-medium text-admin-ink-soft">Location</label>
               <select value={locationId} onChange={(e) => setLocationId(e.target.value)} className={inputClass}>
                 {locations.map((l) => (
                   <option key={l.id} value={l.id}>
@@ -169,7 +169,7 @@ export default function StaffPage() {
               </select>
             </div>
           </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-admin-danger-ink">{error}</p>}
           <button type="submit" disabled={submitting} className={primaryButtonClass}>
             {submitting ? "Creating…" : "Create account"}
           </button>
@@ -178,11 +178,11 @@ export default function StaffPage() {
 
       <div className={`${cardClass} overflow-hidden`}>
         {loading ? (
-          <p className="p-6 text-sm text-stone-400">Loading…</p>
+          <p className="p-6 text-sm text-admin-faint">Loading…</p>
         ) : (
           <div className="overflow-x-auto">
           <table className="w-full min-w-[650px] text-left text-sm">
-            <thead className="border-b border-stone-100 text-xs uppercase tracking-wide text-stone-400">
+            <thead className="border-b border-admin-line-soft text-xs uppercase tracking-wide text-admin-faint">
               <tr>
                 <th className="px-5 py-3 font-medium">Name</th>
                 <th className="px-5 py-3 font-medium">Email</th>
@@ -194,27 +194,27 @@ export default function StaffPage() {
             <tbody>
               {users.map((u) => (
                 <Fragment key={u.id}>
-                  <tr className="border-b border-stone-50 last:border-0 hover:bg-stone-50/60">
-                    <td className="px-5 py-3 font-medium text-stone-900">
+                  <tr className="border-b border-admin-line-soft last:border-0 hover:bg-admin-surface-soft">
+                    <td className="px-5 py-3 font-medium text-admin-ink">
                       {editingId === u.id ? (
                         <input
                           value={editName}
                           onChange={(e) => setEditName(e.target.value)}
-                          className="w-full rounded-md border border-stone-300 px-2 py-1 text-sm"
+                          className="w-full rounded-md border border-admin-line px-2 py-1 text-sm"
                         />
                       ) : (
                         <>
-                          {u.name} {u.id === currentAdminId && <span className="text-xs text-stone-400">(you)</span>}
+                          {u.name} {u.id === currentAdminId && <span className="text-xs text-admin-faint">(you)</span>}
                         </>
                       )}
                     </td>
-                    <td className="px-5 py-3 text-stone-600">
+                    <td className="px-5 py-3 text-admin-muted">
                       {editingId === u.id ? (
                         <input
                           type="email"
                           value={editEmail}
                           onChange={(e) => setEditEmail(e.target.value)}
-                          className="w-full rounded-md border border-stone-300 px-2 py-1 text-sm"
+                          className="w-full rounded-md border border-admin-line px-2 py-1 text-sm"
                         />
                       ) : (
                         u.email
@@ -225,7 +225,7 @@ export default function StaffPage() {
                         value={u.role}
                         disabled={u.id === currentAdminId}
                         onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                        className="rounded-md border border-stone-300 px-2 py-1 text-sm disabled:opacity-50"
+                        className="rounded-md border border-admin-line px-2 py-1 text-sm disabled:opacity-50"
                       >
                         {roles.map((r) => (
                           <option key={r.id} value={r.id}>
@@ -240,7 +240,7 @@ export default function StaffPage() {
                         onClick={() => handleToggleActive(u)}
                         disabled={u.id === currentAdminId}
                         className={`rounded-full px-2.5 py-0.5 text-xs font-medium disabled:opacity-50 ${
-                          u.isActive ? "bg-emerald-100 text-emerald-800" : "bg-stone-100 text-stone-600"
+                          u.isActive ? "bg-admin-success-tint text-admin-success-ink" : "bg-admin-surface-sunk text-admin-muted"
                         }`}
                       >
                         {u.isActive ? "Active" : "Deactivated"}
@@ -248,34 +248,34 @@ export default function StaffPage() {
                     </td>
                     <td className="px-5 py-3 text-right">
                       {editingId === u.id ? (
-                        <button onClick={cancelEdit} className="mr-3 text-stone-500 hover:text-stone-700">
+                        <button onClick={cancelEdit} className="mr-3 text-admin-muted hover:text-admin-ink-soft">
                           Cancel
                         </button>
                       ) : (
-                        <button onClick={() => startEdit(u)} className="mr-3 text-teal-700 hover:text-teal-900">
+                        <button onClick={() => startEdit(u)} className="mr-3 text-admin-primary-ink hover:text-admin-primary-ink">
                           Edit
                         </button>
                       )}
                       {u.id !== currentAdminId && editingId !== u.id && (
-                        <button onClick={() => handleDelete(u.id)} className="text-rose-600 hover:text-rose-800">
+                        <button onClick={() => handleDelete(u.id)} className="text-admin-danger-ink hover:text-admin-danger-ink">
                           Delete
                         </button>
                       )}
                     </td>
                   </tr>
                   {editingId === u.id && (
-                    <tr className="border-b border-stone-50 bg-stone-50/60 last:border-0">
+                    <tr className="border-b border-admin-line-soft bg-admin-surface-soft last:border-0">
                       <td colSpan={5} className="px-5 py-3">
                         <div className="flex flex-wrap items-end gap-3">
                           <div>
-                            <label className="mb-1 block text-xs font-medium text-stone-500">New password (optional)</label>
+                            <label className="mb-1 block text-xs font-medium text-admin-muted">New password (optional)</label>
                             <input
                               type="text"
                               value={editPassword}
                               onChange={(e) => setEditPassword(e.target.value)}
                               placeholder="Leave blank to keep current password"
                               minLength={8}
-                              className="w-72 rounded-md border border-stone-300 px-2 py-1 text-sm"
+                              className="w-72 rounded-md border border-admin-line px-2 py-1 text-sm"
                             />
                           </div>
                           <button
@@ -285,7 +285,7 @@ export default function StaffPage() {
                           >
                             {editSubmitting ? "Saving…" : "Save changes"}
                           </button>
-                          {editError && <p className="text-sm text-red-600">{editError}</p>}
+                          {editError && <p className="text-sm text-admin-danger-ink">{editError}</p>}
                         </div>
                       </td>
                     </tr>
